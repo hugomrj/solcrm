@@ -1,0 +1,53 @@
+# ==========================================
+# VARIABLES DE ENTORNO (¡LO MÁS IMPORTANTE!)
+# ==========================================
+.env
+.env.local
+.env.*.local
+
+# Excepción: Mantener el archivo de ejemplo en el repositorio
+!.env.example
+
+# ==========================================
+# RUBY / BUNDLER
+# ==========================================
+.bundle/
+vendor/bundle/
+
+# Nota: NO ignores Gemfile.lock en aplicaciones web (como esta), 
+# solo se ignora si estuvieras creando una gema/librería.
+
+# ==========================================
+# LOGS Y ARCHIVOS TEMPORALES
+# ==========================================
+log/
+*.log
+tmp/
+cache/
+*.tmp
+*.bak
+*.swp
+*~
+
+# ==========================================
+# BASES DE DATOS LOCALES (Si usas SQLite)
+# ==========================================
+*.sqlite3
+*.sqlite3-journal
+*.db
+
+# ==========================================
+# ARCHIVOS DE SISTEMA (macOS / Windows)
+# ==========================================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ==========================================
+# EDITORES DE CÓDIGO / IDEs
+# ==========================================
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.iml

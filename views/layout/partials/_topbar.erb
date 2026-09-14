@@ -1,0 +1,32 @@
+<header class="topbar">
+  <button class="tb-btn" id="burger"><i data-lucide="menu"></i></button>
+  
+  <label class="searchbar">
+    <i data-lucide="search"></i>
+    <input id="globalSearch" placeholder="Buscar…" autocomplete="off">
+    <span class="kbd">Ctrl K</span>
+  </label>
+  
+  <div class="tb-right">
+    <button class="tb-round" id="themeBtn" title="Cambiar tema"><i data-lucide="moon"></i></button>
+    
+    <div class="tb-user" id="userWrap">
+      <button class="avatar" id="avatarBtn" title="<%= current_user_name %>">
+        <%= current_user_name[0].upcase %>
+      </button>
+      
+      <div class="user-menu" id="userMenu">
+        <div class="um-head">
+          <span class="avatar"><%= current_user_name[0].upcase %></span>
+          <div>
+            <b><%= current_user_name %></b>
+            <span>admin@solcrm.com</span>
+          </div>
+        </div>
+        <a href="/logout" class="um-item" style="text-decoration: none; color: var(--t-red);">
+          <i data-lucide="log-out"></i> Cerrar sesión
+        </a>
+      </div>
+    </div>
+  </div>
+</header>

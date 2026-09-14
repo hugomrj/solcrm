@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Iniciar Sesión — SolCRM</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+  >
+
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+
+<body class="login-layout">
+
+  <div class="login-card">
+
+    <div class="login-header">
+
+      <a class="brand" href="/">
+
+        <svg
+          width="32"
+          height="32"
+          viewBox="0 0 32 32"
+          fill="none"
+          aria-hidden="true"
+        >
+          <rect
+            width="32"
+            height="32"
+            rx="8"
+            fill="#465FFF"
+          />
+
+          <!-- Sol -->
+          <circle
+            cx="16"
+            cy="16"
+            r="5"
+            stroke="white"
+            stroke-width="2"
+          />
+
+          <path
+            d="M16 7V9
+               M16 23V25
+               M7 16H9
+               M23 16H25
+               M9.6 9.6L11 11
+               M21 21L22.4 22.4
+               M22.4 9.6L21 11
+               M11 21L9.6 22.4"
+            stroke="white"
+            stroke-width="2"
+            stroke-linecap="round"
+          />
+        </svg>
+
+        <span>SolCRM</span>
+
+      </a>
+
+      <p>Ingresa tus credenciales para acceder</p>
+
+    </div>
+
+
+    <% if @error %>
+      <div
+        class="field err"
+        style="margin-bottom: 16px;"
+      >
+        <span
+          class="msg"
+          style="display: block; text-align: center;"
+        >
+          <%= @error %>
+        </span>
+      </div>
+    <% end %>
+
+
+    <form action="/login" method="POST">
+
+      <div
+        class="field"
+        style="margin-bottom: 16px;"
+      >
+        <label for="email">
+          Correo electrónico
+        </label>
+
+        <input
+          type="email"
+          id="email"
+          name="email"
+          placeholder="admin@solcrm.com"
+          required
+          autofocus
+        >
+      </div>
+
+
+      <div
+        class="field"
+        style="margin-bottom: 24px;"
+      >
+        <label for="password">
+          Contraseña
+        </label>
+
+        <input
+          type="password"
+          id="password"
+          name="password"
+          placeholder="••••••••"
+          required
+        >
+      </div>
+
+
+      <button
+        type="submit"
+        class="btn btn-primary"
+        style="
+          width: 100%;
+          justify-content: center;
+          height: 44px;
+        "
+      >
+        Iniciar Sesión
+      </button>
+
+    </form>
+
+
+    <div class="login-footer">
+      <p>
+        ¿Olvidaste tu contraseña?
+        <a href="#">
+          Recuperar acceso
+        </a>
+      </p>
+    </div>
+
+  </div>
+
+</body>
+</html>
