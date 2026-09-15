@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= @page_title || 'SolCRM' %></title>
+  
+  <!-- Fuentes -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Iconos Lucide -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  
+  <!-- Tu CSS unificado -->
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+
+  <!-- Fondo oscuro para móvil cuando el sidebar está abierto -->
+  <div id="scrim"></div>
+
+  <!-- ================= SIDEBAR ================= -->
+  <%= erb :"layout/partials/_sidebar", layout: false %>
+
+  <!-- ================= MAIN CONTENT ================= -->
+  <div class="content">
+    
+    <!-- ✅ AQUÍ CARGAMOS EL TOPBAR DESDE SU PROPIO ARCHIVO PARCIAL -->
+    <%= erb :"layout/partials/_topbar", layout: false %>
+    
+    <!-- AQUÍ SE INYECTA EL CONTENIDO ESPECÍFICO DE CADA VISTA (Dashboard, Clientes, etc.) -->
+    <main id="main" class="page">
+      <%= yield %>
+    </main>
+  </div>
+
+  <!-- ================= TOASTS Y FLASH MESSAGES ================= -->
+  <div id="toasts">
+    <%= render_flash %>
+  </div>
+
+    <!-- ================= SCRIPTS GLOBALES ================= -->
+  <script>
+    // ==========================================
+    // 1. LÓGICA DEL TEMA OSCURO / CLARO
+    // ==========================================
+    const themeBtn = document.getElementById('themeBtn');
+    const html = document.documentElement;
+
+    function applyTheme(isDark) {
+      if (isDark) {
+        html.classList.add('dark');
+        // Cambiar ícono a Sol
+        themeBtn.innerHTML = '<i data-lucide="sun"></i>';
+        localStorage.setItem('theme', 'dark');
+      } else {
+        html.classList.remove('dark');
+        // Cambiar ícono a Luna
+        themeBtn.innerHTML = '<i data-lucide="moon"></i>';
+        localStorage.setItem('theme', 'light');
+      }
+      
+      // Activar transiciones suaves después de aplicar el tema inicial
+      html.classList.add('theming');
+      
+      // Re-inicializar los íconos de Lucide porque cambiamos el HTML
+      if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+      }
+    }
+
+    // Detectar preferencia guardada o la del sistema operativo
+    const savedTheme = localStorage.getItem('theme');
+    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+    // Aplicar tema al cargar la página
+    if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
+      applyTheme(true);
+    } else {
+      applyTheme(false);
+    }
+
+    // Evento click para alternar el tema
+    if (themeBtn) {
+      themeBtn.addEventListener('click', () => {
+        const isCurrentlyDark = html.classList.contains('dark');
+        applyTheme(!isCurrentlyDark);
+      });
+    }
+
+    // ==========================================
+    // 2. INICIALIZAR ICONOS LUCIDE
+    // ==========================================
+    function initIcons() {
+      if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+      }
+    }
+    document.addEventListener('DOMContentLoaded', initIcons);
+    setTimeout(initIcons, 100); // Refuerzo para menús desplegables
+
+    // ==========================================
+    // 3. TOGGLE SIDEBAR EN MÓVIL
+    // ==========================================
+    const burger = document.getElementById('burger');
+    const sideClose = document.getElementById('sideClose');
+    const scrim = document.getElementById('scrim');
+    
+    function toggleSidebar() { 
+      document.body.classList.toggle('side-open'); 
+    }
+    if(burger) burger.addEventListener('click', toggleSidebar);
+    if(sideClose) sideClose.addEventListener('click', toggleSidebar);
+    if(scrim) scrim.addEventListener('click', toggleSidebar);
+
+    // ==========================================
+    // 4. TOGGLE MENÚ DE USUARIO (AVATAR)
+    // ==========================================
+    const avatarBtn = document.getElementById('avatarBtn');
+    const userMenu = document.getElementById('userMenu');
+    const userWrap = document.getElementById('userWrap');
+
+    if(avatarBtn) {
+      avatarBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        userMenu.classList.toggle('open');
+      });
+    }
+    
+    document.addEventListener('click', (e) => {
+      if (userWrap && !userWrap.contains(e.target)) {
+        userMenu.classList.remove('open');
+      }
+    });
+
+    // ==========================================
+    // 5. LÓGICA DEL ACORDEÓN DEL SIDEBAR
+    // ==========================================
+    window.toggleMenuGroup = function(button) {
+      const clickedGroup = button.parentElement;
+      const isOpen = clickedGroup.classList.contains('open');
+      
+      document.querySelectorAll('.menu-group').forEach(group => {
+        group.classList.remove('open');
+      });
+      
+      if (!isOpen) {
+        clickedGroup.classList.add('open');
+      }
+    };
+
+    // Cerrar sidebar móvil al hacer clic en un sub-item
+    document.addEventListener('click', (e) => {
+      if (e.target.closest('.sub-item') && window.innerWidth <= 1023) {
+        document.body.classList.remove('side-open');
+      }
+    });
+  </script>
+
+
+
+
+
+
+</body>
+</html>

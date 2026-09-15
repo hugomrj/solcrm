@@ -19,6 +19,11 @@
 
 <body class="login-layout">
 
+  <!-- ✅ El render_flash va DENTRO del contenedor de toasts para que flote -->
+  <div id="toasts">
+    <%= render_flash %>
+  </div>
+
   <div class="login-card">
 
     <div class="login-header">
@@ -39,7 +44,6 @@
             fill="#465FFF"
           />
 
-          <!-- Sol -->
           <circle
             cx="16"
             cy="16"
@@ -71,42 +75,25 @@
 
     </div>
 
-
-    <% if @error %>
-      <div
-        class="field err"
-        style="margin-bottom: 16px;"
-      >
-        <span
-          class="msg"
-          style="display: block; text-align: center;"
-        >
-          <%= @error %>
-        </span>
-      </div>
-    <% end %>
-
-
     <form action="/login" method="POST">
 
       <div
         class="field"
         style="margin-bottom: 16px;"
       >
-        <label for="email">
-          Correo electrónico
+        <label for="username">
+          Usuario
         </label>
 
         <input
-          type="email"
-          id="email"
-          name="email"
-          placeholder="admin@solcrm.com"
+          type="text"
+          id="username"
+          name="username"
+          placeholder="usuario"
           required
           autofocus
         >
       </div>
-
 
       <div
         class="field"
@@ -125,7 +112,6 @@
         >
       </div>
 
-
       <button
         type="submit"
         class="btn btn-primary"
@@ -140,7 +126,6 @@
 
     </form>
 
-
     <div class="login-footer">
       <p>
         ¿Olvidaste tu contraseña?
@@ -153,4 +138,4 @@
   </div>
 
 </body>
-</html>
+</html> 

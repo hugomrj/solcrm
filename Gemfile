@@ -4,7 +4,8 @@ gem "sinatra"
 
 gem "rackup", "~> 2.3"
 gem "puma", "~> 8.0"
-gem 'dotenv'
+gem "dotenv"
 
-gem 'pg' 
-gem 'sequel'
+gem "pg"
+gem "sequel"
+gem "bcrypt"
