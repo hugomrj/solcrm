@@ -632,3 +632,25 @@
     .chat-list { max-height: 260px; border-right: 0; border-bottom: 1px solid var(--border); }
     .page { padding: 22px 18px 70px; }
   }
+
+
+
+
+  /* ============ Scrollbar Super Fino para el Sidebar ============ */
+.side-scroll::-webkit-scrollbar {
+  width: 4px; /* Grosor ultra fino */
+}
+
+.side-scroll::-webkit-scrollbar-track {
+  background: transparent; /* Fondo invisible */
+}
+
+.side-scroll::-webkit-scrollbar-thumb {
+  background: var(--border-strong); /* Color sutil */
+  border-radius: 99px;
+}
+
+/* Opcional: se hace un poquito más visible solo cuando pasas el mouse por encima */
+.side-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--text-3);
+}
