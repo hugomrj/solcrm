@@ -1,0 +1,70 @@
+<div class="page-head">
+  <div>
+    <h1>Usuarios</h1>
+    <p class="sub">Usuarios de la empresa</p>
+  </div>
+  <div class="head-actions">
+    <a href="<%= t('/usuarios/nuevo') %>" class="btn btn-primary">
+      <i data-lucide="plus"></i> Nuevo usuario
+    </a>
+  </div>
+</div>
+
+<div class="card">
+  <% if @usuarios.empty? %>
+    <div class="empty">
+      <i data-lucide="users"></i>
+      <b>No hay usuarios todavía</b>
+      <p>Creá el primero para empezar</p>
+      <a href="<%= t('/usuarios/nuevo') %>" class="btn btn-primary">Crear usuario</a>
+    </div>
+  <% else %>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Usuario</th>
+            <th>Nombre</th>
+            <th>Email</th>
+            <th>Roles</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @usuarios.each do |u| %>
+            <% roles = DB[:usuarios_roles].join(:roles, id: :rol_id).where(usuario_id: u[:id]).select_map(:nombre) %>
+            <tr>
+              <td>
+                <div class="cell-name">
+                  <b><%= u[:usuario] %></b>
+                </div>
+              </td>
+              <td><%= u[:nombre] %></td>
+              <td><%= u[:email] || '—' %></td>
+              <td>
+                <% if roles.empty? %>
+                  <span class="badge b-gray">sin rol</span>
+                <% else %>
+                  <% roles.each do |r| %>
+                    <span class="badge b-brand"><%= r %></span>
+                  <% end %>
+                <% end %>
+              </td>
+              <td>
+                <div class="row-actions">
+                  <a href="<%= t("/usuarios/#{u[:id]}/editar") %>" class="act">Editar</a>
+                  <% if u[:id] != current_user[:id] %>
+                    <form method="post" action="<%= t("/usuarios/#{u[:id]}/eliminar") %>" style="display:inline"
+                          onsubmit="return confirm('¿Eliminar a <%= u[:usuario] %>?')">
+                      <button type="submit" class="act danger">Eliminar</button>
+                    </form>
+                  <% end %>
+                </div>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+</div>

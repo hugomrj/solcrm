@@ -1,0 +1,100 @@
+<a href="<%= t('/usuarios') %>" class="backlink">
+  <i data-lucide="arrow-left"></i> Volver a usuarios
+</a>
+
+<div class="page-head">
+  <div>
+    <h1><%= @page_title %></h1>
+    <p class="sub">Completá los datos del usuario</p>
+  </div>
+</div>
+
+<form method="post" action="<%= @usuario ? t("/usuarios/#{@usuario[:id]}") : t('/usuarios') %>">
+  <div class="card form-card">
+    <div class="form-grid">
+
+      <div class="field">
+        <label for="usuario">Usuario *</label>
+        <input
+          type="text"
+          id="usuario"
+          name="usuario"
+          value="<%= @usuario ? @usuario[:usuario] : '' %>"
+          <%= 'readonly' if @usuario %>
+          required
+        >
+      </div>
+
+      <div class="field">
+        <label for="nombre">Nombre completo *</label>
+        <input
+          type="text"
+          id="nombre"
+          name="nombre"
+          value="<%= @usuario ? @usuario[:nombre] : '' %>"
+          required
+        >
+      </div>
+
+      <div class="field">
+        <label for="email">Email</label>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          value="<%= @usuario && @usuario[:email] ? @usuario[:email] : '' %>"
+        >
+      </div>
+
+      <div class="field">
+        <label for="password">Contraseña <%= @usuario ? '' : '*' %></label>
+        <input
+          type="password"
+          id="password"
+          name="password"
+          <%= 'required' unless @usuario %>
+          placeholder="<%= @usuario ? 'Dejar vacío para no cambiar' : '' %>"
+        >
+      </div>
+
+      <div class="field span2">
+        <label>Roles</label>
+        <div class="tagpick">
+          <% ["admin", "vendedor", "soporte"].each do |rol| %>
+            <label>
+              <input
+                type="checkbox"
+                name="roles[]"
+                value="<%= rol %>"
+                <%= 'checked' if @roles_usuario.include?(rol) %>
+                style="display:none"
+                onchange="this.parentElement.querySelector('.chip').classList.toggle('on', this.checked)"
+              >
+              <span class="chip b-brand <%= 'on' if @roles_usuario.include?(rol) %>">
+                <%= rol.capitalize %>
+              </span>
+            </label>
+          <% end %>
+        </div>
+      </div>
+
+      <% if @usuario %>
+        <div class="field span2">
+          <label>
+            <input type="checkbox" name="activo" value="1" <%= 'checked' if @usuario[:activo] %>>
+            Usuario activo
+          </label>
+        </div>
+      <% end %>
+
+    </div>
+
+    <div class="form-foot">
+      <a href="<%= t('/usuarios') %>" class="btn btn-ghost">Cancelar</a>
+      <div class="spacer"></div>
+      <button type="submit" class="btn btn-primary">
+        <%= @usuario ? 'Guardar cambios' : 'Crear usuario' %>
+      </button>
+    </div>
+  </div>
+</form>

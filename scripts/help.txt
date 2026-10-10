@@ -1,0 +1,207 @@
+==========================================================
+ SolCRM — Scripts de base de datos
+==========================================================
+
+Estructura de la carpeta:
+
+  scripts/
+    env_helper.rb          Helper compartido (carga .env + conexión)
+    schema.sql             Definición de tablas (SQL puro)
+    drop_db.rb             Borra la base de datos
+    crear_estructura.rb    Crea la DB + tablas + roles base
+    crear_tenant.rb        Crea un tenant con su usuario admin
+    crear_dios.rb          Crea un super admin (dios)
+
+Todos los comandos se ejecutan desde la RAÍZ del proyecto:
+  ~/dev/ruby/sinatra/solcrm/
+
+==========================================================
+ 1. BORRAR LA BASE DE DATOS
+==========================================================
+
+  bundle exec ruby scripts/drop_db.rb
+
+Borra completamente la base de datos configurada en .env.
+Útil para empezar de cero.
+
+⚠️  ADVERTENCIA: borra TODO. No usar en producción.
+
+==========================================================
+ 2. CREAR LA ESTRUCTURA
+==========================================================
+
+  bundle exec ruby scripts/crear_estructura.rb
+
+Hace 3 cosas:
+  1. Crea la base de datos si no existe
+  2. Aplica schema.sql (crea las tablas)
+  3. Inserta los roles base: admin, vendedor, soporte
+
+Es idempotente: podés correrlo varias veces sin romper nada.
+
+==========================================================
+ 3. CREAR UN TENANT
+==========================================================
+
+  bundle exec ruby scripts/crear_tenant.rb <codigo> <usuario> <password>
+
+
+    # Crear tenant "acme" con admin/admin
+    bundle exec ruby scripts/crear_tenant.rb acme admin admin
+
+    # Crear tenant "globex" con admin/admin
+    bundle exec ruby scripts/crear_tenant.rb globex admin admin
+
+    # Crear tenant "demo" con demo/demo
+    bundle exec ruby scripts/crear_tenant.rb demo demo demo
+
+    # Crear tenant "initech" con admin/initech2026
+    bundle exec ruby scripts/crear_tenant.rb initech admin initech2026
+
+
+Parámetros:
+  codigo     Slug para la URL (ej: acme, globex, demo)
+  usuario    Username del admin del tenant
+  password   Password del admin
+
+Ejemplos:
+
+  bundle exec ruby scripts/crear_tenant.rb demo   demo  demo
+  bundle exec ruby scripts/crear_tenant.rb acme   admin admin
+  bundle exec ruby scripts/crear_tenant.rb globex admin admin
+
+Resultado:
+  - Crea el tenant en la tabla tenants
+  - Crea el usuario admin con rol 'admin'
+  - Login disponible en: /<codigo>/login
+
+Es idempotente: si el tenant ya existe, actualiza el password.
+
+==========================================================
+ 4. CREAR EL DIOS (SUPER ADMIN)
+==========================================================
+
+  bundle exec ruby scripts/crear_dios.rb <usuario> <password> [email]
+
+Parámetros:
+  usuario    Username del super admin
+  password   Password
+  email      (opcional) Email del super admin
+
+Ejemplos:
+
+  bundle exec ruby scripts/crear_dios.rb dios cambiar123
+  bundle exec ruby scripts/crear_dios.rb dios cambiar123 dios@solcrm.com
+
+Resultado:
+  - Crea el super admin en la tabla super_admins
+  - Login disponible en: /super/login
+
+==========================================================
+ FLUJO COMPLETO (reset desde cero)
+==========================================================
+
+  bundle exec ruby scripts/drop_db.rb
+  bundle exec ruby scripts/crear_estructura.rb
+  bundle exec ruby scripts/crear_tenant.rb demo   demo  demo
+  bundle exec ruby scripts/crear_tenant.rb acme   admin admin
+  bundle exec ruby scripts/crear_tenant.rb globex admin admin
+  bundle exec ruby scripts/crear_dios.rb dios cambiar123
+
+Después:
+
+  bundle exec rackup
+
+Y entrás a:
+
+  http://127.0.0.1:9292/demo/login     →  demo  / demo
+  http://127.0.0.1:9292/acme/login     →  admin / admin
+  http://127.0.0.1:9292/globex/login   →  admin / admin
+  http://127.0.0.1:9292/super/login    →  dios  / cambiar123
+
+==========================================================
+ ATAJOS (opcional)
+==========================================================
+
+Agregar a ~/.bashrc:
+
+  alias solcrm-reset="cd ~/dev/ruby/sinatra/solcrm && \
+    bundle exec ruby scripts/drop_db.rb && \
+    bundle exec ruby scripts/crear_estructura.rb && \
+    bundle exec ruby scripts/crear_tenant.rb demo demo demo && \
+    bundle exec ruby scripts/crear_tenant.rb acme admin admin && \
+    bundle exec ruby scripts/crear_tenant.rb globex admin admin && \
+    bundle exec ruby scripts/crear_dios.rb dios cambiar123"
+
+  alias solcrm-tenant="cd ~/dev/ruby/sinatra/solcrm && bundle exec ruby scripts/crear_tenant.rb"
+
+Después:
+
+  source ~/.bashrc
+
+Uso:
+
+  solcrm-reset
+  solcrm-tenant initech admin initech123
+
+==========================================================
+ VERIFICAR EN LA DB
+==========================================================
+
+Conectar a psql:
+
+  psql -d solcrm_database
+
+Ver todos los tenants:
+
+  SELECT id, codigo, nombre, activo FROM tenants;
+
+Ver todos los usuarios:
+
+  SELECT id, tenant_id, usuario, email, activo FROM usuarios;
+
+Ver roles:
+
+  SELECT * FROM roles;
+
+Ver super admins:
+
+  SELECT id, usuario, email FROM super_admins;
+
+Ver todo junto (útil):
+
+  SELECT
+    t.id AS tenant_id,
+    t.codigo,
+    t.nombre AS tenant_nombre,
+    u.usuario,
+    u.nombre AS usuario_nombre,
+    r.nombre AS rol
+  FROM tenants t
+  LEFT JOIN usuarios u ON u.tenant_id = t.id
+  LEFT JOIN usuarios_roles ur ON ur.usuario_id = u.id
+  LEFT JOIN roles r ON r.id = ur.rol_id
+  ORDER BY t.id;
+
+==========================================================
+ ERRORES COMUNES
+==========================================================
+
+"ERROR: No existe el archivo .env"
+  → Crear .env en la raíz del proyecto
+
+"PG::ConnectionBad: could not connect"
+  → Postgres no está corriendo. Verificar con:
+    sudo systemctl status postgresql
+
+"database does not exist"
+  → Correr primero: bundle exec ruby scripts/crear_estructura.rb
+
+"duplicate key value violates unique constraint"
+  → El tenant ya existe. Es idempotente, no debería pasar.
+    Si pasa, verificar que no haya tenants duplicados.
+
+"undefined method 'exec_params'"
+  → Falta require_relative "env_helper" al inicio del script
+
+==========================================================

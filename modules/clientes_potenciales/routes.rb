@@ -1,0 +1,2 @@
+class ClientesPotencialesRoutes < BaseApp
+end

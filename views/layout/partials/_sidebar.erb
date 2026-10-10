@@ -1,7 +1,6 @@
 <aside class="sidebar" id="sidebar">
   <div class="side-brand">
-    <a class="brand" href="/">
-      <!-- ✅ NUEVO LOGO SOL -->
+    <a class="brand" href="<%= t('/') %>">
       <svg width="32" height="32" viewBox="0 0 32 32" fill="none" aria-hidden="true">
         <rect width="32" height="32" rx="8" fill="#465FFF" />
         <circle cx="16" cy="16" r="5" stroke="white" stroke-width="2" />
@@ -14,25 +13,53 @@
 
   <div class="side-scroll">
     <nav>
-      <p class="side-label">Principal</p>
-      
-      <a class="menu-item <%= current_page?('dashboard') %>" href="/dashboard">
+      <p class="side-label">CRM</p>
+
+      <a class="menu-item <%= current_page?('dashboard') %>" href="<%= t('/dashboard') %>">
         <span class="mi-ic ic-blue"><i data-lucide="layout-dashboard"></i></span>
         Tablero
       </a>
 
-      <a class="menu-item <%= current_page?('clientes') %>" href="/clientes">
+      <a class="menu-item <%= current_page?('pipeline') %>" href="<%= t('/pipeline') %>">
+        <span class="mi-ic ic-green"><i data-lucide="kanban"></i></span>
+        Pipeline de ventas
+      </a>
+
+      <a class="menu-item <%= current_page?('clientes') %>" href="<%= t('/clientes') %>">
         <span class="mi-ic ic-purple"><i data-lucide="users"></i></span>
         Clientes
       </a>
 
-      <a class="menu-item <%= current_page?('leads') %>" href="/leads">
+      <a class="menu-item <%= current_page?('contactos') %>" href="<%= t('/contactos') %>">
+        <span class="mi-ic ic-cyan"><i data-lucide="contact"></i></span>
+        Contactos
+      </a>
+
+      <a class="menu-item <%= current_page?('leads') %>" href="<%= t('/leads') %>">
         <span class="mi-ic ic-brand"><i data-lucide="user-plus"></i></span>
         Clientes potenciales
       </a>
 
-      <!-- Grupo: Ventas -->
-      <% sales_pages = ['ventas', 'propuestas', 'presupuestos', 'facturas', 'pagos', 'notas_credito', 'articulos_venta'] %>
+      <p class="side-label">Actividad</p>
+
+      <div class="menu-group <%= 'open' if ['calendario','tareas','llamadas'].include?(@current_page) %>" data-group="actividad">
+        <button class="menu-item" onclick="toggleMenuGroup(this)">
+          <span class="mi-ic ic-purple"><i data-lucide="calendar-check"></i></span>
+          Actividad
+          <i data-lucide="chevron-down" class="chev"></i>
+        </button>
+        <div class="submenu">
+          <ul>
+            <li><a class="sub-item <%= current_page?('calendario') %>" href="<%= t('/calendario') %>"><i data-lucide="calendar"></i> Calendario</a></li>
+            <li><a class="sub-item <%= current_page?('tareas') %>" href="<%= t('/tareas') %>"><i data-lucide="check-circle-2"></i> Tareas</a></li>
+            <li><a class="sub-item <%= current_page?('llamadas') %>" href="<%= t('/llamadas') %>"><i data-lucide="phone"></i> Llamadas</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <p class="side-label">Ventas</p>
+
+      <% sales_pages = ['propuestas','presupuestos','facturas','pagos','notas_credito','articulos_venta'] %>
       <div class="menu-group <%= 'open' if sales_pages.include?(@current_page) %>" data-group="ventas">
         <button class="menu-item" onclick="toggleMenuGroup(this)">
           <span class="mi-ic ic-green"><i data-lucide="shopping-cart"></i></span>
@@ -41,18 +68,34 @@
         </button>
         <div class="submenu">
           <ul>
-            <li><a class="sub-item <%= current_page?('propuestas') %>" href="/propuestas"><i data-lucide="file-text"></i> Propuestas</a></li>
-            <li><a class="sub-item <%= current_page?('presupuestos') %>" href="/presupuestos"><i data-lucide="calculator"></i> Presupuestos</a></li>
-            <li><a class="sub-item <%= current_page?('facturas') %>" href="/facturas"><i data-lucide="file-check"></i> Facturas</a></li>
-            <li><a class="sub-item <%= current_page?('pagos') %>" href="/pagos"><i data-lucide="credit-card"></i> Pagos</a></li>
-            <li><a class="sub-item <%= current_page?('notas_credito') %>" href="/notas_credito"><i data-lucide="rotate-ccw"></i> Notas de crédito</a></li>
-            <li><a class="sub-item <%= current_page?('articulos_venta') %>" href="/articulos_venta"><i data-lucide="package"></i> Artículos</a></li>
+            <li><a class="sub-item <%= current_page?('propuestas') %>" href="<%= t('/propuestas') %>"><i data-lucide="file-text"></i> Propuestas</a></li>
+            <li><a class="sub-item <%= current_page?('presupuestos') %>" href="<%= t('/presupuestos') %>"><i data-lucide="calculator"></i> Presupuestos</a></li>
+            <li><a class="sub-item <%= current_page?('facturas') %>" href="<%= t('/facturas') %>"><i data-lucide="file-check"></i> Facturas</a></li>
+            <li><a class="sub-item <%= current_page?('pagos') %>" href="<%= t('/pagos') %>"><i data-lucide="credit-card"></i> Pagos</a></li>
+            <li><a class="sub-item <%= current_page?('notas_credito') %>" href="<%= t('/notas_credito') %>"><i data-lucide="rotate-ccw"></i> Notas de crédito</a></li>
+            <li><a class="sub-item <%= current_page?('articulos_venta') %>" href="<%= t('/articulos_venta') %>"><i data-lucide="package"></i> Artículos</a></li>
           </ul>
         </div>
       </div>
 
-      <!-- Grupo: Compras -->
-      <% purchase_pages = ['compras', 'proveedores', 'ordenes_compra', 'contratos_compra'] %>
+      <a class="menu-item <%= current_page?('soporte') %>" href="<%= t('/soporte') %>">
+        <span class="mi-ic ic-brand"><i data-lucide="life-buoy"></i></span>
+        Soporte
+      </a>
+
+      <a class="menu-item <%= current_page?('suscripciones') %>" href="<%= t('/suscripciones') %>">
+        <span class="mi-ic ic-cyan"><i data-lucide="refresh-cw"></i></span>
+        Suscripciones
+      </a>
+
+      <p class="side-label">Operaciones</p>
+
+      <a class="menu-item <%= current_page?('proyectos') %>" href="<%= t('/proyectos') %>">
+        <span class="mi-ic ic-blue"><i data-lucide="briefcase"></i></span>
+        Proyectos
+      </a>
+
+      <% purchase_pages = ['proveedores','ordenes_compra','contratos_compra'] %>
       <div class="menu-group <%= 'open' if purchase_pages.include?(@current_page) %>" data-group="compras">
         <button class="menu-item" onclick="toggleMenuGroup(this)">
           <span class="mi-ic ic-warn"><i data-lucide="shopping-bag"></i></span>
@@ -61,32 +104,14 @@
         </button>
         <div class="submenu">
           <ul>
-            <li><a class="sub-item <%= current_page?('proveedores') %>" href="/proveedores"><i data-lucide="truck"></i> Proveedores</a></li>
-            <li><a class="sub-item <%= current_page?('ordenes_compra') %>" href="/ordenes_compra"><i data-lucide="clipboard-list"></i> Órdenes de Compra</a></li>
-            <li><a class="sub-item <%= current_page?('contratos_compra') %>" href="/contratos_compra"><i data-lucide="file-signature"></i> Contratos</a></li>
+            <li><a class="sub-item <%= current_page?('proveedores') %>" href="<%= t('/proveedores') %>"><i data-lucide="truck"></i> Proveedores</a></li>
+            <li><a class="sub-item <%= current_page?('ordenes_compra') %>" href="<%= t('/ordenes_compra') %>"><i data-lucide="clipboard-list"></i> Órdenes de Compra</a></li>
+            <li><a class="sub-item <%= current_page?('contratos_compra') %>" href="<%= t('/contratos_compra') %>"><i data-lucide="file-signature"></i> Contratos</a></li>
           </ul>
         </div>
       </div>
 
-      <p class="side-label">Operaciones</p>
-
-      <a class="menu-item <%= current_page?('proyectos') %>" href="/proyectos">
-        <span class="mi-ic ic-blue"><i data-lucide="briefcase"></i></span>
-        Proyectos
-      </a>
-
-      <a class="menu-item <%= current_page?('tareas') %>" href="/tareas">
-        <span class="mi-ic ic-purple"><i data-lucide="check-circle-2"></i></span>
-        Tareas
-      </a>
-
-      <a class="menu-item <%= current_page?('soporte') %>" href="/soporte">
-        <span class="mi-ic ic-brand"><i data-lucide="life-buoy"></i></span>
-        Soporte
-      </a>
-
-      <!-- Grupo: Inventario -->
-      <% inventory_pages = ['inventario', 'productos', 'stock', 'ajustes_inventario'] %>
+      <% inventory_pages = ['productos','stock','ajustes_inventario'] %>
       <div class="menu-group <%= 'open' if inventory_pages.include?(@current_page) %>" data-group="inventario">
         <button class="menu-item" onclick="toggleMenuGroup(this)">
           <span class="mi-ic ic-warn"><i data-lucide="warehouse"></i></span>
@@ -95,27 +120,21 @@
         </button>
         <div class="submenu">
           <ul>
-            <li><a class="sub-item <%= current_page?('productos') %>" href="/productos"><i data-lucide="box"></i> Productos</a></li>
-            <li><a class="sub-item <%= current_page?('stock') %>" href="/stock"><i data-lucide="layers"></i> Stock</a></li>
-            <li><a class="sub-item <%= current_page?('ajustes_inventario') %>" href="/ajustes_inventario"><i data-lucide="sliders-horizontal"></i> Ajustes</a></li>
+            <li><a class="sub-item <%= current_page?('productos') %>" href="<%= t('/productos') %>"><i data-lucide="box"></i> Productos</a></li>
+            <li><a class="sub-item <%= current_page?('stock') %>" href="<%= t('/stock') %>"><i data-lucide="layers"></i> Stock</a></li>
+            <li><a class="sub-item <%= current_page?('ajustes_inventario') %>" href="<%= t('/ajustes_inventario') %>"><i data-lucide="sliders-horizontal"></i> Ajustes</a></li>
           </ul>
         </div>
       </div>
 
-      <a class="menu-item <%= current_page?('gastos') %>" href="/gastos">
+      <a class="menu-item <%= current_page?('gastos') %>" href="<%= t('/gastos') %>">
         <span class="mi-ic ic-red"><i data-lucide="receipt"></i></span>
         Gastos
       </a>
 
-      <a class="menu-item <%= current_page?('suscripciones') %>" href="/suscripciones">
-        <span class="mi-ic ic-cyan"><i data-lucide="refresh-cw"></i></span>
-        Suscripciones
-      </a>
-
       <p class="side-label">Herramientas</p>
 
-      <!-- Grupo: Archivos -->
-      <% file_pages = ['archivos', 'explorador', 'compartir'] %>
+      <% file_pages = ['explorador','compartir'] %>
       <div class="menu-group <%= 'open' if file_pages.include?(@current_page) %>" data-group="archivos">
         <button class="menu-item" onclick="toggleMenuGroup(this)">
           <span class="mi-ic ic-gray"><i data-lucide="folder"></i></span>
@@ -124,14 +143,13 @@
         </button>
         <div class="submenu">
           <ul>
-            <li><a class="sub-item <%= current_page?('explorador') %>" href="/explorador"><i data-lucide="folder-open"></i> Explorador</a></li>
-            <li><a class="sub-item <%= current_page?('compartir') %>" href="/compartir"><i data-lucide="share-2"></i> Compartir</a></li>
+            <li><a class="sub-item <%= current_page?('explorador') %>" href="<%= t('/explorador') %>"><i data-lucide="folder-open"></i> Explorador</a></li>
+            <li><a class="sub-item <%= current_page?('compartir') %>" href="<%= t('/compartir') %>"><i data-lucide="share-2"></i> Compartir</a></li>
           </ul>
         </div>
       </div>
 
-      <!-- Grupo: Informes -->
-      <% report_pages = ['informes', 'informes_ventas', 'informes_gastos'] %>
+      <% report_pages = ['informes_ventas','informes_gastos','informes_pipeline','informes_actividad'] %>
       <div class="menu-group <%= 'open' if report_pages.include?(@current_page) %>" data-group="informes">
         <button class="menu-item" onclick="toggleMenuGroup(this)">
           <span class="mi-ic ic-blue"><i data-lucide="bar-chart-3"></i></span>
@@ -140,23 +158,31 @@
         </button>
         <div class="submenu">
           <ul>
-            <li><a class="sub-item <%= current_page?('informes_ventas') %>" href="/informes_ventas"><i data-lucide="trending-up"></i> Ventas</a></li>
-            <li><a class="sub-item <%= current_page?('informes_gastos') %>" href="/informes_gastos"><i data-lucide="trending-down"></i> Gastos</a></li>
+            <li><a class="sub-item <%= current_page?('informes_ventas') %>" href="<%= t('/informes_ventas') %>"><i data-lucide="trending-up"></i> Ventas</a></li>
+            <li><a class="sub-item <%= current_page?('informes_gastos') %>" href="<%= t('/informes_gastos') %>"><i data-lucide="trending-down"></i> Gastos</a></li>
+            <li><a class="sub-item <%= current_page?('informes_pipeline') %>" href="<%= t('/informes_pipeline') %>"><i data-lucide="target"></i> Conversión</a></li>
+            <li><a class="sub-item <%= current_page?('informes_actividad') %>" href="<%= t('/informes_actividad') %>"><i data-lucide="activity"></i> Actividad</a></li>
           </ul>
         </div>
       </div>
 
-      <a class="menu-item <%= current_page?('calendario') %>" href="/calendario">
-        <span class="mi-ic ic-purple"><i data-lucide="calendar"></i></span>
-        Calendario
-      </a>
-
       <p class="side-label">Sistema</p>
 
-      <a class="menu-item <%= current_page?('configuracion') %>" href="/configuracion">
-        <span class="mi-ic ic-gray"><i data-lucide="settings"></i></span>
-        Configuración
-      </a>
+      <% config_pages = ['usuarios','roles','configuracion'] %>
+      <div class="menu-group <%= 'open' if config_pages.include?(@current_page) %>" data-group="configuracion">
+        <button class="menu-item" onclick="toggleMenuGroup(this)">
+          <span class="mi-ic ic-gray"><i data-lucide="settings"></i></span>
+          Configuración
+          <i data-lucide="chevron-down" class="chev"></i>
+        </button>
+        <div class="submenu">
+          <ul>
+            <li><a class="sub-item <%= current_page?('usuarios') %>" href="<%= t('/usuarios') %>"><i data-lucide="user-cog"></i> Usuarios</a></li>
+            <li><a class="sub-item <%= current_page?('roles') %>" href="<%= t('/roles') %>"><i data-lucide="shield"></i> Roles</a></li>
+            <li><a class="sub-item <%= current_page?('configuracion') %>" href="<%= t('/configuracion') %>"><i data-lucide="sliders"></i> Ajustes</a></li>
+          </ul>
+        </div>
+      </div>
 
     </nav>
   </div>

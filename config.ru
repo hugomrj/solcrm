@@ -1,3 +1,3 @@
-require_relative 'app'
-
-run Sinatra::Application
+# config.ru
+require_relative "app"
+run SolCRM

@@ -19,6 +19,7 @@
   }
   .dark {
     --bg: #0D1017; --surface: #141926; --surface-2: #1A2030;
+    
     --border: #242C3D; --border-strong: #33405C;
     --text: #F0F2F5; --text-2: #A5ADC1; --text-3: #6A7385;
     --hover: #1B2233; --row-hover: #181F2E;
