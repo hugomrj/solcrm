@@ -1,0 +1,82 @@
+<%
+  # Nombres de meses y días
+  meses = %w[Enero Febrero Marzo Abril Mayo Junio Julio Agosto Septiembre Octubre Noviembre Diciembre]
+  dias_semana = %w[Lun Mar Mié Jue Vie Sáb Dom]
+
+  primer_dia = Date.new(@year, @month, 1)
+  ultimo_dia = primer_dia.next_month - 1
+
+  # Ajustar al lunes de la semana del primer día
+  inicio_grilla = primer_dia - ((primer_dia.wday - 1) % 7)
+  fin_grilla    = inicio_grilla + 41  # 6 semanas x 7 días
+
+  hoy = Date.today
+%>
+
+<div class="page-head">
+  <div>
+    <h1>Calendario</h1>
+    <p class="sub">Actividades del mes</p>
+  </div>
+  <div class="head-actions">
+    <a href="<%= t('/actividades/nuevo') %>" class="btn btn-primary">
+      <i data-lucide="plus"></i> Nueva actividad
+    </a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="cal-head" style="padding: 16px 20px; border-bottom: 1px solid var(--border);">
+    <a href="<%= t("/calendario?year=#{@month == 1 ? @year - 1 : @year}&month=#{@month == 1 ? 12 : @month - 1}") %>" class="cal-nav">
+      <i data-lucide="chevron-left"></i>
+    </a>
+    <h2><%= meses[@month - 1] %> <%= @year %></h2>
+    <a href="<%= t("/calendario?year=#{@month == 12 ? @year + 1 : @year}&month=#{@month == 12 ? 1 : @month + 1}") %>" class="cal-nav">
+      <i data-lucide="chevron-right"></i>
+    </a>
+  </div>
+
+  <div class="cal-grid" style="grid-template-columns: repeat(7, 1fr);">
+    <% dias_semana.each do |d| %>
+      <div class="cal-dow"><%= d %></div>
+    <% end %>
+
+    <% (inicio_grilla..fin_grilla).each do |dia| %>
+      <%
+        es_mes_actual = dia.month == @month
+        es_hoy        = dia == hoy
+        acts          = @por_dia[dia] || []
+      %>
+      <div class="cal-day <%= 'out' unless es_mes_actual %> <%= 'today' if es_hoy %>">
+        <span class="n"><%= dia.day %></span>
+        <% acts.first(3).each do |a| %>
+          <%
+            color = {
+              'llamada' => 'blue',
+              'email'   => 'brand',
+              'reunion' => 'purple',
+              'nota'    => 'gray',
+              'tarea'   => 'warn'
+            }[a[:tipo]] || 'gray'
+          %>
+          <a href="<%= t("/actividades/#{a[:id]}/editar") %>"
+             style="font-size: 11px; color: var(--t-<%= color %>); text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"
+             title="<%= a[:titulo] %>">
+            <span class="ev" style="background: currentColor;"></span><%= a[:titulo] %>
+          </a>
+        <% end %>
+        <% if acts.size > 3 %>
+          <span style="font-size: 10px; color: var(--text-3);">+<%= acts.size - 3 %> más</span>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="cal-legend">
+    <span><i style="background: var(--t-blue);"></i> Llamada</span>
+    <span><i style="background: var(--t-brand);"></i> Email</span>
+    <span><i style="background: var(--t-purple);"></i> Reunión</span>
+    <span><i style="background: var(--t-warn);"></i> Tarea</span>
+    <span><i style="background: var(--text-3);"></i> Nota</span>
+  </div>
+</div>

@@ -1,0 +1,72 @@
+<a href="<%= t('/articulos') %>" class="backlink">
+  <i data-lucide="arrow-left"></i> Volver a artículos
+</a>
+
+<div class="page-head">
+  <div>
+    <h1><%= @page_title %></h1>
+    <p class="sub">Datos del artículo</p>
+  </div>
+</div>
+
+<form method="post" action="<%= @articulo ? t("/articulos/#{@articulo[:id]}") : t('/articulos') %>">
+  <div class="card form-card">
+    <div class="form-grid">
+
+      <div class="field">
+        <label for="codigo">Código</label>
+        <input type="text" id="codigo" name="codigo"
+               value="<%= @articulo && @articulo[:codigo] ? @articulo[:codigo] : '' %>"
+               placeholder="Ej: POS-001">
+      </div>
+
+      <div class="field">
+        <label for="tipo">Tipo *</label>
+        <div class="fsel">
+          <select id="tipo" name="tipo" required>
+            <option value="producto" <%= 'selected' if @articulo && @articulo[:tipo] == 'producto' %>>Producto</option>
+            <option value="servicio" <%= 'selected' if @articulo && @articulo[:tipo] == 'servicio' %>>Servicio</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field span2">
+        <label for="nombre">Nombre *</label>
+        <input type="text" id="nombre" name="nombre"
+               value="<%= @articulo ? @articulo[:nombre] : '' %>"
+               placeholder="Ej: Sistema POS completo" required>
+      </div>
+
+      <div class="field span2">
+        <label for="descripcion">Descripción</label>
+        <textarea id="descripcion" name="descripcion"><%= @articulo && @articulo[:descripcion] ? @articulo[:descripcion] : '' %></textarea>
+      </div>
+
+      <div class="field">
+        <label for="precio">Precio (₲) *</label>
+        <input type="number" step="1" min="0" id="precio" name="precio"
+               value="<%= @articulo && @articulo[:precio] ? @articulo[:precio].to_i : '' %>"
+               placeholder="0" required>
+      </div>
+
+      <% if @articulo %>
+        <div class="field">
+          <label>&nbsp;</label>
+          <label style="display: inline-flex; align-items: center; gap: 10px; height: 42px;">
+            <input type="checkbox" name="activo" value="1" <%= 'checked' if @articulo[:activo] %>>
+            Artículo activo
+          </label>
+        </div>
+      <% end %>
+
+    </div>
+
+    <div class="form-foot">
+      <a href="<%= t('/articulos') %>" class="btn btn-ghost">Cancelar</a>
+      <div class="spacer"></div>
+      <button type="submit" class="btn btn-primary">
+        <%= @articulo ? 'Guardar cambios' : 'Crear artículo' %>
+      </button>
+    </div>
+  </div>
+</form>

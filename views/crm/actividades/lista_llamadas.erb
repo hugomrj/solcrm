@@ -1,0 +1,59 @@
+<div class="page-head">
+  <div>
+    <h1>Llamadas</h1>
+    <p class="sub">Registro de llamadas realizadas</p>
+  </div>
+  <div class="head-actions">
+    <a href="<%= t('/actividades/nuevo?tipo=llamada') %>" class="btn btn-primary">
+      <i data-lucide="phone"></i> Nueva llamada
+    </a>
+  </div>
+</div>
+
+<div class="count-line"><%= @actividades.pagination_record_count %> llamada(s)</div>
+
+<div class="card">
+  <% if @actividades.empty? %>
+    <div class="empty">
+      <i data-lucide="phone"></i>
+      <b>No hay llamadas registradas</b>
+      <p>Registrá las llamadas con clientes y leads</p>
+      <a href="<%= t('/actividades/nuevo?tipo=llamada') %>" class="btn btn-primary">Registrar llamada</a>
+    </div>
+  <% else %>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Título</th>
+            <th>Vinculado a</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @actividades.each do |a| %>
+            <tr>
+              <td><%= a[:fecha] ? a[:fecha].strftime('%d/%m/%Y %H:%M') : '—' %></td>
+              <td><strong><%= a[:titulo] %></strong></td>
+              <td>
+                <% if a[:entidad_tipo] && a[:entidad_id] %>
+                  <%= cargar_entidad(a[:entidad_tipo], a[:entidad_id]) || '—' %>
+                <% else %>
+                  —
+                <% end %>
+              </td>
+              <td>
+                <div class="row-actions">
+                  <a href="<%= t("/actividades/#{a[:id]}/editar") %>" class="icon-act" title="Editar">
+                    <i data-lucide="pencil"></i>
+                  </a>
+                </div>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+</div>

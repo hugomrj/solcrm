@@ -1,0 +1,66 @@
+<div class="page-head">
+  <div>
+    <h1>Tareas</h1>
+    <p class="sub">Tus pendientes del día a día</p>
+  </div>
+  <div class="head-actions">
+    <a href="<%= t('/actividades/nuevo?tipo=tarea') %>" class="btn btn-primary">
+      <i data-lucide="plus"></i> Nueva tarea
+    </a>
+  </div>
+</div>
+
+<form method="get" action="<%= t('/tareas') %>" class="toolbar">
+  <div class="sel">
+    <select name="estado" onchange="this.form.submit()">
+      <option value="">Todas</option>
+      <option value="pendientes"  <%= 'selected' if @filtros[:estado] == 'pendientes' %>>Pendientes</option>
+      <option value="completadas" <%= 'selected' if @filtros[:estado] == 'completadas' %>>Completadas</option>
+    </select>
+  </div>
+</form>
+
+<% total      = @actividades.pagination_record_count %>
+<% pendientes = @actividades.count { |a| !a[:completada] } %>
+<% pct        = total > 0 ? ((total - pendientes).to_f / total * 100).round : 0 %>
+
+<div class="task-prog">
+  <span class="p"><%= pct %>% completado</span>
+  <div class="bar"><i style="width: <%= pct %>%"></i></div>
+  <span class="p"><%= pendientes %> pendiente<%= 's' if pendientes != 1 %></span>
+</div>
+
+<div class="card">
+  <% if @actividades.empty? %>
+    <div class="empty">
+      <i data-lucide="check-circle-2"></i>
+      <b>No hay tareas</b>
+      <p>Creá la primera para organizar tu día</p>
+      <a href="<%= t('/actividades/nuevo?tipo=tarea') %>" class="btn btn-primary">Crear tarea</a>
+    </div>
+  <% else %>
+    <% @actividades.each do |a| %>
+      <div class="trow <%= 'done' if a[:completada] %>">
+        <button class="tk" onclick="toggleActividad(this)" data-actividad-id="<%= a[:id] %>">
+          <i data-lucide="check"></i>
+        </button>
+        <div class="tt">
+          <b><%= a[:titulo] %></b>
+          <% if a[:descripcion] %><span><%= a[:descripcion] %></span><% end %>
+        </div>
+        <% if a[:fecha] %>
+          <% vencida = a[:fecha].to_date < Date.today && !a[:completada] %>
+          <% hoy     = a[:fecha].to_date == Date.today && !a[:completada] %>
+          <span class="due <%= 'over' if vencida %> <%= 'today' if hoy %>">
+            <%= a[:fecha].strftime('%d/%m') %>
+          </span>
+        <% end %>
+        <div class="row-actions">
+          <a href="<%= t("/actividades/#{a[:id]}/editar") %>" class="icon-act" title="Editar">
+            <i data-lucide="pencil"></i>
+          </a>
+        </div>
+      </div>
+    <% end %>
+  <% end %>
+</div>

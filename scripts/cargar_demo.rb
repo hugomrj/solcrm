@@ -14,6 +14,7 @@ require_relative "../lib/tenants"
 #   - 5 contactos
 #   - 6 leads
 #   - 11 oportunidades en distintas etapas
+#   - 19 actividades (llamadas, emails, reuniones, notas, tareas)
 
 codigo = ARGV[0]
 abort "Uso: bundle exec ruby scripts/cargar_demo.rb <codigo_tenant>" if codigo.nil?
@@ -129,6 +130,46 @@ DB.transaction do
   end
   puts "✅ #{contactos_data.size} contactos"
 
+
+
+  # ============================================================
+  # ARTÍCULOS (catálogo de productos y servicios)
+  # ============================================================
+  articulos_data = [
+    # --- PRODUCTOS (físicos, con stock) ---
+    { codigo: "POS-001", nombre: "Sistema POS Básico",         tipo: "producto", precio: 1500000, descripcion: "Terminal POS + lector de código de barras + software básico" },
+    { codigo: "POS-002", nombre: "Sistema POS Avanzado",        tipo: "producto", precio: 2800000, descripcion: "Terminal POS táctil + impresora térmica + lector + software completo" },
+    { codigo: "IMP-001", nombre: "Impresora Térmica",           tipo: "producto", precio: 850000,  descripcion: "Impresora térmica 80mm para tickets" },
+    { codigo: "LEC-001", nombre: "Lector de Código de Barras",  tipo: "producto", precio: 420000,  descripcion: "Lector USB 1D/2D" },
+    { codigo: "CAJ-001", nombre: "Cajón de Dinero",             tipo: "producto", precio: 650000,  descripcion: "Cajón metálico con apertura automática" },
+    { codigo: "TAB-001", nombre: "Tablet 10 pulgadas",          tipo: "producto", precio: 1950000, descripcion: "Tablet Android para punto de venta móvil" },
+
+    # --- SERVICIOS (no tienen stock) ---
+    { codigo: "INST-01", nombre: "Instalación en sitio",        tipo: "servicio", precio: 500000,  descripcion: "Instalación y configuración en las oficinas del cliente" },
+    { codigo: "CAP-01",  nombre: "Capacitación de personal",    tipo: "servicio", precio: 350000,  descripcion: "Capacitación presencial de hasta 5 usuarios (4 horas)" },
+    { codigo: "SOP-MEN", nombre: "Soporte mensual",             tipo: "servicio", precio: 250000,  descripcion: "Soporte técnico remoto ilimitado por 30 días" },
+    { codigo: "MANT-01", nombre: "Mantenimiento anual",         tipo: "servicio", precio: 1800000, descripcion: "Mantenimiento preventivo y correctivo durante 12 meses" },
+    { codigo: "CONS-01", nombre: "Consultoría en procesos",     tipo: "servicio", precio: 800000,  descripcion: "Consultoría para optimización de procesos comerciales (8 horas)" },
+    { codigo: "TRAIN-01", nombre: "Entrenamiento avanzado",     tipo: "servicio", precio: 550000,  descripcion: "Entrenamiento avanzado para administradores" }
+  ]
+
+  articulos_data.each do |art|
+    DB[:articulos].insert(
+      tenant_id:   tenant_id,
+      codigo:      art[:codigo],
+      nombre:      art[:nombre],
+      descripcion: art[:descripcion],
+      precio:      art[:precio],
+      tipo:        art[:tipo],
+      activo:      true
+    )
+  end
+  puts "✅ #{articulos_data.size} artículos (6 productos + 6 servicios)"
+
+
+
+
+
   # ============================================================
   # LEADS
   # ============================================================
@@ -195,6 +236,163 @@ DB.transaction do
     )
   end
   puts "✅ #{oportunidades_data.size} oportunidades"
+
+  # ============================================================
+  # ACTIVIDADES
+  # ============================================================
+  # Necesitamos los IDs de las oportunidades para vincular algunas
+  oportunidad_ids = {}
+  DB[:oportunidades].where(tenant_id: tenant_id).each do |o|
+    oportunidad_ids[o[:titulo]] = o[:id]
+  end
+
+  hoy_dt = Time.now
+
+  actividades_data = [
+    # --- LLAMADAS (pasadas, completadas) ---
+    {
+      tipo: "llamada", titulo: "Llamada inicial a Pedro Fernández",
+      descripcion: "Primer contacto. Interesado en cotización de sistema POS.",
+      entidad: ["cliente", cliente_ids["Distribuidora del Este S.A."]],
+      fecha: hoy_dt - 15*86400, completada: true
+    },
+    {
+      tipo: "llamada", titulo: "Seguimiento a Luis Benítez",
+      descripcion: "Confirmó interés. Pidió enviar propuesta por email.",
+      entidad: ["cliente", cliente_ids["Supermercado Central"]],
+      fecha: hoy_dt - 10*86400, completada: true
+    },
+    {
+      tipo: "llamada", titulo: "Llamada de calificación a Hugo Cáceres",
+      descripcion: "Calificado como cliente potencial serio. Pasar a etapa Propuesta.",
+      entidad: ["lead", lead_ids["Hugo Cáceres"]],
+      fecha: hoy_dt - 5*86400, completada: true
+    },
+
+    # --- EMAILS (pasados, completados) ---
+    {
+      tipo: "email", titulo: "Envío de propuesta a Supermercado Central",
+      descripcion: "Propuesta enviada por email. Incluye 3 opciones de plan.",
+      entidad: ["oportunidad", oportunidad_ids["Propuesta a Supermercado Central"]],
+      fecha: hoy_dt - 7*86400, completada: true
+    },
+    {
+      tipo: "email", titulo: "Follow-up a Rosa Martínez",
+      descripcion: "Recordatorio de propuesta enviada hace 5 días.",
+      entidad: ["cliente", cliente_ids["Farmacia San Roque"]],
+      fecha: hoy_dt - 2*86400, completada: true
+    },
+    {
+      tipo: "email", titulo: "Respuesta a consulta de Patricia Núñez",
+      descripcion: "Responder consulta sobre precios y plazos de entrega.",
+      entidad: ["lead", lead_ids["Patricia Núñez"]],
+      fecha: hoy_dt + 1*86400, completada: false
+    },
+
+    # --- REUNIONES (mixtas) ---
+    {
+      tipo: "reunion", titulo: "Reunión en oficinas de Distribuidora",
+      descripcion: "Reunión presencial con Pedro y Ana. Revisión del sistema completo.",
+      entidad: ["cliente", cliente_ids["Distribuidora del Este S.A."]],
+      fecha: hoy_dt - 3*86400, completada: true
+    },
+    {
+      tipo: "reunion", titulo: "Demo online para Constructora Guaraní",
+      descripcion: "Mostrar funcionalidades del sistema. Coordinar con Mario Aquino.",
+      entidad: ["oportunidad", oportunidad_ids["Capacitación a Constructora Guaraní"]],
+      fecha: hoy_dt + 3*86400, completada: false
+    },
+    {
+      tipo: "reunion", titulo: "Reunión de cierre con Textil Paraguaya",
+      descripcion: "Discutir condiciones finales del contrato de ampliación.",
+      entidad: ["oportunidad", oportunidad_ids["Ampliación Textil Paraguaya"]],
+      fecha: hoy_dt + 5*86400, completada: false
+    },
+
+    # --- NOTAS (contexto, sin fecha) ---
+    {
+      tipo: "nota", titulo: "Precio especial para cliente frecuente",
+      descripcion: "Distribuidora pidió 15% de descuento por volumen. Consultar con gerencia.",
+      entidad: ["cliente", cliente_ids["Distribuidora del Este S.A."]],
+      fecha: nil, completada: true
+    },
+    {
+      tipo: "nota", titulo: "Competencia: SoftPY está ofertando",
+      descripcion: "Supermercado Central mencionó que SoftPY les hizo una oferta. Diferenciar con soporte 24/7.",
+      entidad: ["oportunidad", oportunidad_ids["Implementación en Supermercado Central"]],
+      fecha: nil, completada: true
+    },
+
+    # --- TAREAS (pendientes) ---
+    {
+      tipo: "tarea", titulo: "Preparar contrato para Constructora Guaraní",
+      descripcion: "Armar borrador de contrato del primer módulo. Revisar con legales.",
+      entidad: ["oportunidad", oportunidad_ids["Primer módulo Constructora Guaraní"]],
+      fecha: hoy_dt + 2*86400, completada: false
+    },
+    {
+      tipo: "tarea", titulo: "Enviar factura a Supermercado Central",
+      descripcion: "Emitir factura por el primer pago acordado.",
+      entidad: ["cliente", cliente_ids["Supermercado Central"]],
+      fecha: hoy_dt + 4*86400, completada: false
+    },
+    {
+      tipo: "tarea", titulo: "Actualizar datos de contacto de Diego Ocampo",
+      descripcion: "Verificar email y teléfono. Nos rebotó el último email.",
+      entidad: ["lead", lead_ids["Diego Ocampo"]],
+      fecha: hoy_dt + 1*86400, completada: false
+    },
+    {
+      tipo: "tarea", titulo: "Revisar condiciones de contrato Textil Paraguaya",
+      descripcion: "Leer cláusulas del contrato de renovación antes de la reunión.",
+      entidad: ["oportunidad", oportunidad_ids["Renovación Textil Paraguaya"]],
+      fecha: hoy_dt - 1*86400, completada: false  # ← vencida a propósito
+    },
+    {
+      tipo: "tarea", titulo: "Preparar presentación de reporte mensual",
+      descripcion: "Armar PDF con métricas del mes para reunión interna.",
+      entidad: [nil, nil],
+      fecha: hoy_dt + 7*86400, completada: false
+    },
+    {
+      tipo: "tarea", titulo: "Llamar a Juan Ramón González",
+      descripcion: "Proyecto descartado. Mantener contacto para futuras oportunidades.",
+      entidad: ["cliente", cliente_ids["Juan Ramón González"]],
+      fecha: hoy_dt + 10*86400, completada: false
+    },
+
+    # --- TAREAS COMPLETADAS ---
+    {
+      tipo: "tarea", titulo: "Enviar catálogo de productos a Farmacia San Roque",
+      descripcion: "Catálogo actualizado enviado por WhatsApp.",
+      entidad: ["cliente", cliente_ids["Farmacia San Roque"]],
+      fecha: hoy_dt - 6*86400, completada: true
+    },
+    {
+      tipo: "tarea", titulo: "Confirmar datos para facturación",
+      descripcion: "Confirmado RUC y razón social de Constructora Guaraní.",
+      entidad: ["cliente", cliente_ids["Constructora Guaraní"]],
+      fecha: hoy_dt - 4*86400, completada: true
+    }
+  ]
+
+  actividades_data.each do |act|
+    entidad_tipo, entidad_id = act[:entidad]
+
+    DB[:actividades].insert(
+      tenant_id:     tenant_id,
+      tipo:          act[:tipo],
+      titulo:        act[:titulo],
+      descripcion:   act[:descripcion],
+      entidad_tipo:  entidad_tipo,
+      entidad_id:    entidad_id,
+      fecha:         act[:fecha],
+      completada:    act[:completada],
+      completada_at: act[:completada] ? act[:fecha] : nil,
+      usuario_id:    vendedor_id
+    )
+  end
+  puts "✅ #{actividades_data.size} actividades (llamadas, emails, reuniones, notas, tareas)"
 end
 
 puts
@@ -204,4 +402,12 @@ puts "=========================================="
 puts "Login admin:    #{codigo}/login  →  admin / admin"
 puts "Login vendedor: #{codigo}/login  →  vendedor / vendedor"
 puts "Login soporte:  #{codigo}/login  →  soporte / soporte"
+puts
+puts "Demo incluye:"
+puts "  - 2 usuarios (vendedor, soporte)"
+puts "  - 6 clientes"
+puts "  - 5 contactos"
+puts "  - 6 leads"
+puts "  - 11 oportunidades en pipeline"
+puts "  - 19 actividades (3 llamadas, 3 emails, 3 reuniones, 2 notas, 8 tareas)"
 puts "=========================================="

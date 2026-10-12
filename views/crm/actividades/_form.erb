@@ -1,0 +1,125 @@
+<a href="<%= t('/actividades') %>" class="backlink">
+  <i data-lucide="arrow-left"></i> Volver a actividades
+</a>
+
+<div class="page-head">
+  <div>
+    <h1><%= @page_title %></h1>
+    <p class="sub">Datos de la actividad</p>
+  </div>
+</div>
+
+<form method="post" action="<%= @actividad ? t("/actividades/#{@actividad[:id]}") : t('/actividades') %>">
+  <div class="card form-card">
+    <div class="form-grid">
+
+      <div class="field">
+        <label for="tipo">Tipo *</label>
+        <div class="fsel">
+          <select id="tipo" name="tipo" required>
+            <% ActividadesRoutes::TIPOS.each do |tp| %>
+              <%
+                seleccionado = false
+                if @actividad && @actividad[:tipo] == tp
+                  seleccionado = true
+                elsif !@actividad && @tipo_preseleccionado == tp
+                  seleccionado = true
+                elsif !@actividad && !@tipo_preseleccionado && tp == "tarea"
+                  seleccionado = true
+                end
+              %>
+              <option value="<%= tp %>" <%= 'selected' if seleccionado %>><%= tp.capitalize %></option>
+            <% end %>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="fecha">Fecha y hora</label>
+        <input type="datetime-local" id="fecha" name="fecha"
+               value="<%= @actividad && @actividad[:fecha] ? @actividad[:fecha].strftime('%Y-%m-%dT%H:%M') : '' %>">
+      </div>
+
+      <div class="field span2">
+        <label for="titulo">Título *</label>
+        <input type="text" id="titulo" name="titulo"
+               value="<%= @actividad ? @actividad[:titulo] : '' %>"
+               placeholder="Ej: Llamar a Juan por la propuesta" required>
+      </div>
+
+      <div class="field span2">
+        <label for="entidad">Vincular a</label>
+        <div class="fsel">
+          <select id="entidad" name="entidad" class="vanilla-select">
+            <option value="">Sin vincular</option>
+
+            <% if @clientes.any? %>
+              <optgroup label="Clientes">
+                <% @clientes.each do |c| %>
+                  <%
+                    val = "cliente:#{c[:id]}"
+                    sel = false
+                    if @actividad && @actividad[:entidad_tipo] == "cliente" && @actividad[:entidad_id] == c[:id]
+                      sel = true
+                    elsif !@actividad && @entidad_preseleccionada == val
+                      sel = true
+                    end
+                  %>
+                  <option value="<%= val %>" <%= 'selected' if sel %>><%= c[:nombre] %></option>
+                <% end %>
+              </optgroup>
+            <% end %>
+
+            <% if @leads.any? %>
+              <optgroup label="Clientes potenciales">
+                <% @leads.each do |l| %>
+                  <%
+                    val = "lead:#{l[:id]}"
+                    sel = false
+                    if @actividad && @actividad[:entidad_tipo] == "lead" && @actividad[:entidad_id] == l[:id]
+                      sel = true
+                    elsif !@actividad && @entidad_preseleccionada == val
+                      sel = true
+                    end
+                  %>
+                  <option value="<%= val %>" <%= 'selected' if sel %>><%= l[:empresa] || l[:nombre] %></option>
+                <% end %>
+              </optgroup>
+            <% end %>
+
+            <% if @oportunidades.any? %>
+              <optgroup label="Oportunidades">
+                <% @oportunidades.each do |o| %>
+                  <%
+                    val = "oportunidad:#{o[:id]}"
+                    sel = false
+                    if @actividad && @actividad[:entidad_tipo] == "oportunidad" && @actividad[:entidad_id] == o[:id]
+                      sel = true
+                    elsif !@actividad && @entidad_preseleccionada == val
+                      sel = true
+                    end
+                  %>
+                  <option value="<%= val %>" <%= 'selected' if sel %>><%= o[:titulo] %></option>
+                <% end %>
+              </optgroup>
+            <% end %>
+          </select>
+        </div>
+      </div>
+
+      <div class="field span2">
+        <label for="descripcion">Descripción / Notas</label>
+        <textarea id="descripcion" name="descripcion"><%= @actividad && @actividad[:descripcion] ? @actividad[:descripcion] : '' %></textarea>
+      </div>
+
+    </div>
+
+    <div class="form-foot">
+      <a href="<%= t('/actividades') %>" class="btn btn-ghost">Cancelar</a>
+      <div class="spacer"></div>
+      <button type="submit" class="btn btn-primary">
+        <%= @actividad ? 'Guardar cambios' : 'Crear actividad' %>
+      </button>
+    </div>
+  </div>
+</form>

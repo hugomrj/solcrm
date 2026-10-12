@@ -1,0 +1,144 @@
+<div class="page-head">
+  <div>
+    <h1>Artículos</h1>
+    <p class="sub">Catálogo de productos y servicios</p>
+  </div>
+  <div class="head-actions">
+    <a href="<%= t('/articulos/nuevo') %>" class="btn btn-primary">
+      <i data-lucide="plus"></i> Nuevo artículo
+    </a>
+  </div>
+</div>
+
+<form method="get" action="<%= t('/articulos') %>" class="toolbar">
+  <label class="search">
+    <i data-lucide="search"></i>
+    <input type="text" name="q" value="<%= @filtros[:q] %>" placeholder="Buscar nombre, código…">
+  </label>
+
+  <div class="sel">
+    <select name="tipo" onchange="this.form.submit()">
+      <option value="">Todos</option>
+      <option value="producto" <%= 'selected' if @filtros[:tipo] == 'producto' %>>Productos</option>
+      <option value="servicio" <%= 'selected' if @filtros[:tipo] == 'servicio' %>>Servicios</option>
+    </select>
+  </div>
+
+  <div class="sel">
+    <select name="estado" onchange="this.form.submit()">
+      <option value="">Todos</option>
+      <option value="activos"   <%= 'selected' if @filtros[:estado] == 'activos' %>>Activos</option>
+      <option value="inactivos" <%= 'selected' if @filtros[:estado] == 'inactivos' %>>Inactivos</option>
+    </select>
+  </div>
+
+  <button type="submit" class="btn btn-ghost">
+    <i data-lucide="search"></i> Buscar
+  </button>
+</form>
+
+<div class="count-line">
+  <%= @articulos.pagination_record_count %> artículo(s)
+</div>
+
+<div class="card">
+  <% if @articulos.empty? %>
+    <div class="empty">
+      <i data-lucide="package"></i>
+      <b>No hay artículos</b>
+      <p>Creá el primero para empezar a facturar</p>
+      <a href="<%= t('/articulos/nuevo') %>" class="btn btn-primary">Crear artículo</a>
+    </div>
+  <% else %>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Nombre</th>
+            <th>Tipo</th>
+            <th style="text-align: right;">Precio</th>
+            <th>Estado</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @articulos.each do |a| %>
+            <tr>
+              <td><span class="sub"><%= a[:codigo] || '—' %></span></td>
+              <td>
+                <div class="cell-name">
+                  <b><%= a[:nombre] %></b>
+                </div>
+                <% if a[:descripcion] %>
+                  <div class="sub" style="margin-top: 2px; font-size: 12px; color: var(--text-3);">
+                    <%= a[:descripcion].length > 60 ? a[:descripcion][0,60] + "…" : a[:descripcion] %>
+                  </div>
+                <% end %>
+              </td>
+              <td>
+                <% if a[:tipo] == "producto" %>
+                  <span class="badge b-blue">producto</span>
+                <% else %>
+                  <span class="badge b-purple">servicio</span>
+                <% end %>
+              </td>
+              <td style="text-align: right; font-variant-numeric: tabular-nums; font-weight: 600;">
+                ₲ <%= number_with_delimiter(a[:precio]) %>
+              </td>
+              <td>
+                <% if a[:activo] %>
+                  <span class="badge b-green">activo</span>
+                <% else %>
+                  <span class="badge b-gray">inactivo</span>
+                <% end %>
+              </td>
+              <td>
+                <div class="row-actions">
+                  <a href="<%= t("/articulos/#{a[:id]}/editar") %>" class="icon-act" title="Editar">
+                    <i data-lucide="pencil"></i>
+                  </a>
+                  <form method="post" action="<%= t("/articulos/#{a[:id]}/eliminar") %>" style="display:inline"
+                        data-confirm="¿Eliminar <%= a[:nombre] %>?"
+                        data-confirm-type="danger"
+                        data-confirm-ok="Eliminar">
+                    <button type="submit" class="icon-act danger" title="Eliminar">
+                      <i data-lucide="trash-2"></i>
+                    </button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+
+    <% if @articulos.page_count > 1 %>
+      <div class="pagination">
+        <span>Página <%= @articulos.current_page %> de <%= @articulos.page_count %></span>
+        <div class="pages">
+          <% if @articulos.prev_page %>
+            <a href="<%= t("/articulos?page=#{@articulos.prev_page}&q=#{@filtros[:q]}&tipo=#{@filtros[:tipo]}&estado=#{@filtros[:estado]}") %>">←</a>
+          <% else %>
+            <span class="disabled">←</span>
+          <% end %>
+
+          <% (1..@articulos.page_count).each do |p| %>
+            <% if p == @articulos.current_page %>
+              <span class="current"><%= p %></span>
+            <% else %>
+              <a href="<%= t("/articulos?page=#{p}&q=#{@filtros[:q]}&tipo=#{@filtros[:tipo]}&estado=#{@filtros[:estado]}") %>"><%= p %></a>
+            <% end %>
+          <% end %>
+
+          <% if @articulos.next_page %>
+            <a href="<%= t("/articulos?page=#{@articulos.next_page}&q=#{@filtros[:q]}&tipo=#{@filtros[:tipo]}&estado=#{@filtros[:estado]}") %>">→</a>
+          <% else %>
+            <span class="disabled">→</span>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  <% end %>
+</div>

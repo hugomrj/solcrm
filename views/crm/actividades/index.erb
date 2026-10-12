@@ -1,0 +1,122 @@
+<div class="page-head">
+  <div>
+    <h1>Actividades</h1>
+    <p class="sub">Llamadas, reuniones, tareas y notas</p>
+  </div>
+  <div class="head-actions">
+    <a href="<%= t('/actividades/nuevo') %>" class="btn btn-primary">
+      <i data-lucide="plus"></i> Nueva actividad
+    </a>
+  </div>
+</div>
+
+<form method="get" action="<%= t('/actividades') %>" class="toolbar">
+  <label class="search">
+    <i data-lucide="search"></i>
+    <input type="text" name="q" value="<%= @filtros[:q] %>" placeholder="Buscar título o descripción…">
+  </label>
+
+  <div class="sel">
+    <select name="tipo" onchange="this.form.submit()">
+      <option value="">Tipo: todos</option>
+      <% ActividadesRoutes::TIPOS.each do |tp| %>
+        <option value="<%= tp %>" <%= 'selected' if @filtros[:tipo] == tp %>><%= tp.capitalize %></option>
+      <% end %>
+    </select>
+  </div>
+
+  <div class="sel">
+    <select name="estado" onchange="this.form.submit()">
+      <option value="">Todos</option>
+      <option value="pendientes"  <%= 'selected' if @filtros[:estado] == 'pendientes' %>>Pendientes</option>
+      <option value="completadas" <%= 'selected' if @filtros[:estado] == 'completadas' %>>Completadas</option>
+    </select>
+  </div>
+
+  <button type="submit" class="btn btn-ghost">
+    <i data-lucide="search"></i> Buscar
+  </button>
+</form>
+
+<div class="count-line">
+  <%= @actividades.pagination_record_count %> actividad(es)
+</div>
+
+<div class="card">
+  <% if @actividades.empty? %>
+    <div class="empty">
+      <i data-lucide="calendar-check"></i>
+      <b>No hay actividades</b>
+      <p>Creá la primera para empezar</p>
+      <a href="<%= t('/actividades/nuevo') %>" class="btn btn-primary">Crear actividad</a>
+    </div>
+  <% else %>
+    <div class="card-b" style="padding: 8px;">
+      <% @actividades.each do |a| %>
+        <div class="trow <%= 'done' if a[:completada] %>" style="border-radius: 8px; border-bottom: 1px solid var(--border);">
+          <button class="tk" data-actividad-id="<%= a[:id] %>" onclick="toggleActividad(this)">
+            <i data-lucide="check"></i>
+          </button>
+          <div class="tt">
+            <b><%= a[:titulo] %></b>
+            <span>
+              <%= a[:tipo].capitalize %>
+              <% if a[:fecha] %> · <%= a[:fecha].strftime('%d/%m/%Y %H:%M') %><% end %>
+              <% if a[:entidad_tipo] && a[:entidad_id] %>
+                <% ent = cargar_entidad(a[:entidad_tipo], a[:entidad_id]) %>
+                <% if ent %> · <%= ent %><% end %>
+              <% end %>
+            </span>
+          </div>
+          <span class="badge b-<%= {
+            'llamada' => 'blue',
+            'email'   => 'brand',
+            'reunion' => 'purple',
+            'nota'    => 'gray',
+            'tarea'   => 'warn'
+          }[a[:tipo]] || 'gray' %>"><%= a[:tipo] %></span>
+          <div class="row-actions" style="margin-left: 12px;">
+            <a href="<%= t("/actividades/#{a[:id]}/editar") %>" class="icon-act" title="Editar">
+              <i data-lucide="pencil"></i>
+            </a>
+            <form method="post" action="<%= t("/actividades/#{a[:id]}/eliminar") %>" style="display:inline"
+                  data-confirm="¿Eliminar esta actividad?"
+                  data-confirm-type="danger"
+                  data-confirm-ok="Eliminar">
+              <button type="submit" class="icon-act danger" title="Eliminar">
+                <i data-lucide="trash-2"></i>
+              </button>
+            </form>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+    <% if @actividades.page_count > 1 %>
+      <div class="pagination">
+        <span>Página <%= @actividades.current_page %> de <%= @actividades.page_count %></span>
+        <div class="pages">
+          <% if @actividades.prev_page %>
+            <a href="<%= t("/actividades?page=#{@actividades.prev_page}&q=#{@filtros[:q]}&tipo=#{@filtros[:tipo]}&estado=#{@filtros[:estado]}") %>">←</a>
+          <% else %>
+            <span class="disabled">←</span>
+          <% end %>
+
+          <% (1..@actividades.page_count).each do |p| %>
+            <% if p == @actividades.current_page %>
+              <span class="current"><%= p %></span>
+            <% else %>
+              <a href="<%= t("/actividades?page=#{p}&q=#{@filtros[:q]}&tipo=#{@filtros[:tipo]}&estado=#{@filtros[:estado]}") %>"><%= p %></a>
+            <% end %>
+          <% end %>
+
+          <% if @actividades.next_page %>
+            <a href="<%= t("/actividades?page=#{@actividades.next_page}&q=#{@filtros[:q]}&tipo=#{@filtros[:tipo]}&estado=#{@filtros[:estado]}") %>">→</a>
+          <% else %>
+            <span class="disabled">→</span>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  <% end %>
+</div>

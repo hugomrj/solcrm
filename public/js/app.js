@@ -259,3 +259,29 @@ document.addEventListener('keydown', (e) => {
     closeConfirm();
   }
 });
+
+
+
+
+// ==========================================
+// 8. TOGGLE ACTIVIDAD COMPLETADA
+// ==========================================
+window.toggleActividad = function(btn) {
+  const id = btn.dataset.actividadId;
+  if (!id) return;
+
+  const tenantSlug = window.location.pathname.split('/').filter(Boolean)[0];
+
+  fetch(`/${tenantSlug}/actividades/${id}/completar`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.ok) {
+      const row = btn.closest('.trow');
+      if (row) row.classList.toggle('done', data.completada);
+    }
+  })
+  .catch(err => console.error(err));
+};
