@@ -1,35 +1,46 @@
 /* ============ Tokens ============ */
 :root {
-    --bg: #F6F7F9; --surface: #FFFFFF; --surface-2: #F9FAFB;
-    --border: #E9EBF1; --border-strong: #D9DCE5;
-    --text: #101828; --text-2: #475467; --text-3: #98A2B3;
-    --hover: #F2F4F7; --row-hover: #FAFBFD;
-  
-    --brand: #465FFF; --t-brand: #3541E3;
-    --purple: #7A5AF8; --t-purple: #6941C6;
-    --blue: #4A6FF3;  --t-blue: #2C4FD8;
-    --warn: #F79009;  --t-warn: #B54708;
-    --green: #12B76A;  --t-green: #027948;
-    --red: #F04438;   --t-red: #B42318;
-    --cyan: #0E9384;  --t-cyan: #087443;
-  
-    --wa-me: #D9FDD3; --wa-me-t: #12261C;
-    --shadow: 0 14px 38px -14px rgba(16,24,40,.18);
-    --r: 12px;
-  }
-  .dark {
-    --bg: #0D1017; --surface: #141926; --surface-2: #1A2030;
-    
+  --bg: #F6F7F9; --surface: #FFFFFF; --surface-2: #F9FAFB;
+  --border: #E9EBF1; --border-strong: #D9DCE5;
+  --text: #101828; --text-2: #475467; --text-3: #98A2B3;
+  --hover: #F2F4F7; --row-hover: #FAFBFD;
+
+  --form-surface: #F9FAFB;
+  --form-input:   #FFFFFF;
+
+  --brand: #465FFF; --t-brand: #3541E3;
+  --purple: #7A5AF8; --t-purple: #6941C6;
+  --blue: #4A6FF3;  --t-blue: #2C4FD8;
+  --warn: #F79009;  --t-warn: #B54708;
+  --green: #12B76A;  --t-green: #027948;
+  --red: #F04438;   --t-red: #B42318;
+  --cyan: #0E9384;  --t-cyan: #087443;
+
+  --wa-me: #D9FDD3; --wa-me-t: #12261C;
+  --shadow: 0 14px 38px -14px rgba(16,24,40,.18);
+  --r: 12px;
+}
+
+.dark {
+
+  --bg: #0D1017; --surface: #141926; --surface-2: #1A2030;
     --border: #242C3D; --border-strong: #33405C;
     --text: #F0F2F5; --text-2: #A5ADC1; --text-3: #6A7385;
-    --hover: #1B2233; --row-hover: #181F2E;
-  
-    --t-brand: #94A3FF; --t-purple: #BCA5FF; --t-blue: #99ADFF;
-    --t-warn: #FDBA68; --t-green: #62D39B; --t-red: #F98F87; --t-cyan: #5BC9BE;
-  
-    --wa-me: #005C4B; --wa-me-t: #DFF6E5;
-    --shadow: 0 14px 38px -14px rgba(0,0,0,.6);
-  }
+     --hover: #1B2233; --row-hover: #181F2E;
+
+     --form-surface: #11141C;   
+   
+     --form-input:   #202838;
+
+
+  --t-brand: #94A3FF; --t-purple: #BCA5FF; --t-blue: #99ADFF;
+  --t-warn: #FDBA68; --t-green: #62D39B; --t-red: #F98F87; --t-cyan: #5BC9BE;
+
+  --wa-me: #005C4B; --wa-me-t: #DFF6E5;
+  --shadow: 0 14px 38px -14px rgba(0,0,0,.6);
+}
+
+
   html.theming, html.theming * { transition: background-color .28s ease, border-color .28s ease, color .28s ease, fill .28s ease, box-shadow .28s ease !important; }
   * { margin: 0; box-sizing: border-box; }
   html, body { height: 100%; }
@@ -172,7 +183,21 @@
   .head-actions { display: flex; gap: 10px; align-items: center; }
   
   /* ============ Buttons ============ */
-  .btn { display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 16px; border-radius: 9px; border: 1px solid transparent; font-size: 13.5px; font-weight: 600; transition: background .15s, border-color .15s, transform .06s; }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 40px;
+    padding: 0 16px;
+    border-radius: 9px;
+    border: 1px solid transparent;
+    font-size: 13.5px;
+    font-weight: 600;
+    text-decoration: none;   /* ← línea nueva */
+    transition: background .15s, border-color .15s, transform .06s;
+  }
+  
+  
   .btn:active { transform: translateY(1px); }
   .btn svg { width: 16px; height: 16px; stroke-width: 2; }
   .btn-primary { background: var(--brand); color: #fff; }
@@ -215,8 +240,20 @@
   .cell-name button { border: 0; background: none; padding: 0; font: inherit; color: var(--text); text-align: left; }
   .cell-name button:hover { color: var(--t-brand); }
   .phone { color: var(--text-2); white-space: nowrap; }
+
   .row-actions { display: flex; gap: 16px; justify-content: flex-end; white-space: nowrap; }
-  .act { border: 0; background: none; padding: 0; font-size: 13px; font-weight: 500; color: var(--text-2); border-radius: 4px; }
+  
+  .act {
+    border: 0;
+    background: none;
+    padding: 0;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-2);
+    border-radius: 4px;
+    text-decoration: none;   /* ← línea nueva */
+  }
+  
   .act:hover { color: var(--t-brand); }
   .act.danger:hover { color: var(--t-red); }
   .badge { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; padding: 2px 10px; border-radius: 99px; white-space: nowrap; }
@@ -235,15 +272,30 @@
   .chip { display: inline-block; font-size: 11.5px; font-weight: 500; padding: 2px 9px; border-radius: 99px; margin: 1px 2px 1px 0; white-space: nowrap; }
   
   /* ============ Formularios (página completa, nunca modal) ============ */
-  .backlink { display: inline-flex; align-items: center; gap: 7px; border: 0; background: none; color: var(--text-2); font-size: 13px; font-weight: 600; padding: 0; margin-bottom: 18px; }
+  .backlink {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    border: 0;
+    background: none;
+    color: var(--text-2);
+    font-size: 13px;
+    font-weight: 600;
+    padding: 0;
+    margin-bottom: 18px;
+    text-decoration: none;   /* ← línea nueva */
+  }
+  
   .backlink:hover { color: var(--t-brand); }
   .backlink svg { width: 15px; height: 15px; }
-  .form-card { padding: 26px 28px; }
+  .form-card { padding: 26px 28px; background: var(--form-surface); }
   .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px 20px; }
   .span2 { grid-column: 1 / -1; }
   .field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
   .field label { font-size: 13px; font-weight: 500; color: var(--text-2); }
-  .field input, .field select, .field textarea, .qadd input { height: 42px; border: 1px solid var(--border-strong); border-radius: 9px; background: var(--surface); padding: 0 13px; font: 400 14px 'Outfit'; color: var(--text); width: 100%; transition: border-color .15s, box-shadow .15s; }
+
+  .field input, .field select, .field textarea, .qadd input { height: 42px; border: 1px solid var(--border-strong); border-radius: 9px; background: var(--form-input); padding: 0 13px; font: 400 14px 'Outfit'; color: var(--text); width: 100%; transition: border-color .15s, box-shadow .15s; }
+
   .field textarea { height: auto; min-height: 88px; padding: 11px 13px; resize: vertical; line-height: 1.55; }
   .field input:focus, .field select:focus, .field textarea:focus, .qadd input:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 14%, transparent); }
   .field.err input, .field.err select { border-color: var(--red); }
@@ -254,7 +306,9 @@
   .fsel select { appearance: none; padding-right: 34px; }
   .form-foot { display: flex; align-items: center; gap: 10px; margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border); }
   .form-foot .spacer { flex: 1; }
-  .tagpick { display: flex; flex-wrap: wrap; gap: 8px; padding: 9px 11px; border: 1px solid var(--border-strong); border-radius: 9px; min-height: 42px; align-items: center; }
+
+  .tagpick { display: flex; flex-wrap: wrap; gap: 8px; padding: 9px 11px; border: 1px solid var(--border-strong); border-radius: 9px; min-height: 42px; align-items: center; background: var(--form-input); }
+  
   .tagpick .chip { cursor: pointer; border: 1.5px solid transparent; opacity: .6; transition: opacity .15s; }
   .tagpick .chip.on { opacity: 1; border-color: currentColor; }
   
@@ -655,3 +709,16 @@
 .side-scroll::-webkit-scrollbar-thumb:hover {
   background: var(--text-3);
 }
+
+
+
+
+.badge { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; padding: 2px 10px; border-radius: 99px; white-space: nowrap; }
+.badge::before { content: ""; width: 5px; height: 5px; border-radius: 99px; background: currentColor; }
+.b-brand { background: color-mix(in srgb, var(--brand) 10%, transparent); color: var(--t-brand); }
+.b-gray { background: var(--surface-2); color: var(--text-2); border: 1px solid var(--border); }
+.b-warn { background: color-mix(in srgb, var(--warn) 13%, transparent); color: var(--t-warn); }
+.b-purple { background: color-mix(in srgb, var(--purple) 10%, transparent); color: var(--t-purple); }
+.b-green { background: color-mix(in srgb, var(--green) 12%, transparent); color: var(--t-green); }
+.b-red { background: color-mix(in srgb, var(--red) 10%, transparent); color: var(--t-red); }
+.b-blue { background: color-mix(in srgb, var(--blue) 10%, transparent); color: var(--t-blue); }

@@ -41,15 +41,19 @@
               </td>
               <td><%= u[:nombre] %></td>
               <td><%= u[:email] || '—' %></td>
+
               <td>
-                <% if roles.empty? %>
-                  <span class="badge b-gray">sin rol</span>
-                <% else %>
-                  <% roles.each do |r| %>
-                    <span class="badge b-brand"><%= r %></span>
-                  <% end %>
+              <% if roles.empty? %>
+                <span class="badge b-gray">sin rol</span>
+              <% else %>
+                <% roles.each do |r| %>
+                  <% color = { "admin" => "b-purple", "vendedor" => "b-green", "soporte" => "b-blue" }[r] || "b-gray" %>
+                  <span class="badge <%= color %>"><%= r %></span>
                 <% end %>
-              </td>
+              <% end %>
+            </td>
+
+
               <td>
                 <div class="row-actions">
                   <a href="<%= t("/usuarios/#{u[:id]}/editar") %>" class="act">Editar</a>
