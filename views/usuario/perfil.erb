@@ -1,0 +1,68 @@
+<div class="page-head">
+  <div>
+    <h1>Mi perfil</h1>
+    <p class="sub">Tus datos y contraseña</p>
+  </div>
+</div>
+
+<div class="card form-card" style="margin-bottom: 20px;">
+  <h3 style="margin-bottom: 18px; font-size: 15px; font-weight: 600;">Datos personales</h3>
+
+  <form method="post" action="<%= t('/perfil') %>">
+    <div class="form-grid">
+
+      <div class="field">
+        <label>Usuario</label>
+        <input type="text" value="<%= @usuario[:usuario] %>" readonly>
+      </div>
+
+      <div class="field">
+        <label for="nombre">Nombre completo *</label>
+        <input type="text" id="nombre" name="nombre"
+               value="<%= @usuario[:nombre] %>" required>
+      </div>
+
+      <div class="field span2">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email"
+               value="<%= @usuario[:email] %>">
+      </div>
+
+    </div>
+
+    <div class="form-foot">
+      <div class="spacer"></div>
+      <button type="submit" class="btn btn-primary">Guardar datos</button>
+    </div>
+  </form>
+</div>
+
+<div class="card form-card">
+  <h3 style="margin-bottom: 18px; font-size: 15px; font-weight: 600;">Cambiar contraseña</h3>
+
+  <form method="post" action="<%= t('/perfil/password') %>">
+    <div class="form-grid">
+
+      <div class="field span2">
+        <label for="password_actual">Contraseña actual *</label>
+        <input type="password" id="password_actual" name="password_actual" required>
+      </div>
+
+      <div class="field">
+        <label for="password_nueva">Nueva contraseña *</label>
+        <input type="password" id="password_nueva" name="password_nueva" required minlength="6">
+      </div>
+
+      <div class="field">
+        <label for="password_confirmacion">Repetir contraseña *</label>
+        <input type="password" id="password_confirmacion" name="password_confirmacion" required minlength="6">
+      </div>
+
+    </div>
+
+    <div class="form-foot">
+      <div class="spacer"></div>
+      <button type="submit" class="btn btn-primary">Cambiar contraseña</button>
+    </div>
+  </form>
+</div>

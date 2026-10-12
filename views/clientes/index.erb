@@ -1,0 +1,142 @@
+<div class="page-head">
+  <div>
+    <h1>Clientes</h1>
+    <p class="sub">Clientes activos de la empresa</p>
+  </div>
+  <div class="head-actions">
+    <a href="<%= t('/clientes/nuevo') %>" class="btn btn-primary">
+      <i data-lucide="plus"></i> Nuevo cliente
+    </a>
+  </div>
+</div>
+
+<form method="get" action="<%= t('/clientes') %>" class="toolbar">
+  <label class="search">
+    <i data-lucide="search"></i>
+    <input type="text" name="q" value="<%= @filtros[:q] %>" placeholder="Buscar nombre, RUC, email…">
+  </label>
+
+  <div class="sel">
+    <select name="tipo" onchange="this.form.submit()">
+      <option value="">Todos</option>
+      <option value="empresa" <%= 'selected' if @filtros[:tipo] == 'empresa' %>>Empresas</option>
+      <option value="persona" <%= 'selected' if @filtros[:tipo] == 'persona' %>>Personas</option>
+    </select>
+  </div>
+
+  <div class="sel">
+    <select name="estado" onchange="this.form.submit()">
+      <option value="">Todos</option>
+      <option value="activos"   <%= 'selected' if @filtros[:estado] == 'activos' %>>Activos</option>
+      <option value="inactivos" <%= 'selected' if @filtros[:estado] == 'inactivos' %>>Inactivos</option>
+    </select>
+  </div>
+
+  <button type="submit" class="btn btn-ghost">
+    <i data-lucide="search"></i> Buscar
+  </button>
+</form>
+
+<div class="count-line">
+  <%= @clientes.pagination_record_count %> cliente(s)
+</div>
+
+<div class="card">
+  <% if @clientes.empty? %>
+    <div class="empty">
+      <i data-lucide="users"></i>
+      <b>No hay clientes</b>
+      <p>Probá con otro filtro o creá el primero</p>
+      <a href="<%= t('/clientes/nuevo') %>" class="btn btn-primary">Crear cliente</a>
+    </div>
+  <% else %>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Documento</th>
+            <th>Email</th>
+            <th>Teléfono</th>
+            <th>Tipo</th>
+            <th>Estado</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @clientes.each do |c| %>
+            <tr>
+              <td>
+                <div class="cell-name">
+                  <b><%= c[:nombre] %></b>
+                </div>
+              </td>
+              <td><%= c[:documento] || '—' %></td>
+              <td><%= c[:email] || '—' %></td>
+              <td><%= c[:telefono] || '—' %></td>
+              <td>
+                <% if c[:tipo] == "empresa" %>
+                  <span class="badge b-blue">empresa</span>
+                <% else %>
+                  <span class="badge b-purple">persona</span>
+                <% end %>
+              </td>
+              <td>
+                <% if c[:activo] %>
+                  <span class="badge b-green">activo</span>
+                <% else %>
+                  <span class="badge b-gray">inactivo</span>
+                <% end %>
+              </td>
+
+              <td>
+                <div class="row-actions">
+                  <a href="<%= t("/clientes/#{c[:id]}/editar") %>" class="icon-act" title="Editar">
+                    <i data-lucide="pencil"></i>
+                  </a>
+                  <form method="post" action="<%= t("/clientes/#{c[:id]}/eliminar") %>" style="display:inline"
+                        data-confirm="¿Eliminar a <%= c[:nombre] %>?"
+                        data-confirm-type="danger"
+                        data-confirm-ok="Eliminar">
+                    <button type="submit" class="icon-act danger" title="Eliminar">
+                      <i data-lucide="trash-2"></i>
+                    </button>
+                  </form>
+                </div>
+              </td>
+
+
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+
+    <% if @clientes.page_count > 1 %>
+      <div class="pagination">
+        <span>Página <%= @clientes.current_page %> de <%= @clientes.page_count %></span>
+        <div class="pages">
+          <% if @clientes.prev_page %>
+            <a href="<%= t("/clientes?page=#{@clientes.prev_page}&q=#{@filtros[:q]}&estado=#{@filtros[:estado]}&tipo=#{@filtros[:tipo]}") %>">←</a>
+          <% else %>
+            <span class="disabled">←</span>
+          <% end %>
+
+          <% (1..@clientes.page_count).each do |p| %>
+            <% if p == @clientes.current_page %>
+              <span class="current"><%= p %></span>
+            <% else %>
+              <a href="<%= t("/clientes?page=#{p}&q=#{@filtros[:q]}&estado=#{@filtros[:estado]}&tipo=#{@filtros[:tipo]}") %>"><%= p %></a>
+            <% end %>
+          <% end %>
+
+          <% if @clientes.next_page %>
+            <a href="<%= t("/clientes?page=#{@clientes.next_page}&q=#{@filtros[:q]}&estado=#{@filtros[:estado]}&tipo=#{@filtros[:tipo]}") %>">→</a>
+          <% else %>
+            <span class="disabled">→</span>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  <% end %>
+</div>

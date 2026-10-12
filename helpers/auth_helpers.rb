@@ -79,4 +79,12 @@ module AuthHelpers
   end
 
 
+  def current_user_rol_principal
+    roles = current_user_roles
+    return "Sin rol" if roles.empty?
+    roles.first.capitalize
+  end
+
+
+
 end

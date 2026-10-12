@@ -1,0 +1,80 @@
+<a href="<%= t('/clientes') %>" class="backlink">
+  <i data-lucide="arrow-left"></i> Volver a clientes
+</a>
+
+<div class="page-head">
+  <div>
+    <h1><%= @page_title %></h1>
+    <p class="sub">Completá los datos del cliente</p>
+  </div>
+</div>
+
+<form method="post" action="<%= @cliente ? t("/clientes/#{@cliente[:id]}") : t('/clientes') %>">
+  <div class="card form-card">
+    <div class="form-grid">
+
+      <div class="field">
+        <label for="tipo">Tipo *</label>
+        <div class="fsel">
+          <select id="tipo" name="tipo" required>
+            <option value="empresa" <%= 'selected' if @cliente && @cliente[:tipo] == 'empresa' %>>Empresa</option>
+            <option value="persona" <%= 'selected' if @cliente && @cliente[:tipo] == 'persona' %>>Persona</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="documento">RUC / CI</label>
+        <input type="text" id="documento" name="documento"
+               value="<%= @cliente && @cliente[:documento] ? @cliente[:documento] : '' %>">
+      </div>
+
+      <div class="field span2">
+        <label for="nombre">Nombre completo / Razón social *</label>
+        <input type="text" id="nombre" name="nombre"
+               value="<%= @cliente ? @cliente[:nombre] : '' %>" required>
+      </div>
+
+      <div class="field">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email"
+               value="<%= @cliente && @cliente[:email] ? @cliente[:email] : '' %>">
+      </div>
+
+      <div class="field">
+        <label for="telefono">Teléfono</label>
+        <input type="text" id="telefono" name="telefono"
+               value="<%= @cliente && @cliente[:telefono] ? @cliente[:telefono] : '' %>">
+      </div>
+
+      <div class="field span2">
+        <label for="direccion">Dirección</label>
+        <input type="text" id="direccion" name="direccion"
+               value="<%= @cliente && @cliente[:direccion] ? @cliente[:direccion] : '' %>">
+      </div>
+
+      <div class="field span2">
+        <label for="notas">Notas</label>
+        <textarea id="notas" name="notas"><%= @cliente && @cliente[:notas] ? @cliente[:notas] : '' %></textarea>
+      </div>
+
+      <% if @cliente %>
+        <div class="field span2">
+          <label>
+            <input type="checkbox" name="activo" value="1" <%= 'checked' if @cliente[:activo] %>>
+            Cliente activo
+          </label>
+        </div>
+      <% end %>
+
+    </div>
+
+    <div class="form-foot">
+      <a href="<%= t('/clientes') %>" class="btn btn-ghost">Cancelar</a>
+      <div class="spacer"></div>
+      <button type="submit" class="btn btn-primary">
+        <%= @cliente ? 'Guardar cambios' : 'Crear cliente' %>
+      </button>
+    </div>
+  </div>
+</form>

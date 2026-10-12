@@ -49,6 +49,75 @@ class UsuarioRoutes < BaseApp
   end
 
   # ============================================================
+  # PERFIL PROPIO (cualquier usuario logueado)
+  # ============================================================
+
+  get "/perfil" do
+    require_login
+    @current_page = "perfil"
+    @page_title   = "Mi perfil"
+    @usuario      = current_user
+    erb :"usuario/perfil"
+  end
+
+  post "/perfil" do
+    require_login
+
+    nombre = params[:nombre].to_s.strip
+    email  = params[:email].to_s.strip
+
+    if nombre.empty?
+      set_flash(:error, "El nombre es obligatorio")
+      redirect t("/perfil")
+    end
+
+    DB[:usuarios].where(id: current_user[:id]).update(
+      nombre:     nombre,
+      email:      email.empty? ? nil : email,
+      updated_at: Sequel::CURRENT_TIMESTAMP
+    )
+
+    set_flash(:success, "Datos actualizados")
+    redirect t("/perfil")
+  end
+
+  post "/perfil/password" do
+    require_login
+
+    actual       = params[:password_actual].to_s
+    nueva        = params[:password_nueva].to_s
+    confirmacion = params[:password_confirmacion].to_s
+
+    if actual.empty? || nueva.empty? || confirmacion.empty?
+      set_flash(:error, "Completá todos los campos")
+      redirect t("/perfil")
+    end
+
+    if BCrypt::Password.new(current_user[:password_hash]) != actual
+      set_flash(:error, "La contraseña actual es incorrecta")
+      redirect t("/perfil")
+    end
+
+    if nueva.length < 6
+      set_flash(:error, "La nueva contraseña debe tener al menos 6 caracteres")
+      redirect t("/perfil")
+    end
+
+    if nueva != confirmacion
+      set_flash(:error, "Las contraseñas no coinciden")
+      redirect t("/perfil")
+    end
+
+    DB[:usuarios].where(id: current_user[:id]).update(
+      password_hash: BCrypt::Password.create(nueva),
+      updated_at:    Sequel::CURRENT_TIMESTAMP
+    )
+
+    set_flash(:success, "Contraseña actualizada")
+    redirect t("/perfil")
+  end
+
+  # ============================================================
   # GESTIÓN DE USUARIOS (solo admin)
   # ============================================================
 
@@ -61,10 +130,28 @@ class UsuarioRoutes < BaseApp
     @current_page = "usuarios"
     @page_title   = "Usuarios"
 
-    @usuarios = tenant_db(:usuarios)
-      .where(activo: true)
-      .order(:usuario)
-      .all
+    page = (params[:page] || 1).to_i
+    page = 1 if page < 1
+
+    dataset = tenant_db(:usuarios)
+
+    case params[:estado]
+    when "activos"   then dataset = dataset.where(activo: true)
+    when "inactivos" then dataset = dataset.where(activo: false)
+    end
+
+    q = params[:q].to_s.strip
+    unless q.empty?
+      patron = "%#{q}%"
+      dataset = dataset.where(
+        Sequel.ilike(:usuario, patron) |
+        Sequel.ilike(:nombre,  patron) |
+        Sequel.ilike(:email,   patron)
+      )
+    end
+
+    @usuarios = dataset.order(:usuario).paginate(page, 25)
+    @filtros  = { q: q, estado: params[:estado] }
 
     erb :"usuario/index"
   end

@@ -1,0 +1,169 @@
+<div class="page-head">
+  <div>
+    <h1>Clientes potenciales</h1>
+    <p class="sub">Leads y oportunidades en seguimiento</p>
+  </div>
+  <div class="head-actions">
+    <a href="<%= t('/leads/nuevo') %>" class="btn btn-primary">
+      <i data-lucide="plus"></i> Nuevo lead
+    </a>
+  </div>
+</div>
+
+<form method="get" action="<%= t('/leads') %>" class="toolbar">
+  <label class="search">
+    <i data-lucide="search"></i>
+    <input type="text" name="q" value="<%= @filtros[:q] %>" placeholder="Buscar nombre, empresa, email…">
+  </label>
+
+  <div class="sel">
+    <select name="estado" onchange="this.form.submit()">
+      <option value="">Estado: todos</option>
+      <% ClientesPotencialesRoutes::ESTADOS.each do |e| %>
+        <option value="<%= e %>" <%= 'selected' if @filtros[:estado] == e %>><%= e.capitalize %></option>
+      <% end %>
+    </select>
+  </div>
+
+  <div class="sel">
+    <select name="origen" onchange="this.form.submit()">
+      <option value="">Origen: todos</option>
+      <% ClientesPotencialesRoutes::ORIGENES.each do |o| %>
+        <option value="<%= o %>" <%= 'selected' if @filtros[:origen] == o %>><%= o.capitalize %></option>
+      <% end %>
+    </select>
+  </div>
+
+  <div class="sel">
+    <select name="activo" onchange="this.form.submit()">
+      <option value="">Todos</option>
+      <option value="activos"   <%= 'selected' if @filtros[:activo] == 'activos' %>>Activos</option>
+      <option value="inactivos" <%= 'selected' if @filtros[:activo] == 'inactivos' %>>Inactivos</option>
+    </select>
+  </div>
+
+  <button type="submit" class="btn btn-ghost">
+    <i data-lucide="search"></i> Buscar
+  </button>
+</form>
+
+<div class="count-line">
+  <%= @leads.pagination_record_count %> lead(s)
+</div>
+
+<div class="card">
+  <% if @leads.empty? %>
+    <div class="empty">
+      <i data-lucide="user-plus"></i>
+      <b>No hay leads</b>
+      <p>Probá con otro filtro o creá el primero</p>
+      <a href="<%= t('/leads/nuevo') %>" class="btn btn-primary">Crear lead</a>
+    </div>
+  <% else %>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Empresa</th>
+            <th>Contacto</th>
+            <th>Origen</th>
+            <th>Estado</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @leads.each do |l| %>
+            <% color_estado = {
+              "nuevo"      => "b-blue",
+              "contactado" => "b-warn",
+              "calificado" => "b-purple",
+              "convertido" => "b-green",
+              "descartado" => "b-gray"
+            }[l[:estado]] || "b-gray" %>
+
+            <tr>
+              <td>
+                <div class="cell-name">
+                  <b><%= l[:nombre] %></b>
+                </div>
+              </td>
+              <td><%= l[:empresa] || '—' %></td>
+              <td>
+                <% if l[:email] %><div><%= l[:email] %></div><% end %>
+                <% if l[:telefono] %><div class="sub" style="margin-top:2px"><%= l[:telefono] %></div><% end %>
+                <% unless l[:email] || l[:telefono] %>—<% end %>
+              </td>
+              <td>
+                <% if l[:origen] %>
+                  <span class="badge b-blue"><%= l[:origen] %></span>
+                <% else %>
+                  —
+                <% end %>
+              </td>
+              <td><span class="badge <%= color_estado %>"><%= l[:estado] %></span></td>
+
+
+              <td>
+                <div class="row-actions">
+                  <% if l[:estado] != "convertido" && l[:estado] != "descartado" %>
+                    <form method="post" action="<%= t("/leads/#{l[:id]}/convertir") %>" style="display:inline"
+                          data-confirm="¿Convertir este lead en cliente? Se creará un cliente con sus datos."
+                          data-confirm-type="success"
+                          data-confirm-ok="Convertir">
+                      <button type="submit" class="icon-act" title="Convertir a cliente"
+                              style="color: var(--t-green);">
+                        <i data-lucide="user-check"></i>
+                      </button>
+                    </form>
+                  <% end %>
+                  <a href="<%= t("/leads/#{l[:id]}/editar") %>" class="icon-act" title="Editar">
+                    <i data-lucide="pencil"></i>
+                  </a>
+                  <form method="post" action="<%= t("/leads/#{l[:id]}/eliminar") %>" style="display:inline"
+                        data-confirm="¿Eliminar a <%= l[:nombre] %>?"
+                        data-confirm-type="danger"
+                        data-confirm-ok="Eliminar">
+                    <button type="submit" class="icon-act danger" title="Eliminar">
+                      <i data-lucide="trash-2"></i>
+                    </button>
+                  </form>
+                </div>
+              </td>
+
+
+
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+
+    <% if @leads.page_count > 1 %>
+      <div class="pagination">
+        <span>Página <%= @leads.current_page %> de <%= @leads.page_count %></span>
+        <div class="pages">
+          <% if @leads.prev_page %>
+            <a href="<%= t("/leads?page=#{@leads.prev_page}&q=#{@filtros[:q]}&estado=#{@filtros[:estado]}&origen=#{@filtros[:origen]}&activo=#{@filtros[:activo]}") %>">←</a>
+          <% else %>
+            <span class="disabled">←</span>
+          <% end %>
+
+          <% (1..@leads.page_count).each do |p| %>
+            <% if p == @leads.current_page %>
+              <span class="current"><%= p %></span>
+            <% else %>
+              <a href="<%= t("/leads?page=#{p}&q=#{@filtros[:q]}&estado=#{@filtros[:estado]}&origen=#{@filtros[:origen]}&activo=#{@filtros[:activo]}") %>"><%= p %></a>
+            <% end %>
+          <% end %>
+
+          <% if @leads.next_page %>
+            <a href="<%= t("/leads?page=#{@leads.next_page}&q=#{@filtros[:q]}&estado=#{@filtros[:estado]}&origen=#{@filtros[:origen]}&activo=#{@filtros[:activo]}") %>">→</a>
+          <% else %>
+            <span class="disabled">→</span>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  <% end %>
+</div>

@@ -10,12 +10,35 @@
   </div>
 </div>
 
+<form method="get" action="<%= t('/usuarios') %>" class="toolbar">
+  <label class="search">
+    <i data-lucide="search"></i>
+    <input type="text" name="q" value="<%= @filtros[:q] %>" placeholder="Buscar usuario, nombre o email…">
+  </label>
+
+  <div class="sel">
+    <select name="estado" onchange="this.form.submit()">
+      <option value="">Todos</option>
+      <option value="activos"   <%= 'selected' if @filtros[:estado] == 'activos' %>>Activos</option>
+      <option value="inactivos" <%= 'selected' if @filtros[:estado] == 'inactivos' %>>Inactivos</option>
+    </select>
+  </div>
+
+  <button type="submit" class="btn btn-ghost">
+    <i data-lucide="search"></i> Buscar
+  </button>
+</form>
+
+<div class="count-line">
+  <%= @usuarios.pagination_record_count %> usuario(s)
+</div>
+
 <div class="card">
   <% if @usuarios.empty? %>
     <div class="empty">
       <i data-lucide="users"></i>
-      <b>No hay usuarios todavía</b>
-      <p>Creá el primero para empezar</p>
+      <b>No hay usuarios</b>
+      <p>Probá con otro filtro o creá el primero</p>
       <a href="<%= t('/usuarios/nuevo') %>" class="btn btn-primary">Crear usuario</a>
     </div>
   <% else %>
@@ -27,6 +50,7 @@
             <th>Nombre</th>
             <th>Email</th>
             <th>Roles</th>
+            <th>Estado</th>
             <th></th>
           </tr>
         </thead>
@@ -41,26 +65,36 @@
               </td>
               <td><%= u[:nombre] %></td>
               <td><%= u[:email] || '—' %></td>
-
               <td>
-              <% if roles.empty? %>
-                <span class="badge b-gray">sin rol</span>
-              <% else %>
-                <% roles.each do |r| %>
-                  <% color = { "admin" => "b-purple", "vendedor" => "b-green", "soporte" => "b-blue" }[r] || "b-gray" %>
-                  <span class="badge <%= color %>"><%= r %></span>
+                <% if roles.empty? %>
+                  <span class="badge b-gray">sin rol</span>
+                <% else %>
+                  <% roles.each do |r| %>
+                    <% color = { "admin" => "b-purple", "vendedor" => "b-green", "soporte" => "b-blue" }[r] || "b-gray" %>
+                    <span class="badge <%= color %>"><%= r %></span>
+                  <% end %>
                 <% end %>
-              <% end %>
-            </td>
-
-
+              </td>
+              <td>
+                <% if u[:activo] %>
+                  <span class="badge b-green">activo</span>
+                <% else %>
+                  <span class="badge b-gray">inactivo</span>
+                <% end %>
+              </td>
               <td>
                 <div class="row-actions">
-                  <a href="<%= t("/usuarios/#{u[:id]}/editar") %>" class="act">Editar</a>
+                  <a href="<%= t("/usuarios/#{u[:id]}/editar") %>" class="icon-act" title="Editar">
+                    <i data-lucide="pencil"></i>
+                  </a>
                   <% if u[:id] != current_user[:id] %>
                     <form method="post" action="<%= t("/usuarios/#{u[:id]}/eliminar") %>" style="display:inline"
-                          onsubmit="return confirm('¿Eliminar a <%= u[:usuario] %>?')">
-                      <button type="submit" class="act danger">Eliminar</button>
+                          data-confirm="¿Eliminar a <%= u[:usuario] %>?"
+                          data-confirm-type="danger"
+                          data-confirm-ok="Eliminar">
+                      <button type="submit" class="icon-act danger" title="Eliminar">
+                        <i data-lucide="trash-2"></i>
+                      </button>
                     </form>
                   <% end %>
                 </div>
@@ -70,5 +104,34 @@
         </tbody>
       </table>
     </div>
+
+    <% if @usuarios.page_count > 1 %>
+      <div class="pagination">
+        <span>
+          Página <%= @usuarios.current_page %> de <%= @usuarios.page_count %>
+        </span>
+        <div class="pages">
+          <% if @usuarios.prev_page %>
+            <a href="<%= t("/usuarios?page=#{@usuarios.prev_page}&q=#{@filtros[:q]}&estado=#{@filtros[:estado]}") %>">←</a>
+          <% else %>
+            <span class="disabled">←</span>
+          <% end %>
+
+          <% (1..@usuarios.page_count).each do |p| %>
+            <% if p == @usuarios.current_page %>
+              <span class="current"><%= p %></span>
+            <% else %>
+              <a href="<%= t("/usuarios?page=#{p}&q=#{@filtros[:q]}&estado=#{@filtros[:estado]}") %>"><%= p %></a>
+            <% end %>
+          <% end %>
+
+          <% if @usuarios.next_page %>
+            <a href="<%= t("/usuarios?page=#{@usuarios.next_page}&q=#{@filtros[:q]}&estado=#{@filtros[:estado]}") %>">→</a>
+          <% else %>
+            <span class="disabled">→</span>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
   <% end %>
 </div>

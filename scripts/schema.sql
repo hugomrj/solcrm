@@ -107,8 +107,6 @@ CREATE TABLE clientes (
     email       VARCHAR(255),
     telefono    VARCHAR(50),
     direccion   VARCHAR(255),
-    ciudad      VARCHAR(100),
-    provincia   VARCHAR(100),
     notas       TEXT,
     activo      BOOLEAN      NOT NULL DEFAULT TRUE,
     created_at  TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
@@ -117,7 +115,6 @@ CREATE TABLE clientes (
     UNIQUE (tenant_id, documento)
 );
 CREATE INDEX idx_clientes_tenant ON clientes(tenant_id) WHERE activo = TRUE;
-
 CREATE TABLE contactos (
     id          BIGSERIAL PRIMARY KEY,
     tenant_id   BIGINT       NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,

@@ -1,0 +1,105 @@
+<a href="<%= t('/leads') %>" class="backlink">
+  <i data-lucide="arrow-left"></i> Volver a leads
+</a>
+
+<div class="page-head">
+  <div>
+    <h1><%= @page_title %></h1>
+    <p class="sub">Datos del cliente potencial</p>
+  </div>
+</div>
+
+<form method="post" action="<%= @lead ? t("/leads/#{@lead[:id]}") : t('/leads') %>">
+  <div class="card form-card">
+    <div class="form-grid">
+
+      <div class="field">
+        <label for="nombre">Nombre *</label>
+        <input type="text" id="nombre" name="nombre"
+               value="<%= @lead ? @lead[:nombre] : '' %>" required>
+      </div>
+
+      <div class="field">
+        <label for="empresa">Empresa</label>
+        <input type="text" id="empresa" name="empresa"
+               value="<%= @lead && @lead[:empresa] ? @lead[:empresa] : '' %>">
+      </div>
+
+      <div class="field">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email"
+               value="<%= @lead && @lead[:email] ? @lead[:email] : '' %>">
+      </div>
+
+      <div class="field">
+        <label for="telefono">Teléfono</label>
+        <input type="text" id="telefono" name="telefono"
+               value="<%= @lead && @lead[:telefono] ? @lead[:telefono] : '' %>">
+      </div>
+
+      <div class="field">
+        <label for="origen">Origen</label>
+        <div class="fsel">
+          <select id="origen" name="origen">
+            <option value="">—</option>
+            <% ClientesPotencialesRoutes::ORIGENES.each do |o| %>
+              <option value="<%= o %>" <%= 'selected' if @lead && @lead[:origen] == o %>><%= o.capitalize %></option>
+            <% end %>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="estado">Estado</label>
+        <div class="fsel">
+          <select id="estado" name="estado">
+            <% ClientesPotencialesRoutes::ESTADOS.each do |e| %>
+              <% next if e == "convertido" %>
+              <option value="<%= e %>"
+                <%= 'selected' if (@lead && @lead[:estado] == e) || (!@lead && e == "nuevo") %>>
+                <%= e.capitalize %>
+              </option>
+            <% end %>
+          </select>
+        </div>
+      </div>
+
+      <div class="field span2">
+        <label for="responsable_id">Responsable</label>
+        <div class="fsel">
+          <select id="responsable_id" name="responsable_id">
+            <% @usuarios.each do |u| %>
+              <option value="<%= u[:id] %>"
+                <%= 'selected' if (@lead && @lead[:responsable_id] == u[:id]) || (!@lead && u[:id] == current_user[:id]) %>>
+                <%= u[:nombre] %>
+              </option>
+            <% end %>
+          </select>
+        </div>
+      </div>
+
+      <div class="field span2">
+        <label for="notas">Notas</label>
+        <textarea id="notas" name="notas"><%= @lead && @lead[:notas] ? @lead[:notas] : '' %></textarea>
+      </div>
+
+      <% if @lead %>
+        <div class="field span2">
+          <label>
+            <input type="checkbox" name="activo" value="1" <%= 'checked' if @lead[:activo] %>>
+            Lead activo
+          </label>
+        </div>
+      <% end %>
+
+    </div>
+
+    <div class="form-foot">
+      <a href="<%= t('/leads') %>" class="btn btn-ghost">Cancelar</a>
+      <div class="spacer"></div>
+      <button type="submit" class="btn btn-primary">
+        <%= @lead ? 'Guardar cambios' : 'Crear lead' %>
+      </button>
+    </div>
+  </div>
+</form>

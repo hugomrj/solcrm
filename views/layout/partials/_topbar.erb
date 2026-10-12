@@ -3,20 +3,23 @@
   <button class="tb-btn" id="burger">
     <i data-lucide="menu"></i>
   </button>
-  
-  <!-- Barra de búsqueda global -->
-  <label class="searchbar">
-    <i data-lucide="search"></i>
-    <input id="globalSearch" placeholder="Buscar…" autocomplete="off">
-    <span class="kbd">Ctrl K</span>
-  </label>
-  
+
+  <!-- Barra de búsqueda en menú -->
+  <div class="searchbar-wrap">
+    <label class="searchbar">
+      <i data-lucide="search"></i>
+      <input id="globalSearch" placeholder="Buscar en el menú…" autocomplete="off">
+      <span class="kbd">Ctrl K</span>
+    </label>
+    <div id="menuResults" class="menu-results"></div>
+  </div>
+
   <!-- Lado derecho del topbar -->
   <div class="tb-right">
     <button class="tb-round" id="themeBtn" title="Cambiar tema">
       <i data-lucide="moon"></i>
     </button>
-    
+
     <!-- Menú de usuario -->
     <div class="tb-user" id="userWrap">
       <button class="avatar" id="avatarBtn" title="<%= current_user_name %>">
@@ -25,8 +28,9 @@
           <circle cx="12" cy="7" r="4"></circle>
         </svg>
       </button>
-      
+
       <div class="user-menu" id="userMenu">
+
         <div class="um-head">
           <span class="avatar">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -36,13 +40,23 @@
           </span>
           <div>
             <b><%= current_user_name %></b>
-            <span>Administrador</span>
+            <span><%= current_user_rol_principal %></span>
           </div>
         </div>
-        
+
+        <a href="<%= t('/perfil') %>" class="um-item">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+          <span>Mi perfil</span>
+        </a>
+
+        <div class="um-sep"></div>
+
         <form action="<%= t('/logout') %>" method="post" style="margin: 0;">
-          <button type="submit" class="um-item" style="text-decoration: none; color: #B42318 !important; display: flex !important; align-items: center !important; gap: 10px !important; width: 100%; padding: 9px 10px; border-radius: 8px; font: 500 13.5px 'Outfit', sans-serif; background: none; border: none; cursor: pointer; text-align: left;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#B42318" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: block !important; flex-shrink: 0;">
+          <button type="submit" class="um-item um-item-danger">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
               <polyline points="16 17 21 12 16 7"></polyline>
               <line x1="21" y1="12" x2="9" y2="12"></line>
@@ -50,6 +64,7 @@
             <span>Cerrar sesión</span>
           </button>
         </form>
+
       </div>
     </div>
   </div>

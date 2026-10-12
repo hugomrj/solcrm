@@ -64,3 +64,11 @@ bash
 ```
 ruby -rsecurerandom -e 'puts SecureRandom.hex(64)'
 ```
+
+
+### Ejecutar
+
+bash 
+```
+bundle exec rackup
+```

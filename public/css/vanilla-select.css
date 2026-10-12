@@ -1,0 +1,117 @@
+/* ============================================================
+   Vanilla Select — adaptado a tokens de SolCRM
+   ============================================================ */
+
+   .vanilla-select-wrapper {
+    --vs-bg:              var(--form-input);
+    --vs-text:            var(--text);
+    --vs-placeholder:     var(--text-3);
+    --vs-border:          var(--border-strong);
+    --vs-border-hover:    var(--brand);
+    --vs-border-focus:    var(--brand);
+    --vs-border-radius:   9px;
+    --vs-option-hover-bg: var(--hover);
+    --vs-selected-bg:     color-mix(in srgb, var(--brand) 10%, transparent);
+    --vs-selected-text:   var(--t-brand);
+    --vs-shadow-focus:    0 0 0 3px color-mix(in srgb, var(--brand) 14%, transparent);
+    --vs-dropdown-shadow: var(--shadow);
+    --vs-height:          42px;
+    --vs-font-size:       14px;
+    --vs-max-height:      260px;
+  }
+  
+  .vanilla-select-wrapper { position: relative; width: 100%; font-family: inherit; box-sizing: border-box; }
+  
+  .vanilla-select-wrapper select.vanilla-select-original {
+    position: absolute; opacity: 0; width: 0; height: 0; pointer-events: none;
+  }
+  
+  .vs-control {
+    display: flex; align-items: center; justify-content: space-between;
+    width: 100%; height: var(--vs-height); padding: 0 13px;
+    font-size: var(--vs-font-size); color: var(--vs-text);
+    background-color: var(--vs-bg);
+    border: 1px solid var(--vs-border); border-radius: var(--vs-border-radius);
+    cursor: pointer;
+    transition: border-color .15s, box-shadow .15s;
+    box-sizing: border-box;
+  }
+  
+  .vs-control:hover { border-color: var(--vs-border-hover); }
+  .vanilla-select-wrapper.is-open .vs-control {
+    border-color: var(--vs-border-focus);
+    box-shadow: var(--vs-shadow-focus);
+  }
+  
+  .vs-control .vs-placeholder { color: var(--vs-placeholder); }
+  .vs-control .vs-arrow {
+    transition: transform .2s ease;
+    color: var(--vs-placeholder);
+    font-size: 10px;
+  }
+  .vanilla-select-wrapper.is-open .vs-arrow { transform: rotate(180deg); }
+  
+  .vs-dropdown {
+    display: none;
+    position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+    z-index: 999;
+    background-color: var(--vs-bg);
+    border: 1px solid var(--vs-border); border-radius: var(--vs-border-radius);
+    box-shadow: var(--vs-dropdown-shadow);
+    max-height: var(--vs-max-height); overflow-y: auto;
+    box-sizing: border-box;
+  }
+  
+  .vanilla-select-wrapper.is-open .vs-dropdown {
+    display: block;
+    animation: vs-fade-in .15s ease-out;
+  }
+  
+  @keyframes vs-fade-in {
+    from { opacity: 0; transform: translateY(-5px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  
+  .vs-search {
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--vs-border);
+    position: sticky; top: 0;
+    background: var(--vs-bg);
+    z-index: 1;
+  }
+  
+  .vs-search input {
+    width: 100%; height: 32px; padding: 0 10px;
+    border: 0; outline: none;
+    border-radius: 6px;
+    font-size: calc(var(--vs-font-size) - 1px);
+    color: var(--vs-text); background: transparent;
+    box-sizing: border-box;
+  }
+  
+  .vs-options { list-style: none; margin: 0; padding: 4px 0; }
+  
+  .vs-option {
+    padding: 9px 13px;
+    cursor: pointer;
+    font-size: calc(var(--vs-font-size) - 0.5px);
+    color: var(--vs-text);
+    transition: background-color .1s;
+  }
+  
+  .vs-option:hover { background-color: var(--vs-option-hover-bg); }
+  
+  .vs-option.is-selected {
+    background-color: var(--vs-selected-bg);
+    color: var(--vs-selected-text);
+    font-weight: 600;
+  }
+  
+  .vs-option.is-hidden { display: none; }
+  
+  .vs-no-results {
+    padding: 12px;
+    color: var(--vs-placeholder);
+    font-style: italic; text-align: center;
+    font-size: calc(var(--vs-font-size) - 1px);
+  }
