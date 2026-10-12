@@ -19,7 +19,7 @@
   <div class="sel">
     <select name="estado" onchange="this.form.submit()">
       <option value="">Estado: todos</option>
-      <% ClientesPotencialesRoutes::ESTADOS.each do |e| %>
+      <% LeadsRoutes::ESTADOS.each do |e| %>
         <option value="<%= e %>" <%= 'selected' if @filtros[:estado] == e %>><%= e.capitalize %></option>
       <% end %>
     </select>
@@ -28,7 +28,7 @@
   <div class="sel">
     <select name="origen" onchange="this.form.submit()">
       <option value="">Origen: todos</option>
-      <% ClientesPotencialesRoutes::ORIGENES.each do |o| %>
+      <% LeadsRoutes::ORIGENES.each do |o| %>
         <option value="<%= o %>" <%= 'selected' if @filtros[:origen] == o %>><%= o.capitalize %></option>
       <% end %>
     </select>

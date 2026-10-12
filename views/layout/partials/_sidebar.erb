@@ -13,176 +13,274 @@
 
   <div class="side-scroll">
     <nav>
+      <%# ============ CRM ============ %>
       <p class="side-label">CRM</p>
 
-      <a class="menu-item <%= current_page?('dashboard') %>" href="<%= t('/dashboard') %>">
-        <span class="mi-ic ic-blue"><i data-lucide="layout-dashboard"></i></span>
-        Tablero
-      </a>
+      <% if puede?(:dashboard) %>
+        <a class="menu-item <%= current_page?('dashboard') %>" href="<%= t('/dashboard') %>">
+          <span class="mi-ic ic-blue"><i data-lucide="layout-dashboard"></i></span>
+          Tablero
+        </a>
+      <% end %>
 
-      <a class="menu-item <%= current_page?('pipeline') %>" href="<%= t('/pipeline') %>">
-        <span class="mi-ic ic-green"><i data-lucide="kanban"></i></span>
-        Pipeline de ventas
-      </a>
+      <% if puede?(:pipeline) %>
+        <a class="menu-item <%= current_page?('pipeline') %>" href="<%= t('/pipeline') %>">
+          <span class="mi-ic ic-green"><i data-lucide="kanban"></i></span>
+          Pipeline de ventas
+        </a>
+      <% end %>
 
-      <a class="menu-item <%= current_page?('clientes') %>" href="<%= t('/clientes') %>">
-        <span class="mi-ic ic-purple"><i data-lucide="users"></i></span>
-        Clientes
-      </a>
+      <% if puede?(:clientes) %>
+        <a class="menu-item <%= current_page?('clientes') %>" href="<%= t('/clientes') %>">
+          <span class="mi-ic ic-purple"><i data-lucide="users"></i></span>
+          Clientes
+        </a>
+      <% end %>
 
-      <a class="menu-item <%= current_page?('contactos') %>" href="<%= t('/contactos') %>">
-        <span class="mi-ic ic-cyan"><i data-lucide="contact"></i></span>
-        Contactos
-      </a>
+      <% if puede?(:contactos) %>
+        <a class="menu-item <%= current_page?('contactos') %>" href="<%= t('/contactos') %>">
+          <span class="mi-ic ic-cyan"><i data-lucide="contact"></i></span>
+          Contactos
+        </a>
+      <% end %>
 
-      <a class="menu-item <%= current_page?('leads') %>" href="<%= t('/leads') %>">
-        <span class="mi-ic ic-brand"><i data-lucide="user-plus"></i></span>
-        Clientes potenciales
-      </a>
+      <% if puede?(:leads) %>
+        <a class="menu-item <%= current_page?('leads') %>" href="<%= t('/leads') %>">
+          <span class="mi-ic ic-brand"><i data-lucide="user-plus"></i></span>
+          Clientes potenciales
+        </a>
+      <% end %>
 
-      <p class="side-label">Actividad</p>
+      <%# ============ ACTIVIDAD ============ %>
+      <% if puede?(:calendario) || puede?(:tareas) || puede?(:llamadas) %>
+        <p class="side-label">Actividad</p>
 
-      <div class="menu-group <%= 'open' if ['calendario','tareas','llamadas'].include?(@current_page) %>" data-group="actividad">
-        <button class="menu-item" onclick="toggleMenuGroup(this)">
-          <span class="mi-ic ic-purple"><i data-lucide="calendar-check"></i></span>
-          Actividad
-          <i data-lucide="chevron-down" class="chev"></i>
-        </button>
-        <div class="submenu">
-          <ul>
-            <li><a class="sub-item <%= current_page?('calendario') %>" href="<%= t('/calendario') %>"><i data-lucide="calendar"></i> Calendario</a></li>
-            <li><a class="sub-item <%= current_page?('tareas') %>" href="<%= t('/tareas') %>"><i data-lucide="check-circle-2"></i> Tareas</a></li>
-            <li><a class="sub-item <%= current_page?('llamadas') %>" href="<%= t('/llamadas') %>"><i data-lucide="phone"></i> Llamadas</a></li>
-          </ul>
+        <div class="menu-group <%= 'open' if ['calendario','tareas','llamadas'].include?(@current_page) %>" data-group="actividad">
+          <button class="menu-item" onclick="toggleMenuGroup(this)">
+            <span class="mi-ic ic-purple"><i data-lucide="calendar-check"></i></span>
+            Actividad
+            <i data-lucide="chevron-down" class="chev"></i>
+          </button>
+          <div class="submenu">
+            <ul>
+              <% if puede?(:calendario) %>
+                <li><a class="sub-item <%= current_page?('calendario') %>" href="<%= t('/calendario') %>"><i data-lucide="calendar"></i> Calendario</a></li>
+              <% end %>
+              <% if puede?(:tareas) %>
+                <li><a class="sub-item <%= current_page?('tareas') %>" href="<%= t('/tareas') %>"><i data-lucide="check-circle-2"></i> Tareas</a></li>
+              <% end %>
+              <% if puede?(:llamadas) %>
+                <li><a class="sub-item <%= current_page?('llamadas') %>" href="<%= t('/llamadas') %>"><i data-lucide="phone"></i> Llamadas</a></li>
+              <% end %>
+            </ul>
+          </div>
         </div>
-      </div>
+      <% end %>
 
-      <p class="side-label">Ventas</p>
+      <%# ============ VENTAS ============ %>
+      <% ventas_puede = puede?(:propuestas) || puede?(:presupuestos) || puede?(:facturas) || puede?(:pagos) || puede?(:notas_credito) || puede?(:articulos_venta) %>
+      <% if ventas_puede %>
+        <p class="side-label">Ventas</p>
 
-      <% sales_pages = ['propuestas','presupuestos','facturas','pagos','notas_credito','articulos_venta'] %>
-      <div class="menu-group <%= 'open' if sales_pages.include?(@current_page) %>" data-group="ventas">
-        <button class="menu-item" onclick="toggleMenuGroup(this)">
-          <span class="mi-ic ic-green"><i data-lucide="shopping-cart"></i></span>
-          Ventas
-          <i data-lucide="chevron-down" class="chev"></i>
-        </button>
-        <div class="submenu">
-          <ul>
-            <li><a class="sub-item <%= current_page?('propuestas') %>" href="<%= t('/propuestas') %>"><i data-lucide="file-text"></i> Propuestas</a></li>
-            <li><a class="sub-item <%= current_page?('presupuestos') %>" href="<%= t('/presupuestos') %>"><i data-lucide="calculator"></i> Presupuestos</a></li>
-            <li><a class="sub-item <%= current_page?('facturas') %>" href="<%= t('/facturas') %>"><i data-lucide="file-check"></i> Facturas</a></li>
-            <li><a class="sub-item <%= current_page?('pagos') %>" href="<%= t('/pagos') %>"><i data-lucide="credit-card"></i> Pagos</a></li>
-            <li><a class="sub-item <%= current_page?('notas_credito') %>" href="<%= t('/notas_credito') %>"><i data-lucide="rotate-ccw"></i> Notas de crédito</a></li>
-            <li><a class="sub-item <%= current_page?('articulos_venta') %>" href="<%= t('/articulos_venta') %>"><i data-lucide="package"></i> Artículos</a></li>
-          </ul>
+        <% sales_pages = ['propuestas','presupuestos','facturas','pagos','notas_credito','articulos_venta'] %>
+        <div class="menu-group <%= 'open' if sales_pages.include?(@current_page) %>" data-group="ventas">
+          <button class="menu-item" onclick="toggleMenuGroup(this)">
+            <span class="mi-ic ic-green"><i data-lucide="shopping-cart"></i></span>
+            Ventas
+            <i data-lucide="chevron-down" class="chev"></i>
+          </button>
+          <div class="submenu">
+            <ul>
+              <% if puede?(:propuestas) %>
+                <li><a class="sub-item <%= current_page?('propuestas') %>" href="<%= t('/propuestas') %>"><i data-lucide="file-text"></i> Propuestas</a></li>
+              <% end %>
+              <% if puede?(:presupuestos) %>
+                <li><a class="sub-item <%= current_page?('presupuestos') %>" href="<%= t('/presupuestos') %>"><i data-lucide="calculator"></i> Presupuestos</a></li>
+              <% end %>
+              <% if puede?(:facturas) %>
+                <li><a class="sub-item <%= current_page?('facturas') %>" href="<%= t('/facturas') %>"><i data-lucide="file-check"></i> Facturas</a></li>
+              <% end %>
+              <% if puede?(:pagos) %>
+                <li><a class="sub-item <%= current_page?('pagos') %>" href="<%= t('/pagos') %>"><i data-lucide="credit-card"></i> Pagos</a></li>
+              <% end %>
+              <% if puede?(:notas_credito) %>
+                <li><a class="sub-item <%= current_page?('notas_credito') %>" href="<%= t('/notas_credito') %>"><i data-lucide="rotate-ccw"></i> Notas de crédito</a></li>
+              <% end %>
+              <% if puede?(:articulos_venta) %>
+                <li><a class="sub-item <%= current_page?('articulos_venta') %>" href="<%= t('/articulos_venta') %>"><i data-lucide="package"></i> Artículos</a></li>
+              <% end %>
+            </ul>
+          </div>
         </div>
-      </div>
+      <% end %>
 
-      <a class="menu-item <%= current_page?('soporte') %>" href="<%= t('/soporte') %>">
-        <span class="mi-ic ic-brand"><i data-lucide="life-buoy"></i></span>
-        Soporte
-      </a>
+      <% if puede?(:soporte) %>
+        <a class="menu-item <%= current_page?('soporte') %>" href="<%= t('/soporte') %>">
+          <span class="mi-ic ic-brand"><i data-lucide="life-buoy"></i></span>
+          Soporte
+        </a>
+      <% end %>
 
-      <a class="menu-item <%= current_page?('suscripciones') %>" href="<%= t('/suscripciones') %>">
-        <span class="mi-ic ic-cyan"><i data-lucide="refresh-cw"></i></span>
-        Suscripciones
-      </a>
+      <% if puede?(:suscripciones) %>
+        <a class="menu-item <%= current_page?('suscripciones') %>" href="<%= t('/suscripciones') %>">
+          <span class="mi-ic ic-cyan"><i data-lucide="refresh-cw"></i></span>
+          Suscripciones
+        </a>
+      <% end %>
 
-      <p class="side-label">Operaciones</p>
+      <%# ============ OPERACIONES ============ %>
+      <% operaciones_puede = puede?(:proyectos) || puede?(:proveedores) || puede?(:ordenes_compra) || puede?(:contratos_compra) || puede?(:productos) || puede?(:stock) || puede?(:ajustes_inventario) || puede?(:gastos) %>
+      <% if operaciones_puede %>
+        <p class="side-label">Operaciones</p>
+      <% end %>
 
-      <a class="menu-item <%= current_page?('proyectos') %>" href="<%= t('/proyectos') %>">
-        <span class="mi-ic ic-blue"><i data-lucide="briefcase"></i></span>
-        Proyectos
-      </a>
+      <% if puede?(:proyectos) %>
+        <a class="menu-item <%= current_page?('proyectos') %>" href="<%= t('/proyectos') %>">
+          <span class="mi-ic ic-blue"><i data-lucide="briefcase"></i></span>
+          Proyectos
+        </a>
+      <% end %>
 
-      <% purchase_pages = ['proveedores','ordenes_compra','contratos_compra'] %>
-      <div class="menu-group <%= 'open' if purchase_pages.include?(@current_page) %>" data-group="compras">
-        <button class="menu-item" onclick="toggleMenuGroup(this)">
-          <span class="mi-ic ic-warn"><i data-lucide="shopping-bag"></i></span>
-          Compras
-          <i data-lucide="chevron-down" class="chev"></i>
-        </button>
-        <div class="submenu">
-          <ul>
-            <li><a class="sub-item <%= current_page?('proveedores') %>" href="<%= t('/proveedores') %>"><i data-lucide="truck"></i> Proveedores</a></li>
-            <li><a class="sub-item <%= current_page?('ordenes_compra') %>" href="<%= t('/ordenes_compra') %>"><i data-lucide="clipboard-list"></i> Órdenes de Compra</a></li>
-            <li><a class="sub-item <%= current_page?('contratos_compra') %>" href="<%= t('/contratos_compra') %>"><i data-lucide="file-signature"></i> Contratos</a></li>
-          </ul>
+      <% compras_puede = puede?(:proveedores) || puede?(:ordenes_compra) || puede?(:contratos_compra) %>
+      <% if compras_puede %>
+        <% purchase_pages = ['proveedores','ordenes_compra','contratos_compra'] %>
+        <div class="menu-group <%= 'open' if purchase_pages.include?(@current_page) %>" data-group="compras">
+          <button class="menu-item" onclick="toggleMenuGroup(this)">
+            <span class="mi-ic ic-warn"><i data-lucide="shopping-bag"></i></span>
+            Compras
+            <i data-lucide="chevron-down" class="chev"></i>
+          </button>
+          <div class="submenu">
+            <ul>
+              <% if puede?(:proveedores) %>
+                <li><a class="sub-item <%= current_page?('proveedores') %>" href="<%= t('/proveedores') %>"><i data-lucide="truck"></i> Proveedores</a></li>
+              <% end %>
+              <% if puede?(:ordenes_compra) %>
+                <li><a class="sub-item <%= current_page?('ordenes_compra') %>" href="<%= t('/ordenes_compra') %>"><i data-lucide="clipboard-list"></i> Órdenes de Compra</a></li>
+              <% end %>
+              <% if puede?(:contratos_compra) %>
+                <li><a class="sub-item <%= current_page?('contratos_compra') %>" href="<%= t('/contratos_compra') %>"><i data-lucide="file-signature"></i> Contratos</a></li>
+              <% end %>
+            </ul>
+          </div>
         </div>
-      </div>
+      <% end %>
 
-      <% inventory_pages = ['productos','stock','ajustes_inventario'] %>
-      <div class="menu-group <%= 'open' if inventory_pages.include?(@current_page) %>" data-group="inventario">
-        <button class="menu-item" onclick="toggleMenuGroup(this)">
-          <span class="mi-ic ic-warn"><i data-lucide="warehouse"></i></span>
-          Inventario
-          <i data-lucide="chevron-down" class="chev"></i>
-        </button>
-        <div class="submenu">
-          <ul>
-            <li><a class="sub-item <%= current_page?('productos') %>" href="<%= t('/productos') %>"><i data-lucide="box"></i> Productos</a></li>
-            <li><a class="sub-item <%= current_page?('stock') %>" href="<%= t('/stock') %>"><i data-lucide="layers"></i> Stock</a></li>
-            <li><a class="sub-item <%= current_page?('ajustes_inventario') %>" href="<%= t('/ajustes_inventario') %>"><i data-lucide="sliders-horizontal"></i> Ajustes</a></li>
-          </ul>
+      <% inventario_puede = puede?(:productos) || puede?(:stock) || puede?(:ajustes_inventario) %>
+      <% if inventario_puede %>
+        <% inventory_pages = ['productos','stock','ajustes_inventario'] %>
+        <div class="menu-group <%= 'open' if inventory_pages.include?(@current_page) %>" data-group="inventario">
+          <button class="menu-item" onclick="toggleMenuGroup(this)">
+            <span class="mi-ic ic-warn"><i data-lucide="warehouse"></i></span>
+            Inventario
+            <i data-lucide="chevron-down" class="chev"></i>
+          </button>
+          <div class="submenu">
+            <ul>
+              <% if puede?(:productos) %>
+                <li><a class="sub-item <%= current_page?('productos') %>" href="<%= t('/productos') %>"><i data-lucide="box"></i> Productos</a></li>
+              <% end %>
+              <% if puede?(:stock) %>
+                <li><a class="sub-item <%= current_page?('stock') %>" href="<%= t('/stock') %>"><i data-lucide="layers"></i> Stock</a></li>
+              <% end %>
+              <% if puede?(:ajustes_inventario) %>
+                <li><a class="sub-item <%= current_page?('ajustes_inventario') %>" href="<%= t('/ajustes_inventario') %>"><i data-lucide="sliders-horizontal"></i> Ajustes</a></li>
+              <% end %>
+            </ul>
+          </div>
         </div>
-      </div>
+      <% end %>
 
-      <a class="menu-item <%= current_page?('gastos') %>" href="<%= t('/gastos') %>">
-        <span class="mi-ic ic-red"><i data-lucide="receipt"></i></span>
-        Gastos
-      </a>
+      <% if puede?(:gastos) %>
+        <a class="menu-item <%= current_page?('gastos') %>" href="<%= t('/gastos') %>">
+          <span class="mi-ic ic-red"><i data-lucide="receipt"></i></span>
+          Gastos
+        </a>
+      <% end %>
 
-      <p class="side-label">Herramientas</p>
+      <%# ============ HERRAMIENTAS ============ %>
+      <% herramientas_puede = puede?(:explorador) || puede?(:compartir) || puede?(:informes_ventas) || puede?(:informes_gastos) || puede?(:informes_pipeline) || puede?(:informes_actividad) %>
+      <% if herramientas_puede %>
+        <p class="side-label">Herramientas</p>
+      <% end %>
 
-      <% file_pages = ['explorador','compartir'] %>
-      <div class="menu-group <%= 'open' if file_pages.include?(@current_page) %>" data-group="archivos">
-        <button class="menu-item" onclick="toggleMenuGroup(this)">
-          <span class="mi-ic ic-gray"><i data-lucide="folder"></i></span>
-          Archivos
-          <i data-lucide="chevron-down" class="chev"></i>
-        </button>
-        <div class="submenu">
-          <ul>
-            <li><a class="sub-item <%= current_page?('explorador') %>" href="<%= t('/explorador') %>"><i data-lucide="folder-open"></i> Explorador</a></li>
-            <li><a class="sub-item <%= current_page?('compartir') %>" href="<%= t('/compartir') %>"><i data-lucide="share-2"></i> Compartir</a></li>
-          </ul>
+      <% archivos_puede = puede?(:explorador) || puede?(:compartir) %>
+      <% if archivos_puede %>
+        <% file_pages = ['explorador','compartir'] %>
+        <div class="menu-group <%= 'open' if file_pages.include?(@current_page) %>" data-group="archivos">
+          <button class="menu-item" onclick="toggleMenuGroup(this)">
+            <span class="mi-ic ic-gray"><i data-lucide="folder"></i></span>
+            Archivos
+            <i data-lucide="chevron-down" class="chev"></i>
+          </button>
+          <div class="submenu">
+            <ul>
+              <% if puede?(:explorador) %>
+                <li><a class="sub-item <%= current_page?('explorador') %>" href="<%= t('/explorador') %>"><i data-lucide="folder-open"></i> Explorador</a></li>
+              <% end %>
+              <% if puede?(:compartir) %>
+                <li><a class="sub-item <%= current_page?('compartir') %>" href="<%= t('/compartir') %>"><i data-lucide="share-2"></i> Compartir</a></li>
+              <% end %>
+            </ul>
+          </div>
         </div>
-      </div>
+      <% end %>
 
-      <% report_pages = ['informes_ventas','informes_gastos','informes_pipeline','informes_actividad'] %>
-      <div class="menu-group <%= 'open' if report_pages.include?(@current_page) %>" data-group="informes">
-        <button class="menu-item" onclick="toggleMenuGroup(this)">
-          <span class="mi-ic ic-blue"><i data-lucide="bar-chart-3"></i></span>
-          Informes
-          <i data-lucide="chevron-down" class="chev"></i>
-        </button>
-        <div class="submenu">
-          <ul>
-            <li><a class="sub-item <%= current_page?('informes_ventas') %>" href="<%= t('/informes_ventas') %>"><i data-lucide="trending-up"></i> Ventas</a></li>
-            <li><a class="sub-item <%= current_page?('informes_gastos') %>" href="<%= t('/informes_gastos') %>"><i data-lucide="trending-down"></i> Gastos</a></li>
-            <li><a class="sub-item <%= current_page?('informes_pipeline') %>" href="<%= t('/informes_pipeline') %>"><i data-lucide="target"></i> Conversión</a></li>
-            <li><a class="sub-item <%= current_page?('informes_actividad') %>" href="<%= t('/informes_actividad') %>"><i data-lucide="activity"></i> Actividad</a></li>
-          </ul>
+      <% informes_puede = puede?(:informes_ventas) || puede?(:informes_gastos) || puede?(:informes_pipeline) || puede?(:informes_actividad) %>
+      <% if informes_puede %>
+        <% report_pages = ['informes_ventas','informes_gastos','informes_pipeline','informes_actividad'] %>
+        <div class="menu-group <%= 'open' if report_pages.include?(@current_page) %>" data-group="informes">
+          <button class="menu-item" onclick="toggleMenuGroup(this)">
+            <span class="mi-ic ic-blue"><i data-lucide="bar-chart-3"></i></span>
+            Informes
+            <i data-lucide="chevron-down" class="chev"></i>
+          </button>
+          <div class="submenu">
+            <ul>
+              <% if puede?(:informes_ventas) %>
+                <li><a class="sub-item <%= current_page?('informes_ventas') %>" href="<%= t('/informes_ventas') %>"><i data-lucide="trending-up"></i> Ventas</a></li>
+              <% end %>
+              <% if puede?(:informes_gastos) %>
+                <li><a class="sub-item <%= current_page?('informes_gastos') %>" href="<%= t('/informes_gastos') %>"><i data-lucide="trending-down"></i> Gastos</a></li>
+              <% end %>
+              <% if puede?(:informes_pipeline) %>
+                <li><a class="sub-item <%= current_page?('informes_pipeline') %>" href="<%= t('/informes_pipeline') %>"><i data-lucide="target"></i> Conversión</a></li>
+              <% end %>
+              <% if puede?(:informes_actividad) %>
+                <li><a class="sub-item <%= current_page?('informes_actividad') %>" href="<%= t('/informes_actividad') %>"><i data-lucide="activity"></i> Actividad</a></li>
+              <% end %>
+            </ul>
+          </div>
         </div>
-      </div>
+      <% end %>
 
-      <p class="side-label">Sistema</p>
+      <%# ============ SISTEMA ============ %>
+      <% sistema_puede = puede?(:usuarios) || puede?(:roles) || puede?(:configuracion) %>
+      <% if sistema_puede %>
+        <p class="side-label">Sistema</p>
 
-      <% config_pages = ['usuarios','roles','configuracion'] %>
-      <div class="menu-group <%= 'open' if config_pages.include?(@current_page) %>" data-group="configuracion">
-        <button class="menu-item" onclick="toggleMenuGroup(this)">
-          <span class="mi-ic ic-gray"><i data-lucide="settings"></i></span>
-          Configuración
-          <i data-lucide="chevron-down" class="chev"></i>
-        </button>
-        <div class="submenu">
-          <ul>
-            <li><a class="sub-item <%= current_page?('usuarios') %>" href="<%= t('/usuarios') %>"><i data-lucide="user-cog"></i> Usuarios</a></li>
-            <li><a class="sub-item <%= current_page?('roles') %>" href="<%= t('/roles') %>"><i data-lucide="shield"></i> Roles</a></li>
-            <li><a class="sub-item <%= current_page?('configuracion') %>" href="<%= t('/configuracion') %>"><i data-lucide="sliders"></i> Ajustes</a></li>
-          </ul>
+        <% config_pages = ['usuarios','roles','configuracion'] %>
+        <div class="menu-group <%= 'open' if config_pages.include?(@current_page) %>" data-group="configuracion">
+          <button class="menu-item" onclick="toggleMenuGroup(this)">
+            <span class="mi-ic ic-gray"><i data-lucide="settings"></i></span>
+            Configuración
+            <i data-lucide="chevron-down" class="chev"></i>
+          </button>
+          <div class="submenu">
+            <ul>
+              <% if puede?(:usuarios) %>
+                <li><a class="sub-item <%= current_page?('usuarios') %>" href="<%= t('/usuarios') %>"><i data-lucide="user-cog"></i> Usuarios</a></li>
+              <% end %>
+              <% if puede?(:roles) %>
+                <li><a class="sub-item <%= current_page?('roles') %>" href="<%= t('/roles') %>"><i data-lucide="shield"></i> Roles</a></li>
+              <% end %>
+              <% if puede?(:configuracion) %>
+                <li><a class="sub-item <%= current_page?('configuracion') %>" href="<%= t('/configuracion') %>"><i data-lucide="sliders"></i> Ajustes</a></li>
+              <% end %>
+            </ul>
+          </div>
         </div>
-      </div>
+      <% end %>
 
     </nav>
   </div>

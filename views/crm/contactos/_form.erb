@@ -1,0 +1,84 @@
+<a href="<%= t('/contactos') %>" class="backlink">
+  <i data-lucide="arrow-left"></i> Volver a contactos
+</a>
+
+<div class="page-head">
+  <div>
+    <h1><%= @page_title %></h1>
+    <p class="sub">Datos del contacto</p>
+  </div>
+</div>
+
+<form method="post" action="<%= @contacto ? t("/contactos/#{@contacto[:id]}") : t('/contactos') %>">
+  <div class="card form-card">
+    <div class="form-grid">
+
+      <div class="field span2">
+        <label for="cliente_id">Cliente *</label>
+        <select id="cliente_id" name="cliente_id" class="vanilla-select" required>
+          <option value="">Seleccionar cliente…</option>
+          <% @clientes.each do |c| %>
+            <%
+              seleccionado = false
+              if @contacto && @contacto[:cliente_id] == c[:id]
+                seleccionado = true
+              elsif !@contacto && @cliente_preseleccionado && @cliente_preseleccionado.to_i == c[:id]
+                seleccionado = true
+              end
+            %>
+            <option value="<%= c[:id] %>" <%= 'selected' if seleccionado %>>
+              <%= c[:nombre] %>
+            </option>
+          <% end %>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="nombre">Nombre completo *</label>
+        <input type="text" id="nombre" name="nombre"
+               value="<%= @contacto ? @contacto[:nombre] : '' %>" required>
+      </div>
+
+      <div class="field">
+        <label for="cargo">Cargo</label>
+        <input type="text" id="cargo" name="cargo"
+               value="<%= @contacto && @contacto[:cargo] ? @contacto[:cargo] : '' %>">
+      </div>
+
+      <div class="field">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email"
+               value="<%= @contacto && @contacto[:email] ? @contacto[:email] : '' %>">
+      </div>
+
+      <div class="field">
+        <label for="telefono">Teléfono</label>
+        <input type="text" id="telefono" name="telefono"
+               value="<%= @contacto && @contacto[:telefono] ? @contacto[:telefono] : '' %>">
+      </div>
+
+      <div class="field span2">
+        <label for="notas">Notas</label>
+        <textarea id="notas" name="notas"><%= @contacto && @contacto[:notas] ? @contacto[:notas] : '' %></textarea>
+      </div>
+
+      <% if @contacto %>
+        <div class="field span2">
+          <label>
+            <input type="checkbox" name="activo" value="1" <%= 'checked' if @contacto[:activo] %>>
+            Contacto activo
+          </label>
+        </div>
+      <% end %>
+
+    </div>
+
+    <div class="form-foot">
+      <a href="<%= t('/contactos') %>" class="btn btn-ghost">Cancelar</a>
+      <div class="spacer"></div>
+      <button type="submit" class="btn btn-primary">
+        <%= @contacto ? 'Guardar cambios' : 'Crear contacto' %>
+      </button>
+    </div>
+  </div>
+</form>

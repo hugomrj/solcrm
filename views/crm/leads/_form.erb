@@ -42,7 +42,7 @@
         <div class="fsel">
           <select id="origen" name="origen">
             <option value="">—</option>
-            <% ClientesPotencialesRoutes::ORIGENES.each do |o| %>
+            <% LeadsRoutes::ORIGENES.each do |o| %>
               <option value="<%= o %>" <%= 'selected' if @lead && @lead[:origen] == o %>><%= o.capitalize %></option>
             <% end %>
           </select>
@@ -53,7 +53,7 @@
         <label for="estado">Estado</label>
         <div class="fsel">
           <select id="estado" name="estado">
-            <% ClientesPotencialesRoutes::ESTADOS.each do |e| %>
+            <% LeadsRoutes::ESTADOS.each do |e| %>
               <% next if e == "convertido" %>
               <option value="<%= e %>"
                 <%= 'selected' if (@lead && @lead[:estado] == e) || (!@lead && e == "nuevo") %>>

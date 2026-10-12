@@ -84,7 +84,19 @@ module AuthHelpers
     return "Sin rol" if roles.empty?
     roles.first.capitalize
   end
+    
+  def puede?(modulo)
+    return false unless current_user
 
+    @permisos_usuario ||= DB[:roles_permisos]
+      .join(:permisos,       id: :permiso_id)
+      .join(:usuarios_roles, { Sequel[:roles_permisos][:rol_id] => Sequel[:usuarios_roles][:rol_id] })
+      .where(Sequel[:usuarios_roles][:usuario_id] => current_user[:id])
+      .select_map(Sequel[:permisos][:modulo])
+      .to_set
 
+    @permisos_usuario.include?(modulo.to_s)
+  end
 
+  
 end

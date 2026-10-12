@@ -1,11 +1,15 @@
 # config/routes.rb
 
-require_relative "../modules/usuario/routes"
-require_relative "../modules/clientes/routes"
-require_relative "../modules/clientes_potenciales/routes"
-require_relative "../modules/dashboard/routes"
+require_relative "../modules/auth/usuario/routes"
+require_relative "../modules/crm/clientes/routes"
+require_relative "../modules/crm/contactos/routes"
+require_relative "../modules/crm/leads/routes"
+require_relative "../modules/crm/pipeline/routes"
+require_relative "../modules/sistema/dashboard/routes"
 
 SolCRM.use UsuarioRoutes
 SolCRM.use ClientesRoutes
-SolCRM.use ClientesPotencialesRoutes
+SolCRM.use ContactosRoutes
+SolCRM.use LeadsRoutes
+SolCRM.use PipelineRoutes
 SolCRM.use DashboardRoutes

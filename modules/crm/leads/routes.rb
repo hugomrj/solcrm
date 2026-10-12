@@ -1,4 +1,4 @@
-class ClientesPotencialesRoutes < BaseApp
+class LeadsRoutes < BaseApp
     ESTADOS = %w[nuevo contactado calificado convertido descartado].freeze
     ORIGENES = %w[web referido llamada whatsapp otro].freeze
   
@@ -7,7 +7,10 @@ class ClientesPotencialesRoutes < BaseApp
     # ============================================================
   
     before do
-      require_login if request.path_info.start_with?("/leads")
+      if request.path_info.start_with?("/leads")
+        require_login
+        halt 403, "Sin permiso para acceder a Clientes potenciales" unless puede?(:leads)
+      end
     end
   
     # --- Listado ---
@@ -56,7 +59,7 @@ class ClientesPotencialesRoutes < BaseApp
         activo:  params[:activo]
       }
   
-      erb :"clientes_potenciales/index"
+      erb :"crm/leads/index"
     end
   
     # --- Form alta ---
@@ -65,7 +68,7 @@ class ClientesPotencialesRoutes < BaseApp
       @page_title   = "Nuevo cliente potencial"
       @lead         = nil
       @usuarios     = tenant_db(:usuarios).where(activo: true).order(:nombre).all
-      erb :"clientes_potenciales/nuevo"
+      erb :"crm/leads/nuevo"
     end
   
     # --- Crear ---
@@ -112,7 +115,7 @@ class ClientesPotencialesRoutes < BaseApp
   
       @page_title = "Editar cliente potencial"
       @usuarios   = tenant_db(:usuarios).where(activo: true).order(:nombre).all
-      erb :"clientes_potenciales/editar"
+      erb :"crm/leads/editar"
     end
   
     # --- Actualizar ---

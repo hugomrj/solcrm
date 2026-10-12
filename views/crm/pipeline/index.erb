@@ -1,0 +1,68 @@
+<div class="page-head">
+  <div>
+    <h1>Pipeline de ventas</h1>
+    <p class="sub">Arrastrá las tarjetas para avanzar cada oportunidad</p>
+  </div>
+  <div class="head-actions">
+    <a href="<%= t('/pipeline/nuevo') %>" class="btn btn-primary">
+      <i data-lucide="plus"></i> Nueva oportunidad
+    </a>
+  </div>
+</div>
+
+<% if @etapas.empty? %>
+  <div class="card">
+    <div class="empty">
+      <i data-lucide="kanban"></i>
+      <b>No hay etapas configuradas</b>
+      <p>Contactá al administrador del sistema</p>
+    </div>
+  </div>
+<% else %>
+  <div class="kanban" id="kanban">
+    <% @etapas.each do |etapa| %>
+      <% ops = @oportunidades_por_etapa[etapa[:id]] || [] %>
+      <% total = ops.sum { |o| o[:monto_estimado].to_f } %>
+      <div class="kcol" data-etapa-id="<%= etapa[:id] %>">
+        <div class="kcol-h">
+          <span><%= etapa[:nombre] %></span>
+          <span class="n"><%= ops.size %></span>
+          <span class="sum">₲ <%= number_with_delimiter(total) %></span>
+        </div>
+        <div class="kstack">
+          <% ops.each do |op| %>
+            <div class="kcard" draggable="true" data-oportunidad-id="<%= op[:id] %>">
+              <b><%= op[:titulo] %></b>
+              <% if op[:cliente_id] %>
+                <% cliente = DB[:clientes].where(id: op[:cliente_id]).first %>
+                <% if cliente %>
+                  <div class="org"><%= cliente[:nombre] %></div>
+                <% end %>
+              <% elsif op[:lead_id] %>
+                <% lead = DB[:leads].where(id: op[:lead_id]).first %>
+                <% if lead %>
+                  <div class="org"><%= lead[:empresa] || lead[:nombre] %></div>
+                <% end %>
+              <% end %>
+              <div class="foot">
+                <% if op[:monto_estimado] %>
+                  <span class="val">₲ <%= number_with_delimiter(op[:monto_estimado]) %></span>
+                <% else %>
+                  <span class="val sub">Sin monto</span>
+                <% end %>
+                <% if op[:fecha_cierre_estimada] %>
+                  <span class="date"><%= op[:fecha_cierre_estimada].strftime('%d/%m') %></span>
+                <% end %>
+              </div>
+              <div class="kcard-actions">
+                <a href="<%= t("/pipeline/#{op[:id]}/editar") %>" title="Editar">
+                  <i data-lucide="pencil"></i>
+                </a>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+<% end %>

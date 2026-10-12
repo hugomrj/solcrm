@@ -1,0 +1,143 @@
+<div class="page-head">
+  <div>
+    <h1>Contactos</h1>
+    <p class="sub">Personas de contacto de tus clientes</p>
+  </div>
+  <div class="head-actions">
+    <a href="<%= t('/contactos/nuevo') %>" class="btn btn-primary">
+      <i data-lucide="plus"></i> Nuevo contacto
+    </a>
+  </div>
+</div>
+
+<form method="get" action="<%= t('/contactos') %>" class="toolbar">
+  <label class="search">
+    <i data-lucide="search"></i>
+    <input type="text" name="q" value="<%= @filtros[:q] %>" placeholder="Buscar nombre, cargo, email…">
+  </label>
+
+  <div class="sel" style="min-width: 220px;">
+    <select name="cliente_id" onchange="this.form.submit()">
+      <option value="">Cliente: todos</option>
+      <% @clientes.each do |c| %>
+        <option value="<%= c[:id] %>" <%= 'selected' if @filtros[:cliente_id].to_s == c[:id].to_s %>>
+          <%= c[:nombre] %>
+        </option>
+      <% end %>
+    </select>
+  </div>
+
+  <div class="sel">
+    <select name="estado" onchange="this.form.submit()">
+      <option value="">Todos</option>
+      <option value="activos"   <%= 'selected' if @filtros[:estado] == 'activos' %>>Activos</option>
+      <option value="inactivos" <%= 'selected' if @filtros[:estado] == 'inactivos' %>>Inactivos</option>
+    </select>
+  </div>
+
+  <button type="submit" class="btn btn-ghost">
+    <i data-lucide="search"></i> Buscar
+  </button>
+</form>
+
+<div class="count-line">
+  <%= @contactos.pagination_record_count %> contacto(s)
+</div>
+
+<div class="card">
+  <% if @contactos.empty? %>
+    <div class="empty">
+      <i data-lucide="contact"></i>
+      <b>No hay contactos</b>
+      <p>Probá con otro filtro o creá el primero</p>
+      <a href="<%= t('/contactos/nuevo') %>" class="btn btn-primary">Crear contacto</a>
+    </div>
+  <% else %>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Cargo</th>
+            <th>Cliente</th>
+            <th>Email</th>
+            <th>Teléfono</th>
+            <th>Estado</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @contactos.each do |ct| %>
+            <% cliente = @clientes.find { |c| c[:id] == ct[:cliente_id] } %>
+            <tr>
+              <td>
+                <div class="cell-name">
+                  <b><%= ct[:nombre] %></b>
+                </div>
+              </td>
+              <td><%= ct[:cargo] || '—' %></td>
+              <td>
+                <% if cliente %>
+                  <%= cliente[:nombre] %>
+                <% else %>
+                  <span class="sub">Cliente #<%= ct[:cliente_id] %></span>
+                <% end %>
+              </td>
+              <td><%= ct[:email] || '—' %></td>
+              <td><%= ct[:telefono] || '—' %></td>
+              <td>
+                <% if ct[:activo] %>
+                  <span class="badge b-green">activo</span>
+                <% else %>
+                  <span class="badge b-gray">inactivo</span>
+                <% end %>
+              </td>
+              <td>
+                <div class="row-actions">
+                  <a href="<%= t("/contactos/#{ct[:id]}/editar") %>" class="icon-act" title="Editar">
+                    <i data-lucide="pencil"></i>
+                  </a>
+                  <form method="post" action="<%= t("/contactos/#{ct[:id]}/eliminar") %>" style="display:inline"
+                        data-confirm="¿Eliminar a <%= ct[:nombre] %>?"
+                        data-confirm-type="danger"
+                        data-confirm-ok="Eliminar">
+                    <button type="submit" class="icon-act danger" title="Eliminar">
+                      <i data-lucide="trash-2"></i>
+                    </button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+
+    <% if @contactos.page_count > 1 %>
+      <div class="pagination">
+        <span>Página <%= @contactos.current_page %> de <%= @contactos.page_count %></span>
+        <div class="pages">
+          <% if @contactos.prev_page %>
+            <a href="<%= t("/contactos?page=#{@contactos.prev_page}&q=#{@filtros[:q]}&cliente_id=#{@filtros[:cliente_id]}&estado=#{@filtros[:estado]}") %>">←</a>
+          <% else %>
+            <span class="disabled">←</span>
+          <% end %>
+
+          <% (1..@contactos.page_count).each do |p| %>
+            <% if p == @contactos.current_page %>
+              <span class="current"><%= p %></span>
+            <% else %>
+              <a href="<%= t("/contactos?page=#{p}&q=#{@filtros[:q]}&cliente_id=#{@filtros[:cliente_id]}&estado=#{@filtros[:estado]}") %>"><%= p %></a>
+            <% end %>
+          <% end %>
+
+          <% if @contactos.next_page %>
+            <a href="<%= t("/contactos?page=#{@contactos.next_page}&q=#{@filtros[:q]}&cliente_id=#{@filtros[:cliente_id]}&estado=#{@filtros[:estado]}") %>">→</a>
+          <% else %>
+            <span class="disabled">→</span>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  <% end %>
+</div>

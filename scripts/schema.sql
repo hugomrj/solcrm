@@ -9,6 +9,8 @@
 -- ============================================================
 -- DROP
 -- ============================================================
+DROP TABLE IF EXISTS roles_permisos CASCADE;
+DROP TABLE IF EXISTS permisos CASCADE;
 DROP TABLE IF EXISTS tickets_mensajes CASCADE;
 DROP TABLE IF EXISTS tickets CASCADE;
 DROP TABLE IF EXISTS archivos CASCADE;
@@ -36,6 +38,7 @@ DROP TABLE IF EXISTS usuarios CASCADE;
 DROP TABLE IF EXISTS roles CASCADE;
 DROP TABLE IF EXISTS tenants CASCADE;
 DROP TABLE IF EXISTS super_admins CASCADE;
+
 
 -- ============================================================
 -- FASE 1 — BASE
@@ -94,6 +97,25 @@ CREATE TABLE usuarios_roles (
 );
 CREATE INDEX idx_usuarios_roles_usuario ON usuarios_roles(usuario_id);
 
+
+CREATE TABLE permisos (
+    id          BIGSERIAL PRIMARY KEY,
+    modulo      VARCHAR(50)  NOT NULL UNIQUE,
+    descripcion VARCHAR(255),
+    created_at  TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE roles_permisos (
+    id         BIGSERIAL PRIMARY KEY,
+    rol_id     BIGINT NOT NULL REFERENCES roles(id)     ON DELETE CASCADE,
+    permiso_id BIGINT NOT NULL REFERENCES permisos(id)  ON DELETE CASCADE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE (rol_id, permiso_id)
+);
+CREATE INDEX idx_roles_permisos_rol ON roles_permisos(rol_id);
+
+
+
 -- ============================================================
 -- FASE 2 — CRM
 -- ============================================================
@@ -148,13 +170,19 @@ CREATE TABLE leads (
 );
 CREATE INDEX idx_leads_tenant ON leads(tenant_id) WHERE activo = TRUE;
 
+
+
 CREATE TABLE pipeline_etapas (
-    id         BIGSERIAL PRIMARY KEY,
-    tenant_id  BIGINT       NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
-    nombre     VARCHAR(100) NOT NULL,
-    orden      INTEGER      NOT NULL,
-    activo     BOOLEAN      NOT NULL DEFAULT TRUE
+    id            BIGSERIAL PRIMARY KEY,
+    tenant_id     BIGINT       NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+    nombre        VARCHAR(100) NOT NULL,
+    orden         INTEGER      NOT NULL,
+    probabilidad  INTEGER      NOT NULL DEFAULT 0,
+    activo        BOOLEAN      NOT NULL DEFAULT TRUE,
+    created_at    TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    UNIQUE (tenant_id, nombre)
 );
+
 
 CREATE TABLE oportunidades (
     id                    BIGSERIAL PRIMARY KEY,
@@ -164,7 +192,6 @@ CREATE TABLE oportunidades (
     lead_id               BIGINT       REFERENCES leads(id),
     etapa_id              BIGINT       REFERENCES pipeline_etapas(id),
     monto_estimado        NUMERIC(15,2),
-    probabilidad          INTEGER,
     fecha_cierre_estimada DATE,
     fecha_cierre_real     DATE,
     estado                VARCHAR(20)  NOT NULL DEFAULT 'abierta',
@@ -173,7 +200,8 @@ CREATE TABLE oportunidades (
     created_at            TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
     updated_at            TIMESTAMPTZ  NOT NULL DEFAULT NOW()
 );
-CREATE INDEX idx_oportunidades_tenant ON oportunidades(tenant_id);
+
+
 
 CREATE TABLE oportunidades_historial (
     id                BIGSERIAL PRIMARY KEY,

@@ -1,23 +1,10 @@
 # app.rb
 require "sinatra/base"
-require "sequel"
 require "bcrypt"
-require "dotenv/load"
 
+require_relative "lib/db"
 require_relative "helpers/auth_helpers"
 require_relative "helpers/flash_helpers"
-
-DB = Sequel.connect(
-  adapter:  "postgres",
-  host:     ENV.fetch("DB_HOST"),
-  port:     ENV.fetch("DB_PORT"),
-  database: ENV.fetch("DB_NAME"),
-  user:     ENV.fetch("DB_USER"),
-  password: ENV.fetch("DB_PASSWORD")
-)
-
-DB.extension :pagination 
-
 
 
 class BaseApp < Sinatra::Base

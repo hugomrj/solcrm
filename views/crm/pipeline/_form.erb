@@ -1,0 +1,100 @@
+<a href="<%= t('/pipeline') %>" class="backlink">
+  <i data-lucide="arrow-left"></i> Volver al pipeline
+</a>
+
+<div class="page-head">
+  <div>
+    <h1><%= @page_title %></h1>
+    <p class="sub">Datos de la oportunidad</p>
+  </div>
+</div>
+
+<form method="post" action="<%= @oportunidad ? t("/pipeline/#{@oportunidad[:id]}") : t('/pipeline') %>">
+  <div class="card form-card">
+    <div class="form-grid">
+
+      <div class="field span2">
+        <label for="titulo">Título *</label>
+        <input type="text" id="titulo" name="titulo"
+               value="<%= @oportunidad ? @oportunidad[:titulo] : '' %>"
+               placeholder="Ej: Venta de sistema a ACME" required>
+      </div>
+
+      <div class="field">
+        <label for="cliente_id">Cliente</label>
+        <select id="cliente_id" name="cliente_id" class="vanilla-select">
+          <option value="">Sin cliente</option>
+          <% @clientes.each do |c| %>
+            <option value="<%= c[:id] %>" <%= 'selected' if @oportunidad && @oportunidad[:cliente_id] == c[:id] %>>
+              <%= c[:nombre] %>
+            </option>
+          <% end %>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="lead_id">Cliente potencial</label>
+        <select id="lead_id" name="lead_id" class="vanilla-select">
+          <option value="">Sin lead</option>
+          <% @leads.each do |l| %>
+            <option value="<%= l[:id] %>" <%= 'selected' if @oportunidad && @oportunidad[:lead_id] == l[:id] %>>
+              <%= l[:empresa] || l[:nombre] %>
+            </option>
+          <% end %>
+        </select>
+      </div>
+
+      <div class="field">
+
+        <label for="monto_estimado">Monto estimado (₲)</label>
+
+        <input type="number" step="0.01" id="monto_estimado" name="monto_estimado"
+               value="<%= @oportunidad && @oportunidad[:monto_estimado] ? @oportunidad[:monto_estimado] : '' %>"
+               placeholder="0.00">
+      </div>
+
+      <div class="field">
+        <label for="fecha_cierre_estimada">Fecha estimada de cierre</label>
+        <input type="date" id="fecha_cierre_estimada" name="fecha_cierre_estimada"
+               value="<%= @oportunidad && @oportunidad[:fecha_cierre_estimada] ? @oportunidad[:fecha_cierre_estimada] : '' %>">
+      </div>
+
+      <% unless @oportunidad %>
+        <div class="field span2">
+          <label for="etapa_id">Etapa inicial</label>
+          <select id="etapa_id" name="etapa_id" class="vanilla-select">
+            <% @etapas.each do |et| %>
+              <option value="<%= et[:id] %>"><%= et[:nombre] %></option>
+            <% end %>
+          </select>
+        </div>
+      <% end %>
+
+      <div class="field span2">
+        <label for="responsable_id">Responsable</label>
+        <select id="responsable_id" name="responsable_id" class="vanilla-select">
+          <% @usuarios.each do |u| %>
+            <option value="<%= u[:id] %>"
+              <%= 'selected' if (@oportunidad && @oportunidad[:responsable_id] == u[:id]) || (!@oportunidad && u[:id] == current_user[:id]) %>>
+              <%= u[:nombre] %>
+            </option>
+          <% end %>
+        </select>
+      </div>
+
+      <div class="field span2">
+        <label for="notas">Notas</label>
+        <textarea id="notas" name="notas"><%= @oportunidad && @oportunidad[:notas] ? @oportunidad[:notas] : '' %></textarea>
+      </div>
+
+    </div>
+
+    <div class="form-foot">
+      <a href="<%= t('/pipeline') %>" class="btn btn-ghost">Cancelar</a>
+      <div class="spacer"></div>
+      <button type="submit" class="btn btn-primary">
+        <%= @oportunidad ? 'Guardar cambios' : 'Crear oportunidad' %>
+      </button>
+    </div>
+  </div>
+</form>

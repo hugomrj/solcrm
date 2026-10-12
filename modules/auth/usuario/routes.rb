@@ -18,7 +18,7 @@ class UsuarioRoutes < BaseApp
   get "/login" do
     halt 404, "Necesitás acceder con la URL de tu empresa" unless tenant
     redirect t("/dashboard") if authenticated?
-    erb :"usuario/login", layout: false
+    erb :"auth/usuario/login", layout: false
   end
 
   post "/login" do
@@ -57,7 +57,7 @@ class UsuarioRoutes < BaseApp
     @current_page = "perfil"
     @page_title   = "Mi perfil"
     @usuario      = current_user
-    erb :"usuario/perfil"
+    erb :"auth/usuario/perfil"
   end
 
   post "/perfil" do
@@ -122,7 +122,10 @@ class UsuarioRoutes < BaseApp
   # ============================================================
 
   before do
-    require_admin if request.path_info.start_with?("/usuarios")
+    if request.path_info.start_with?("/usuarios")
+      require_login
+      halt 403, "Sin permiso para acceder a Usuarios" unless puede?(:usuarios)
+    end
   end
 
   # --- Listado ---
@@ -153,7 +156,7 @@ class UsuarioRoutes < BaseApp
     @usuarios = dataset.order(:usuario).paginate(page, 25)
     @filtros  = { q: q, estado: params[:estado] }
 
-    erb :"usuario/index"
+    erb :"auth/usuario/index"
   end
 
   # --- Form alta ---
@@ -163,7 +166,7 @@ class UsuarioRoutes < BaseApp
     @usuario       = nil
     @roles_usuario = []
 
-    erb :"usuario/nuevo"
+    erb :"auth/usuario/nuevo"
   end
 
   # --- Crear ---
@@ -211,7 +214,7 @@ class UsuarioRoutes < BaseApp
       .where(usuario_id: @usuario[:id])
       .select_map(Sequel[:roles][:nombre])
 
-    erb :"usuario/editar"
+    erb :"auth/usuario/editar"
   end
 
   # --- Actualizar ---

@@ -3,9 +3,12 @@ class ClientesRoutes < BaseApp
     # GESTIÓN DE CLIENTES (cualquier usuario logueado)
     # ============================================================
   
-    before do
-      require_login if request.path_info.start_with?("/clientes")
+  before do
+    if request.path_info.start_with?("/clientes")
+      require_login
+      halt 403, "Sin permiso para acceder a Clientes" unless puede?(:clientes)
     end
+  end
   
     # --- Listado ---
     get "/clientes" do
@@ -43,7 +46,7 @@ class ClientesRoutes < BaseApp
       @clientes = dataset.order(:nombre).paginate(page, 25)
       @filtros  = { q: q, estado: params[:estado], tipo: params[:tipo] }
   
-      erb :"clientes/index"
+      erb :"crm/clientes/index"
     end
   
     # --- Form alta ---
@@ -51,7 +54,7 @@ class ClientesRoutes < BaseApp
       @current_page = "clientes"
       @page_title   = "Nuevo cliente"
       @cliente      = nil
-      erb :"clientes/nuevo"
+      erb :"crm/clientes/nuevo"
     end
   
     # --- Crear ---
@@ -102,7 +105,7 @@ class ClientesRoutes < BaseApp
       halt 404, "Cliente no encontrado" unless @cliente
   
       @page_title = "Editar cliente"
-      erb :"clientes/editar"
+      erb :"crm/clientes/editar"
     end
   
     # --- Actualizar ---

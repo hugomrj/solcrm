@@ -205,3 +205,14 @@ Ver todo junto (útil):
   → Falta require_relative "env_helper" al inicio del script
 
 ==========================================================
+
+
+reset COMPLETO
+
+bundle exec ruby scripts/drop_db.rb
+bundle exec ruby scripts/crear_estructura.rb
+bundle exec ruby scripts/crear_tenant.rb acme   admin admin
+bundle exec ruby scripts/crear_tenant.rb globex admin admin
+bundle exec ruby scripts/crear_tenant.rb demo   demo  demo
+bundle exec ruby scripts/crear_dios.rb dios cambiar123
+bundle exec ruby scripts/cargar_demo.rb acme

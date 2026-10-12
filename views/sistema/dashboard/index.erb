@@ -1,0 +1,164 @@
+<div class="page-head">
+  <div>
+    <h1>Panel de Control</h1>
+    <p class="sub">Resumen de tu actividad comercial</p>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- STATS PRINCIPALES -->
+<!-- ============================================================ -->
+<div class="stats">
+
+  <div class="card stat">
+    <div class="top">
+      <span class="mi-ic ic-purple"><i data-lucide="users"></i></span>
+      <span>Clientes activos</span>
+    </div>
+    <div class="big"><%= @total_clientes %></div>
+    <div class="delta">en total</div>
+  </div>
+
+  <div class="card stat">
+    <div class="top">
+      <span class="mi-ic ic-brand"><i data-lucide="user-plus"></i></span>
+      <span>Leads activos</span>
+    </div>
+    <div class="big"><%= @total_leads %></div>
+    <div class="delta">en seguimiento</div>
+  </div>
+
+  <div class="card stat">
+    <div class="top">
+      <span class="mi-ic ic-green"><i data-lucide="target"></i></span>
+      <span>Oportunidades abiertas</span>
+    </div>
+    <div class="big"><%= @ops_abiertas_count %></div>
+    <div class="delta">₲ <%= number_with_delimiter(@ops_abiertas_monto) %> en pipeline</div>
+  </div>
+
+  <div class="card stat">
+    <div class="top">
+      <span class="mi-ic ic-green"><i data-lucide="trending-up"></i></span>
+      <span>Ganadas este mes</span>
+    </div>
+    <div class="big"><%= @ganadas_mes_count %></div>
+    <div class="delta">₲ <%= number_with_delimiter(@ganadas_mes_monto) %></div>
+  </div>
+
+</div>
+
+<!-- ============================================================ -->
+<!-- GRID PRINCIPAL -->
+<!-- ============================================================ -->
+<div class="dash-grid">
+
+  <!-- Últimas oportunidades -->
+  <div class="card">
+    <div class="card-h">
+      <span>Últimas oportunidades</span>
+      <a href="<%= t('/pipeline') %>" class="view-all">Ver todas →</a>
+    </div>
+    <div class="card-b">
+      <% if @ultimas_ops.empty? %>
+        <div class="empty" style="padding: 40px 20px;">
+          <i data-lucide="target"></i>
+          <b>Sin oportunidades abiertas</b>
+          <p>Creá la primera desde el pipeline</p>
+        </div>
+      <% else %>
+        <% @ultimas_ops.each do |op| %>
+          <% cliente = op[:cliente_id] ? DB[:clientes].where(id: op[:cliente_id]).first : nil %>
+          <% etapa   = DB[:pipeline_etapas].where(id: op[:etapa_id]).first %>
+          <a href="<%= t("/pipeline/#{op[:id]}/editar") %>" class="mini-row" style="text-decoration:none; color: inherit;">
+            <span class="mi-ic ic-green"><i data-lucide="target"></i></span>
+            <div class="grow">
+              <b><%= op[:titulo] %></b>
+              <span>
+                <% if cliente %><%= cliente[:nombre] %><% end %>
+                <% if etapa %> · <%= etapa[:nombre] %><% end %>
+              </span>
+            </div>
+            <div style="text-align: right; flex: none;">
+              <div style="font-weight: 600; font-size: 13.5px; color: var(--t-green);">
+                ₲ <%= number_with_delimiter(op[:monto_estimado]) %>
+              </div>
+            </div>
+          </a>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Leads recientes -->
+  <div class="card">
+    <div class="card-h">
+      <span>Leads recientes</span>
+      <a href="<%= t('/leads') %>" class="view-all">Ver todos →</a>
+    </div>
+    <div class="card-b">
+      <% if @ultimos_leads.empty? %>
+        <div class="empty" style="padding: 40px 20px;">
+          <i data-lucide="user-plus"></i>
+          <b>Sin leads todavía</b>
+          <p>Cargá el primero desde el módulo</p>
+        </div>
+      <% else %>
+        <% @ultimos_leads.each do |l| %>
+          <a href="<%= t("/leads/#{l[:id]}/editar") %>" class="mini-row" style="text-decoration:none; color: inherit;">
+            <span class="mi-ic ic-brand"><i data-lucide="user"></i></span>
+            <div class="grow">
+              <b><%= l[:nombre] %></b>
+              <span><%= l[:empresa] || "Sin empresa" %></span>
+            </div>
+            <%
+              color = {
+                "nuevo"      => "b-blue",
+                "contactado" => "b-warn",
+                "calificado" => "b-purple",
+                "convertido" => "b-green",
+                "descartado" => "b-gray"
+              }[l[:estado]] || "b-gray"
+            %>
+            <span class="badge <%= color %>" style="flex: none;"><%= l[:estado] %></span>
+          </a>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+
+</div>
+
+<!-- ============================================================ -->
+<!-- PIPELINE SNAPSHOT -->
+<!-- ============================================================ -->
+<div class="card" style="margin-top: 16px;">
+  <div class="card-h">
+    <span>Pipeline por etapa</span>
+    <a href="<%= t('/pipeline') %>" class="view-all">Abrir pipeline →</a>
+  </div>
+  <div class="card-b" style="padding: 12px 16px;">
+    <% if @pipeline_snapshot.empty? %>
+      <p class="sub" style="padding: 20px 0; text-align: center;">Sin etapas configuradas</p>
+    <% else %>
+      <% max_count = [@pipeline_snapshot.map { |s| s[:count] }.max, 1].max %>
+      <% @pipeline_snapshot.each do |row| %>
+        <% pct = (row[:count].to_f / max_count * 100).round %>
+        <div style="padding: 10px 0; border-bottom: 1px solid var(--border);">
+          <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 6px;">
+            <span style="font-size: 13.5px; font-weight: 600;">
+              <%= row[:etapa][:nombre] %>
+              <span class="badge b-gray" style="margin-left: 6px;"><%= row[:count] %></span>
+            </span>
+            <span style="font-size: 13px; color: var(--text-2); font-variant-numeric: tabular-nums;">
+              ₲ <%= number_with_delimiter(row[:monto]) %>
+            </span>
+          </div>
+          <div style="height: 5px; background: var(--surface-2); border-radius: 99px; overflow: hidden;">
+            <div style="height: 100%; width: <%= pct %>%; background: var(--brand); border-radius: 99px; transition: width .3s;"></div>
+          </div>
+        </div>
+      <% end %>
+    <% end %>
+  </div>
+</div>
