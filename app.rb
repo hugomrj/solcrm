@@ -1,4 +1,5 @@
 # app.rb
+
 require "sinatra/base"
 require "bcrypt"
 
@@ -13,8 +14,7 @@ class BaseApp < Sinatra::Base
   set :views,         File.join(settings.root, "views")
   set :erb,           layout: :"layout/base"
 
-  set :sessions,       true
-  set :session_secret, ENV.fetch("SESSION_SECRET")
+  set :sessions, false
 
   configure :development do
     set :show_exceptions, true
