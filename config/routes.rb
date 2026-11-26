@@ -6,7 +6,8 @@ require_relative "../modules/crm/contactos/routes"
 require_relative "../modules/crm/leads/routes"
 require_relative "../modules/crm/pipeline/routes"
 require_relative "../modules/crm/actividades/routes"
-require_relative "../modules/ventas/articulos/routes"
+require_relative "../modules/crm/ventas/articulos/routes"
+require_relative "../modules/crm/ventas/facturas/routes"
 require_relative "../modules/sistema/dashboard/routes"
 
 SolCRM.use UsuarioRoutes
@@ -16,4 +17,5 @@ SolCRM.use LeadsRoutes
 SolCRM.use PipelineRoutes
 SolCRM.use ActividadesRoutes
 SolCRM.use ArticulosRoutes
+SolCRM.use FacturasRoutes
 SolCRM.use DashboardRoutes

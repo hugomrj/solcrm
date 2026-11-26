@@ -1,0 +1,127 @@
+<div class="page-head">
+  <div>
+    <h1>Facturas</h1>
+    <p class="sub">Documentos de venta</p>
+  </div>
+  <div class="head-actions">
+    <a href="<%= t('/ventas/facturas/nuevo') %>" class="btn btn-primary">
+      <i data-lucide="plus"></i> Nueva factura
+    </a>
+  </div>
+</div>
+
+<form method="get" action="<%= t('/ventas/facturas') %>" class="toolbar">
+  <label class="search">
+    <i data-lucide="search"></i>
+    <input type="text" name="q" value="<%= @filtros[:q] %>" placeholder="Buscar número, notas…">
+  </label>
+
+  <div class="sel">
+    <select name="cliente_id" onchange="this.form.submit()">
+      <option value="">Todos los clientes</option>
+      <% @clientes.each do |c| %>
+        <option value="<%= c[:id] %>" <%= 'selected' if @filtros[:cliente_id].to_s == c[:id].to_s %>><%= c[:nombre] %></option>
+      <% end %>
+    </select>
+  </div>
+
+  <div class="sel">
+    <select name="estado" onchange="this.form.submit()">
+      <option value="">Todos</option>
+      <% %w[borrador emitida pagada anulada].each do |e| %>
+        <option value="<%= e %>" <%= 'selected' if @filtros[:estado] == e %>><%= e.capitalize %></option>
+      <% end %>
+    </select>
+  </div>
+
+  <button type="submit" class="btn btn-ghost"><i data-lucide="search"></i> Buscar</button>
+</form>
+
+<div class="count-line"><%= @facturas.pagination_record_count %> factura(s)</div>
+
+<div class="card">
+  <% if @facturas.empty? %>
+    <div class="empty">
+      <i data-lucide="file-text"></i>
+      <b>No hay facturas</b>
+      <p>Creá la primera para empezar a facturar</p>
+      <a href="<%= t('/ventas/facturas/nuevo') %>" class="btn btn-primary">Crear factura</a>
+    </div>
+  <% else %>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Número</th>
+            <th>Cliente</th>
+            <th>Fecha</th>
+            <th style="text-align:right">Total</th>
+            <th>Estado</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+
+          <% clientes_por_id = @clientes.each_with_object({}) { |c, h| h[c[:id]] = c } %>
+          <% @facturas.each do |f| %>
+            <% cli = clientes_por_id[f[:cliente_id]] %>
+            <tr>
+              <td><b><%= f[:numero] %></b></td>
+              <td><%= cli ? cli[:nombre] : '—' %></td>
+              <td><%= f[:fecha] %></td>
+              <td style="text-align:right;font-variant-numeric:tabular-nums;font-weight:600;">
+                ₲ <%= number_with_delimiter(f[:total]) %>
+              </td>
+              <td>
+                <% badge = { "borrador"=>"b-gray","emitida"=>"b-blue","pagada"=>"b-green","anulada"=>"b-red" }[f[:estado]] || "b-gray" %>
+                <span class="badge <%= badge %>"><%= f[:estado] %></span>
+              </td>
+              <td>
+                <div class="row-actions">
+                  <a href="<%= t("/ventas/facturas/#{f[:id]}") %>" class="icon-act" title="Ver"><i data-lucide="eye"></i></a>
+                  <% if f[:estado] == "borrador" %>
+                    <a href="<%= t("/ventas/facturas/#{f[:id]}/editar") %>" class="icon-act" title="Editar"><i data-lucide="pencil"></i></a>
+                  <% end %>
+                  <% unless f[:estado] == "anulada" || f[:estado] == "pagada" %>
+                    <form method="post" action="<%= t("/ventas/facturas/#{f[:id]}/eliminar") %>" style="display:inline"
+                          data-confirm="¿Anular factura <%= f[:numero] %>?"
+                          data-confirm-type="danger"
+                          data-confirm-ok="Anular">
+                      <button type="submit" class="icon-act danger" title="Anular"><i data-lucide="x-circle"></i></button>
+                    </form>
+                  <% end %>
+                </div>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+
+    <% if @facturas.page_count > 1 %>
+      <div class="pagination">
+        <span>Página <%= @facturas.current_page %> de <%= @facturas.page_count %></span>
+        <div class="pages">
+          <% qs = "q=#{@filtros[:q]}&estado=#{@filtros[:estado]}&cliente_id=#{@filtros[:cliente_id]}" %>
+          <% if @facturas.prev_page %>
+            <a href="<%= t("/ventas/facturas?page=#{@facturas.prev_page}&#{qs}") %>">←</a>
+          <% else %>
+            <span class="disabled">←</span>
+          <% end %>
+          <% (1..@facturas.page_count).each do |p| %>
+            <% if p == @facturas.current_page %>
+              <span class="current"><%= p %></span>
+            <% else %>
+              <a href="<%= t("/ventas/facturas?page=#{p}&#{qs}") %>"><%= p %></a>
+            <% end %>
+          <% end %>
+          <% if @facturas.next_page %>
+            <a href="<%= t("/ventas/facturas?page=#{@facturas.next_page}&#{qs}") %>">→</a>
+          <% else %>
+            <span class="disabled">→</span>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  <% end %>
+</div>

@@ -1,0 +1,107 @@
+<meta charset="UTF-8">
+
+<!-- Encabezado solo para PDF / Impresión -->
+<div class="print-only" style="display: none; margin-bottom: 30px;">
+  <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #000; padding-bottom: 10px;">
+    <div>
+      <h2 style="margin: 0; font-size: 24px;">SolCRM</h2>
+      <p style="margin: 0; font-size: 12px; color: #666;">Tu empresa S.A. - RUC: 80012345-6</p>
+    </div>
+    <div style="text-align: right;">
+      <h3 style="margin: 0; font-size: 18px;">FACTURA</h3>
+      <p style="margin: 0; font-size: 14px;"><%= @factura[:numero] %></p>
+    </div>
+  </div>
+</div>
+
+<a href="<%= t('/ventas/facturas') %>" class="backlink"><i data-lucide="arrow-left"></i> Volver a facturas</a>
+
+<div class="page-head" style="margin-bottom: 24px;">
+  <div>
+    <h1>Factura <%= @factura[:numero] %></h1>
+    <p class="sub" style="display:flex; align-items:center; gap:8px;">
+      <%= @cliente ? @cliente[:nombre] : '—' %> 
+      <span style="color:var(--border-strong)">|</span> 
+      <%= @factura[:fecha] %>
+      <span class="badge <%= @factura[:estado] == 'borrador' ? 'b-gray' : (@factura[:estado] == 'pagada' ? 'b-green' : 'b-blue') %>" style="margin-left:8px">
+        <%= @factura[:estado] %>
+      </span>
+    </p>
+  </div>
+  <div class="head-actions" style="display:flex;gap:8px">
+    
+    <!-- Botón para imprimir / generar PDF -->
+    <a href="<%= t("/ventas/facturas/#{@factura[:id]}/pdf") %>" target="_blank" class="btn btn-ghost">
+      <i data-lucide="printer"></i> Imprimir PDF
+    </a>
+
+    <% if @factura[:estado] == "borrador" %>
+      <a href="<%= t("/ventas/facturas/#{@factura[:id]}/editar") %>" class="btn btn-ghost"><i data-lucide="pencil"></i> Editar</a>
+      <form method="post" action="<%= t("/ventas/facturas/#{@factura[:id]}/estado") %>" style="display:inline">
+        <input type="hidden" name="estado" value="emitida">
+        <button type="submit" class="btn btn-primary"><i data-lucide="send"></i> Emitir</button>
+      </form>
+    <% elsif @factura[:estado] == "emitida" %>
+      <form method="post" action="<%= t("/ventas/facturas/#{@factura[:id]}/estado") %>" style="display:inline">
+        <input type="hidden" name="estado" value="pagada">
+        <button type="submit" class="btn btn-primary"><i data-lucide="check"></i> Registrar Pago</button>
+      </form>
+    <% end %>
+    
+  </div>
+</div>
+
+<div class="card" style="padding: 24px 28px;">
+  
+  <div class="table-wrap">
+    <table style="margin-bottom: 24px;">
+      <thead>
+        <tr>
+          <th>Descripción</th>
+          <th style="text-align:right">Cantidad</th>
+          <th style="text-align:right">Precio Unit.</th>
+          <th style="text-align:right">Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @items.each do |it| %>
+          <tr>
+            <td><%= it[:descripcion] %></td>
+            <td style="text-align:right"><%= it[:cantidad].to_f == it[:cantidad].to_i ? it[:cantidad].to_i : it[:cantidad] %></td>
+            <td style="text-align:right">₲ <%= number_with_delimiter(it[:precio]) %></td>
+            <td style="text-align:right;font-weight:600">₲ <%= number_with_delimiter(it[:total]) %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+
+  <div style="border-top: 1px solid var(--border); padding-top: 24px; margin-top: 8px; display: flex; justify-content: flex-end;">
+    
+    <div style="width: 300px;">
+      <div style="display:flex; justify-content:space-between; margin-bottom:12px; font-size:14px; color:var(--text-2);">
+        <span>Subtotal:</span>
+        <span style="font-variant-numeric: tabular-nums;">₲ <%= number_with_delimiter(@factura[:subtotal]) %></span>
+      </div>
+      
+      <div style="display:flex; justify-content:space-between; margin-bottom:16px; font-size:14px; color:var(--text-2);">
+        <span>IVA (10%):</span>
+        <span style="font-variant-numeric: tabular-nums;">₲ <%= number_with_delimiter(@factura[:impuestos]) %></span>
+      </div>
+      
+      <div style="display:flex; justify-content:space-between; font-size:18px; font-weight:700; color:var(--text); border-top:1px solid var(--border); padding-top:16px;">
+        <span>Total:</span>
+        <span style="font-variant-numeric: tabular-nums;">₲ <%= number_with_delimiter(@factura[:total]) %></span>
+      </div>
+    </div>
+
+  </div>
+
+  <% if @factura[:notas] && !@factura[:notas].empty? %>
+    <div style="margin-top: 32px; padding: 16px; background: var(--surface-2); border-radius: 9px; border: 1px solid var(--border); font-size: 13.5px; color: var(--text-2); line-height: 1.6;">
+      <b style="color:var(--text);">Notas de la factura:</b><br>
+      <%= @factura[:notas] %>
+    </div>
+  <% end %>
+
+</div>

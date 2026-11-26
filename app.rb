@@ -21,8 +21,9 @@ class BaseApp < Sinatra::Base
     set :logging,         true
   end
 
+
   # Rutas que NO llevan slug de tenant
-  NON_TENANT = %w[css js images favicon.ico super].freeze
+  NON_TENANT = %w[css js images favicon.ico super doc].freeze
 
   # Extrae el tenant del primer segmento de la URL y reescribe el path
   before do
@@ -45,6 +46,13 @@ class BaseApp < Sinatra::Base
       halt 404, "Empresa '#{first}' no encontrada"
     end
   end
+
+
+  # ---- Doc técnica (estática) ----
+  get "/doc" do
+    send_file File.join(settings.root, "doc", "index.html")
+  end
+
 
   helpers AuthHelpers
   helpers FlashHelpers

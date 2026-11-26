@@ -9,3 +9,6 @@ gem "dotenv"
 gem "pg"
 gem "sequel"
 gem "bcrypt"
+
+gem "wicked_pdf"
+gem "wkhtmltopdf-binary" # Instala el binario automáticamente

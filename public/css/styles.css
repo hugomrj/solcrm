@@ -1310,3 +1310,141 @@
   display: inline-block;
   margin-right: 5px;
 }
+
+
+
+
+/* ============ Facturas - Grilla de ítems ============ */
+.items-grid-header {
+  display: grid;
+  grid-template-columns: 1fr 90px 120px 120px 40px;
+  gap: 12px;
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: var(--text-3);
+  font-weight: 500;
+  padding: 0 4px;
+}
+
+.items-grid-header > div:nth-child(2) { text-align: center; }
+.items-grid-header > div:nth-child(3) { text-align: right; }
+.items-grid-header > div:nth-child(4) { text-align: right; }
+
+.item-row {
+  display: grid;
+  grid-template-columns: 1fr 90px 120px 120px 40px;
+  gap: 12px;
+  margin-bottom: 10px;
+  align-items: start;
+}
+
+.item-row .item-cant { text-align: center; }
+.item-row .item-precio { text-align: right; }
+.item-row .item-total {
+  text-align: right;
+  background: var(--surface-2);
+  font-weight: 600;
+  border-color: transparent;
+  padding-right: 12px;
+}
+.item-row .icon-act { margin-top: 5px; }
+
+/* Caja de Totales */
+.invoice-totals {
+  margin-top: 24px;
+  display: flex;
+  justify-content: flex-end;
+}
+.invoice-totals-inner {
+  width: 250px;
+  background: var(--surface-2);
+  padding: 16px;
+  border-radius: 9px;
+  border: 1px solid var(--border);
+}
+.invoice-totals-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: var(--text-2);
+}
+.invoice-totals-row.grand-total {
+  margin-bottom: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+  margin-top: 12px;
+}
+.invoice-totals-row span:last-child {
+  font-variant-numeric: tabular-nums;
+}
+
+
+
+/* ============ Modo Impresión / PDF ============ */
+@media print {
+  /* 1. Ocultar la interfaz de la app */
+  .sidebar, 
+  .topbar, 
+  .head-actions, 
+  .backlink, 
+  #toasts, 
+  .modal-backdrop, 
+  .pagination,
+  .toolbar { 
+    display: none !important; 
+  }
+
+  /* 2. Resetear el layout para que ocupe toda la hoja */
+  .content { 
+    margin-left: 0 !important; 
+  }
+  .page { 
+    padding: 0 !important; 
+    max-width: 100% !important; 
+  }
+
+  /* 3. Forzar fondo blanco y texto oscuro (ignora el modo oscuro) */
+  body, .card, .form-card { 
+    background: #fff !important; 
+    color: #000 !important; 
+    box-shadow: none !important;
+    border-color: #ddd !important;
+  }
+  
+  /* 4. Ajustar tablas para papel */
+  th, td { 
+    border-color: #ddd !important; 
+    color: #000 !important;
+  }
+  th {
+    background: #f9f9f9 !important;
+  }
+
+  /* 5. Evitar que las tablas se corten raro entre páginas */
+  table { page-break-inside: auto; }
+  tr    { page-break-inside: avoid; page-break-after: auto; }
+
+  /* 6. Forzar impresión de colores de fondo (badges) */
+  * { 
+    -webkit-print-color-adjust: exact; 
+    print-color-adjust: exact; 
+  }
+}
+
+
+
+
+
+
+
+/* Ocultar en pantalla */
+.print-only { display: none; }
+
+/* Mostrar solo en impresión */
+@media print {
+  .print-only { display: block !important; }
+}

@@ -97,8 +97,10 @@
               <% if puede?(:presupuestos) %>
                 <li><a class="sub-item <%= current_page?('presupuestos') %>" href="<%= t('/presupuestos') %>"><i data-lucide="calculator"></i> Presupuestos</a></li>
               <% end %>
+
+              
               <% if puede?(:facturas) %>
-                <li><a class="sub-item <%= current_page?('facturas') %>" href="<%= t('/facturas') %>"><i data-lucide="file-check"></i> Facturas</a></li>
+                <li><a class="sub-item <%= current_page?('facturas') %>" href="<%= t('/ventas/facturas') %>"><i data-lucide="file-check"></i> Facturas</a></li>
               <% end %>
               <% if puede?(:pagos) %>
                 <li><a class="sub-item <%= current_page?('pagos') %>" href="<%= t('/pagos') %>"><i data-lucide="credit-card"></i> Pagos</a></li>
