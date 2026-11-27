@@ -71,13 +71,6 @@
   .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 16px; color: var(--text); }
   .brand svg { border-radius: 8px; }
   .top .spacer { flex: 1; }
-  .search {
-    display: flex; align-items: center; gap: 8px;
-    background: var(--surface-2); border: 1px solid var(--border);
-    border-radius: 10px; padding: 7px 12px; min-width: 260px;
-  }
-  .search input { border: 0; background: none; outline: none; color: var(--text); font: inherit; width: 100%; }
-  .search i, .search svg { color: var(--text-3); width: 16px; height: 16px; flex: none; }
   .icon-btn {
     display: grid; place-items: center;
     width: 36px; height: 36px; border-radius: 10px;
@@ -207,7 +200,6 @@
     .wrap { grid-template-columns: 1fr; padding-top: 18px; }
     .nav { display: none; }
     .row { grid-template-columns: 1fr; gap: 2px; }
-    .search { display: none; }
   }
 </style>
 </head>
@@ -223,10 +215,6 @@
     <span>SolCRM · Guía de uso</span>
   </a>
   <div class="spacer"></div>
-  <label class="search">
-    <i data-lucide="search"></i>
-    <input id="q" type="search" placeholder="Buscar un módulo… (ej: factura)" autocomplete="off">
-  </label>
   <button class="icon-btn" id="themeBtn" title="Cambiar tema" aria-label="Cambiar tema">
     <i data-lucide="moon"></i>
   </button>
@@ -779,21 +767,6 @@
     pintar();
   });
   pintar();
-
-  // Buscador de módulos
-  var q = document.getElementById('q');
-  q.addEventListener('input', function () {
-    var t = q.value.trim().toLowerCase();
-    document.querySelectorAll('.card[id]').forEach(function (c) {
-      c.style.display = (!t || c.textContent.toLowerCase().indexOf(t) !== -1) ? '' : 'none';
-    });
-    document.querySelectorAll('h2.sec').forEach(function (h) {
-      h.style.display = t ? 'none' : '';
-    });
-    document.querySelectorAll('.sec-desc').forEach(function (h) {
-      h.style.display = t ? 'none' : '';
-    });
-  });
 
   // Botones "abrir el módulo": usan el slug del tenant de la URL del navegador.
   // La guía también funciona sola (sin app), así que calculamos el slug en vivo.
