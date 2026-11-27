@@ -12,9 +12,11 @@ require_relative "../lib/tenants"
 #   - 2 usuarios (vendedor, soporte)
 #   - 6 clientes
 #   - 5 contactos
+#   - 12 artículos (6 productos, 6 servicios)
 #   - 6 leads
 #   - 11 oportunidades en distintas etapas
 #   - 19 actividades (llamadas, emails, reuniones, notas, tareas)
+#   - 6 facturas con ítems, cobros y una nota de crédito
 
 codigo = ARGV[0]
 abort "Uso: bundle exec ruby scripts/cargar_demo.rb <codigo_tenant>" if codigo.nil?
@@ -153,8 +155,9 @@ DB.transaction do
     { codigo: "TRAIN-01", nombre: "Entrenamiento avanzado",     tipo: "servicio", precio: 550000,  descripcion: "Entrenamiento avanzado para administradores" }
   ]
 
+  articulo_ids = {}
   articulos_data.each do |art|
-    DB[:articulos].insert(
+    aid = DB[:articulos].insert(
       tenant_id:   tenant_id,
       codigo:      art[:codigo],
       nombre:      art[:nombre],
@@ -163,6 +166,7 @@ DB.transaction do
       tipo:        art[:tipo],
       activo:      true
     )
+    articulo_ids[art[:codigo]] = aid
   end
   puts "✅ #{articulos_data.size} artículos (6 productos + 6 servicios)"
 
@@ -393,6 +397,155 @@ DB.transaction do
     )
   end
   puts "✅ #{actividades_data.size} actividades (llamadas, emails, reuniones, notas, tareas)"
+
+  # ============================================================
+  # FACTURAS (con ítems, cobros y nota de crédito)
+  # ============================================================
+  # Totales calculados con la misma regla que FacturasRoutes#calcular_totales:
+  #   subtotal = suma de ítems, impuestos = 10%, total = subtotal + impuestos
+  # Lo que NO se emite aquí es el stock (stock_movimientos): lo genera la app
+  # cuando el usuario emite una factura, así que la demo arranca con stock 0.
+  numero_factura = ->(n) { format("FAC-%06d", n) }
+
+  facturas_data = [
+    {
+      cliente: "Distribuidora del Este S.A.", dias: -12, vencimiento: 18,
+      estado: "pagada",
+      notas: "Pago a 30 días. Gracias por su preferencia.",
+      items: [
+        { codigo: "POS-002", cantidad: 1 },
+        { codigo: "IMP-001", cantidad: 2 },
+        { codigo: "INST-01", cantidad: 1 }
+      ],
+      pagos: [{ monto: nil, dias: -5, metodo: "transferencia", referencia: "TRF-8842" }]
+    },
+    {
+      cliente: "Supermercado Central", dias: -8, vencimiento: 22,
+      estado: "emitida",
+      notas: "Incluye capacitación de 5 usuarios.",
+      items: [
+        { codigo: "CAP-01", cantidad: 2 },
+        { codigo: "LEC-001", cantidad: 3 }
+      ],
+      pagos: []
+    },
+    {
+      cliente: "Farmacia San Roque", dias: -5, vencimiento: 10,
+      estado: "emitida",
+      notas: nil,
+      items: [
+        { codigo: "SOP-MEN", cantidad: 3 },
+        { codigo: "CONS-01", cantidad: 1 }
+      ],
+      # cobro parcial: la factura sigue "emitida" con saldo pendiente
+      pagos: [{ monto: 500_000, dias: -3, metodo: "efectivo", referencia: nil }]
+    },
+    {
+      cliente: "Constructora Guaraní", dias: -4, vencimiento: 26,
+      estado: "emitida",
+      notas: "Primer módulo del proyecto. Obra en Luque.",
+      items: [
+        { codigo: "MANT-01", cantidad: 1 },
+        { codigo: "TRAIN-01", cantidad: 2 }
+      ],
+      pagos: [],
+      # nota de crédito aplicada: baja el saldo de la factura
+      nota_credito: { monto: 350_000, motivo: "Descuento acordado por demora en la instalación" }
+    },
+    {
+      cliente: "Textil Paraguaya S.A.", dias: 0, vencimiento: 30,
+      estado: "borrador",
+      notas: "Borrador para revisar con el cliente.",
+      items: [
+        { codigo: "POS-001", cantidad: 2 },
+        { codigo: "CAJ-001", cantidad: 2 }
+      ],
+      pagos: []
+    },
+    {
+      cliente: "Juan Ramón González", dias: -20, vencimiento: 10,
+      estado: "anulada",
+      notas: "Anulada: el cliente cambió de decisión.",
+      items: [
+        { codigo: "TAB-001", cantidad: 1 }
+      ],
+      pagos: []
+    }
+  ]
+
+  precios = articulos_data.each_with_object({}) { |a, h| h[a[:codigo]] = a[:precio] }
+
+  facturas_data.each_with_index do |f, idx|
+    items = f[:items].map do |it|
+      precio   = precios[it[:codigo]]
+      cantidad = it[:cantidad].to_f
+      {
+        codigo:      it[:codigo],
+        articulo_id: articulo_ids[it[:codigo]],
+        cantidad:    cantidad,
+        precio:      precio,
+        total:       (cantidad * precio).round(2)
+      }
+    end
+
+    subtotal  = items.sum { |i| i[:total] }.round(2)
+    impuestos = (subtotal * 0.10).round(2)
+    total     = (subtotal + impuestos).round(2)
+    fecha     = hoy + f[:dias]
+
+    factura_id = DB[:facturas].insert(
+      tenant_id:   tenant_id,
+      numero:      numero_factura.(idx + 1),
+      cliente_id:  cliente_ids[f[:cliente]],
+      fecha:       fecha,
+      vencimiento: fecha + f[:vencimiento],
+      subtotal:    subtotal,
+      impuestos:   impuestos,
+      total:       total,
+      estado:      f[:estado],
+      notas:       f[:notas]
+    )
+
+    items.each do |it|
+      DB[:facturas_items].insert(
+        factura_id:  factura_id,
+        articulo_id: it[:articulo_id],
+        descripcion: "#{it[:codigo]} · #{articulos_data.find { |a| a[:codigo] == it[:codigo] }[:nombre]}",
+        cantidad:    it[:cantidad],
+        precio:      it[:precio],
+        total:       it[:total]
+      )
+    end
+
+    f[:pagos].each do |p|
+      DB[:pagos].insert(
+        tenant_id:  tenant_id,
+        factura_id: factura_id,
+        cliente_id: cliente_ids[f[:cliente]],
+        fecha:      hoy + p[:dias],
+        monto:      p[:monto] || total,
+        metodo:     p[:metodo],
+        referencia: p[:referencia],
+        notas:      nil
+      )
+    end
+
+    if (nc = f[:nota_credito])
+      DB[:notas_credito].insert(
+        tenant_id:  tenant_id,
+        numero:     format("NC-%06d", idx + 1),
+        cliente_id: cliente_ids[f[:cliente]],
+        factura_id: factura_id,
+        fecha:      hoy + 1,
+        monto:      nc[:monto],
+        motivo:     nc[:motivo]
+      )
+    end
+  end
+
+  total_items = facturas_data.sum { |f| f[:items].size }
+  total_pagos = facturas_data.sum { |f| f[:pagos].size }
+  puts "✅ #{facturas_data.size} facturas (#{total_items} ítems, #{total_pagos} cobros, 1 nota de crédito)"
 end
 
 puts
@@ -407,7 +560,11 @@ puts "Demo incluye:"
 puts "  - 2 usuarios (vendedor, soporte)"
 puts "  - 6 clientes"
 puts "  - 5 contactos"
+puts "  - 12 artículos (6 productos, 6 servicios)"
 puts "  - 6 leads"
 puts "  - 11 oportunidades en pipeline"
 puts "  - 19 actividades (3 llamadas, 3 emails, 3 reuniones, 2 notas, 8 tareas)"
+puts "  - 6 facturas con ítems, 2 cobros y 1 nota de crédito"
+puts
+puts "Probar el PDF: /#{codigo}/ventas/facturas → abrir una factura → \"Imprimir PDF\""
 puts "=========================================="
