@@ -38,7 +38,7 @@ class FacturasRoutes < BaseApp
       )
     end
 
-    @facturas = dataset.order(Sequel.desc(:fecha), Sequel.desc(:id)).paginate(page, 25)
+    @facturas = dataset.order(Sequel.desc(:fecha), Sequel.desc(:id)).paginate(page, ITEMS_POR_PAGINA)
     @clientes = tenant_db(:clientes).where(activo: true).order(:nombre).all
     @filtros  = { q: q, estado: params[:estado], cliente_id: params[:cliente_id] }
 
@@ -95,6 +95,8 @@ class FacturasRoutes < BaseApp
 
     @cliente = tenant_db(:clientes).where(id: @factura[:cliente_id]).first
     @items   = DB[:facturas_items].where(factura_id: @factura[:id]).order(:id).all
+    @pagos   = tenant_db(:pagos).where(factura_id: @factura[:id]).order(Sequel.asc(:fecha)).all
+    @notas   = tenant_db(:notas_credito).where(factura_id: @factura[:id]).order(Sequel.asc(:fecha)).all
     @page_title = "Factura #{@factura[:numero]}"
 
     erb :"crm/ventas/facturas/ver"
@@ -151,8 +153,14 @@ class FacturasRoutes < BaseApp
       end
     end
 
-    set_flash(:success, "Factura #{numero} creada")
-    redirect t("/ventas/facturas/#{factura_id}")
+    if estado == "emitida"
+      generar_movimientos_factura(tenant_db(:facturas).where(id: factura_id).first)
+      set_flash(:success, "Factura #{numero} creada. Registrá el cobro:")
+      redirect t("/ventas/pagos/nuevo?factura_id=#{factura_id}&origen=factura")
+    else
+      set_flash(:success, "Factura #{numero} creada")
+      redirect t("/ventas/facturas/#{factura_id}")
+    end
   end
 
   # --- Form edición (solo borrador) ---
@@ -238,6 +246,9 @@ class FacturasRoutes < BaseApp
       estado:     nuevo,
       updated_at: Sequel::CURRENT_TIMESTAMP
     )
+
+    # Al emitir, se descuenta el stock de los artículos vendidos
+    generar_movimientos_factura(tenant_db(:facturas).where(id: factura[:id]).first) if nuevo == "emitida"
 
     set_flash(:success, "Factura marcada como #{nuevo}")
     redirect t("/ventas/facturas/#{factura[:id]}")

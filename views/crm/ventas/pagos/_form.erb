@@ -1,0 +1,102 @@
+<a href="<%= t('/ventas/pagos') %>" class="backlink"><i data-lucide="arrow-left"></i> Volver a pagos</a>
+
+<div class="page-head">
+  <div>
+    <h1><%= @page_title %></h1>
+    <p class="sub">Datos del cobro</p>
+  </div>
+</div>
+
+<form method="post" action="<%= t('/ventas/pagos') %>">
+  <input type="hidden" name="origen" value="<%= @origen %>">
+  <div class="card form-card">
+    <div class="form-grid">
+
+      <% if @factura_seleccionada %>
+        <% fac = @factura_seleccionada %>
+        <% cli = @clientes_por_id[fac[:cliente_id]] %>
+        <input type="hidden" name="factura_id" value="<%= fac[:id] %>">
+
+        <div class="field span2">
+          <label>Factura</label>
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; height:42px; padding:0 13px; border:1px solid var(--border-strong); border-radius:9px; background:var(--form-input);">
+            <span>
+              <b><%= fac[:numero] %></b>
+              <span class="sub">— <%= cli ? cli[:nombre] : '—' %></span>
+            </span>
+            <span style="font-variant-numeric:tabular-nums; color:var(--text-2); font-weight:600;">
+              Saldo ₲ <%= number_with_delimiter(@saldo_seleccionado) %>
+            </span>
+          </div>
+        </div>
+      <% else %>
+        <div class="field span2">
+          <label>Factura *</label>
+          <select name="factura_id" class="vanilla-select" required>
+            <option value="">— Elegir factura con saldo —</option>
+            <% @facturas_abiertas.each do |f| %>
+              <% cli = @clientes_por_id[f[:cliente_id]] %>
+              <% saldo = saldo_factura(f) %>
+              <option value="<%= f[:id] %>" <%= 'selected' if @factura_id.to_s == f[:id].to_s %>>
+                <%= f[:numero] %> — <%= cli ? cli[:nombre] : '—' %> — saldo ₲ <%= number_with_delimiter(saldo) %>
+              </option>
+            <% end %>
+          </select>
+          <% if @facturas_abiertas.empty? %>
+            <p class="sub" style="margin-top:8px">No hay facturas emitidas con saldo pendiente.</p>
+          <% end %>
+        </div>
+      <% end %>
+
+      <div class="field">
+        <label for="monto">Monto (₲) *</label>
+        <input type="number" id="monto" name="monto" min="0.01" step="0.01" required placeholder="0"
+               value="<%= @saldo_seleccionado ? numero_input(@saldo_seleccionado.round(2)) : '' %>">
+      </div>
+
+      <div class="field">
+        <label>Método *</label>
+        <select name="metodo" class="vanilla-select" required>
+          <% PagosRoutes::METODOS.each do |m| %>
+            <option value="<%= m %>" <%= 'selected' if m == 'efectivo' %>><%= m.capitalize %></option>
+          <% end %>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="fecha">Fecha</label>
+        <input type="date" id="fecha" name="fecha" value="<%= Date.today %>">
+      </div>
+
+      <div class="field">
+        <label for="referencia">Referencia</label>
+        <input type="text" id="referencia" name="referencia" placeholder="Nº de transferencia, cheque, etc.">
+      </div>
+
+      <div class="field span2">
+        <label for="notas">Notas</label>
+        <textarea id="notas" name="notas"></textarea>
+      </div>
+
+      <% if @saldo_seleccionado %>
+        <div class="field span2" style="flex-direction:row; align-items:center; gap:10px;">
+          <button type="button" class="btn btn-ghost btn-sm"
+                  onclick="document.getElementById('monto').value='<%= numero_input(@saldo_seleccionado.round(2)) %>'; document.getElementById('monto').focus();">
+            <i data-lucide="check"></i> Cobrar el total (₲ <%= number_with_delimiter(@saldo_seleccionado) %>)
+          </button>
+          <span class="sub" style="margin:0;">o escribí un monto menor para un pago parcial</span>
+        </div>
+      <% end %>
+
+    </div>
+
+    <div class="form-foot">
+      <a href="<%= t('/ventas/pagos') %>" class="btn btn-ghost">Cancelar</a>
+      <div class="spacer"></div>
+      <button type="submit" class="btn btn-primary"
+              <%= @factura_seleccionada.nil? && @facturas_abiertas.empty? ? 'disabled' : '' %>>
+        Registrar pago
+      </button>
+    </div>
+  </div>
+</form>

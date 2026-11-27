@@ -1,0 +1,110 @@
+<div class="page-head">
+  <div>
+    <h1>Pagos</h1>
+    <p class="sub">Cobros registrados sobre facturas</p>
+  </div>
+  <div class="head-actions">
+    <a href="<%= t('/ventas/pagos/nuevo') %>" class="btn btn-primary">
+      <i data-lucide="plus"></i> Registrar pago
+    </a>
+  </div>
+</div>
+
+<form method="get" action="<%= t('/ventas/pagos') %>" class="toolbar">
+  <label class="search">
+    <i data-lucide="search"></i>
+    <input type="text" name="q" value="<%= @filtros[:q] %>" placeholder="Buscar referencia, notas…">
+  </label>
+
+  <div class="sel">
+    <select name="metodo" onchange="this.form.submit()">
+      <option value="">Todos los métodos</option>
+      <% PagosRoutes::METODOS.each do |m| %>
+        <option value="<%= m %>" <%= 'selected' if @filtros[:metodo] == m %>><%= m.capitalize %></option>
+      <% end %>
+    </select>
+  </div>
+
+  <button type="submit" class="btn btn-ghost"><i data-lucide="search"></i> Buscar</button>
+</form>
+
+
+<div class="card">
+  <% if @pagos.empty? %>
+    <div class="empty">
+      <i data-lucide="credit-card"></i>
+      <b>No hay pagos registrados</b>
+      <p>Registrá el primer cobro de una factura emitida</p>
+      <a href="<%= t('/ventas/pagos/nuevo') %>" class="btn btn-primary">Registrar pago</a>
+    </div>
+  <% else %>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Factura</th>
+            <th>Cliente</th>
+            <th>Método</th>
+            <th>Referencia</th>
+            <th style="text-align:right">Monto</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @pagos.each do |p| %>
+            <% fac = @facturas_por_id[p[:factura_id]] %>
+            <% cli = @clientes_por_id[p[:cliente_id]] %>
+            <tr>
+              <td><%= p[:fecha] %></td>
+              <td>
+                <% if fac %>
+                  <a href="<%= t("/ventas/facturas/#{fac[:id]}") %>"><b><%= fac[:numero] %></b></a>
+                <% else %>
+                  <span class="sub">—</span>
+                <% end %>
+              </td>
+              <td><%= cli ? cli[:nombre] : '—' %></td>
+              <td><span class="badge b-blue"><%= p[:metodo] %></span></td>
+              <td><span class="sub"><%= p[:referencia] && !p[:referencia].empty? ? p[:referencia] : '—' %></span></td>
+              <td style="text-align:right;font-variant-numeric:tabular-nums;font-weight:600;">
+                ₲ <%= number_with_delimiter(p[:monto]) %>
+              </td>
+              <td>
+                <div class="row-actions">
+                  <a href="<%= t("/ventas/pagos/#{p[:id]}") %>" class="icon-act" title="Ver"><i data-lucide="eye"></i></a>
+                </div>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+
+    <% if @pagos.page_count >= 1 %>
+      <div class="pagination">
+        <span>Página <%= @pagos.current_page %> de <%= @pagos.page_count %></span>
+        <div class="pages">
+          <% qs = "q=#{@filtros[:q]}&metodo=#{@filtros[:metodo]}" %>
+          <% if @pagos.prev_page %>
+            <a href="<%= t("/ventas/pagos?page=#{@pagos.prev_page}&#{qs}") %>">←</a>
+          <% else %>
+            <span class="disabled">←</span>
+          <% end %>
+          <% (1..@pagos.page_count).each do |p| %>
+            <% if p == @pagos.current_page %>
+              <span class="current"><%= p %></span>
+            <% else %>
+              <a href="<%= t("/ventas/pagos?page=#{p}&#{qs}") %>"><%= p %></a>
+            <% end %>
+          <% end %>
+          <% if @pagos.next_page %>
+            <a href="<%= t("/ventas/pagos?page=#{@pagos.next_page}&#{qs}") %>">→</a>
+          <% else %>
+            <span class="disabled">→</span>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  <% end %>
+</div>

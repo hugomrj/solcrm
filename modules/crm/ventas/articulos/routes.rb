@@ -1,15 +1,17 @@
+# modules/crm/ventas/articulos/routes.rb
+
 class ArticulosRoutes < BaseApp
   TIPOS = %w[producto servicio].freeze
 
   before do
-    if request.path_info.start_with?("/articulos")
+    if request.path_info.start_with?("/ventas/articulos")
       require_login
       halt 403, "Sin permiso para acceder a Artículos" unless puede?(:articulos_venta)
     end
   end
 
   # --- Listado ---
-  get "/articulos" do
+  get "/ventas/articulos" do
     @current_page = "articulos_venta"
     @page_title   = "Artículos"
 
@@ -37,22 +39,22 @@ class ArticulosRoutes < BaseApp
       )
     end
 
-    @articulos = dataset.order(:nombre).paginate(page, 25)
+    @articulos = dataset.order(:nombre).paginate(page, ITEMS_POR_PAGINA)
     @filtros   = { q: q, tipo: params[:tipo], estado: params[:estado] }
 
-    erb :"ventas/articulos/index"
+    erb :"crm/ventas/articulos/index"
   end
 
   # --- Form alta ---
-  get "/articulos/nuevo" do
+  get "/ventas/articulos/nuevo" do
     @current_page = "articulos_venta"
     @page_title   = "Nuevo artículo"
     @articulo     = nil
-    erb :"ventas/articulos/nuevo"
+    erb :"crm/ventas/articulos/nuevo"
   end
 
   # --- Crear ---
-  post "/articulos" do
+  post "/ventas/articulos" do
     codigo      = params[:codigo].to_s.strip
     nombre      = params[:nombre].to_s.strip
     descripcion = params[:descripcion].to_s.strip
@@ -61,12 +63,12 @@ class ArticulosRoutes < BaseApp
 
     if nombre.empty?
       set_flash(:error, "El nombre es obligatorio")
-      redirect t("/articulos/nuevo")
+      redirect t("/ventas/articulos/nuevo")
     end
 
     if !codigo.empty? && tenant_db(:articulos).where(codigo: codigo).count > 0
       set_flash(:error, "Ya existe un artículo con ese código")
-      redirect t("/articulos/nuevo")
+      redirect t("/ventas/articulos/nuevo")
     end
 
     tipo = "producto" unless TIPOS.include?(tipo)
@@ -82,22 +84,22 @@ class ArticulosRoutes < BaseApp
     )
 
     set_flash(:success, "Artículo '#{nombre}' creado")
-    redirect t("/articulos")
+    redirect t("/ventas/articulos")
   end
 
   # --- Form edición ---
-  get "/articulos/:id/editar" do
+  get "/ventas/articulos/:id/editar" do
     @current_page = "articulos_venta"
     @articulo = tenant_db(:articulos).where(id: params[:id]).first
 
     halt 404, "Artículo no encontrado" unless @articulo
 
     @page_title = "Editar artículo"
-    erb :"ventas/articulos/editar"
+    erb :"crm/ventas/articulos/editar"
   end
 
   # --- Actualizar ---
-  post "/articulos/:id" do
+  post "/ventas/articulos/:id" do
     articulo = tenant_db(:articulos).where(id: params[:id]).first
     halt 404, "Artículo no encontrado" unless articulo
 
@@ -109,7 +111,7 @@ class ArticulosRoutes < BaseApp
 
     if nombre.empty?
       set_flash(:error, "El nombre es obligatorio")
-      redirect t("/articulos/#{articulo[:id]}/editar")
+      redirect t("/ventas/articulos/#{articulo[:id]}/editar")
     end
 
     if !codigo.empty?
@@ -120,7 +122,7 @@ class ArticulosRoutes < BaseApp
 
       if duplicado > 0
         set_flash(:error, "Ya existe otro artículo con ese código")
-        redirect t("/articulos/#{articulo[:id]}/editar")
+        redirect t("/ventas/articulos/#{articulo[:id]}/editar")
       end
     end
 
@@ -137,11 +139,11 @@ class ArticulosRoutes < BaseApp
     )
 
     set_flash(:success, "Artículo actualizado")
-    redirect t("/articulos")
+    redirect t("/ventas/articulos")
   end
 
   # --- Soft delete ---
-  post "/articulos/:id/eliminar" do
+  post "/ventas/articulos/:id/eliminar" do
     articulo = tenant_db(:articulos).where(id: params[:id]).first
     halt 404, "Artículo no encontrado" unless articulo
 
@@ -151,6 +153,6 @@ class ArticulosRoutes < BaseApp
     )
 
     set_flash(:success, "Artículo '#{articulo[:nombre]}' eliminado")
-    redirect t("/articulos")
+    redirect t("/ventas/articulos")
   end
 end

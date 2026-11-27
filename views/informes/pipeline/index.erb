@@ -1,0 +1,104 @@
+<div class="page-head">
+  <div>
+    <h1>Informe de conversión</h1>
+    <p class="sub">Estado del pipeline comercial</p>
+  </div>
+</div>
+
+<div class="stats">
+  <div class="card stat">
+    <div class="top">
+      <span class="mi-ic ic-brand"><i data-lucide="target"></i></span>
+      <span>Oportunidades abiertas</span>
+    </div>
+    <div class="big"><%= @abiertas.size %></div>
+    <div class="delta">₲ <%= number_with_delimiter(@monto_abierto) %> en juego</div>
+  </div>
+
+  <div class="card stat">
+    <div class="top">
+      <span class="mi-ic ic-green"><i data-lucide="check-circle"></i></span>
+      <span>Ganadas</span>
+    </div>
+    <div class="big"><%= @ganadas.size %></div>
+    <div class="delta">₲ <%= number_with_delimiter(@monto_ganado) %></div>
+  </div>
+
+  <div class="card stat">
+    <div class="top">
+      <span class="mi-ic ic-red"><i data-lucide="x-circle"></i></span>
+      <span>Perdidas</span>
+    </div>
+    <div class="big"><%= @perdidas.size %></div>
+    <div class="delta">₲ <%= number_with_delimiter(@perdidas.sum { |o| o[:monto_estimado].to_f }) %></div>
+  </div>
+
+  <div class="card stat">
+    <div class="top">
+      <span class="mi-ic ic-purple"><i data-lucide="percent"></i></span>
+      <span>Tasa de conversión</span>
+    </div>
+    <div class="big"><%= @tasa_conversion %>%</div>
+    <div class="delta">ganadas / cerradas</div>
+  </div>
+</div>
+
+<div class="card">
+  <div style="padding:18px 22px 0">
+    <h3 style="margin:0;font-size:15px">Oportunidades abiertas por etapa</h3>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Etapa</th>
+          <th style="text-align:right">Cantidad</th>
+          <th style="text-align:right">Monto estimado</th>
+          <th style="text-align:right">Prob.</th>
+          <th style="width:180px"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @por_etapa.each do |e| %>
+          <tr>
+            <td><b><%= e[:nombre] %></b></td>
+            <td style="text-align:right"><%= e[:cantidad] %></td>
+            <td style="text-align:right;font-variant-numeric:tabular-nums">₲ <%= number_with_delimiter(e[:monto]) %></td>
+            <td style="text-align:right"><span class="sub"><%= e[:probabilidad] %>%</span></td>
+            <td>
+              <div style="height:6px;background:var(--border);border-radius:999px;overflow:hidden">
+                <div style="height:100%;width:<%= (e[:monto] / @max_etapa * 100).round(1) %>%;background:var(--brand);border-radius:999px"></div>
+              </div>
+            </td>
+          </tr>
+        <% end %>
+        <% if @sin_etapa[:cantidad] > 0 %>
+          <tr>
+            <td><span class="sub">Sin etapa</span></td>
+            <td style="text-align:right"><%= @sin_etapa[:cantidad] %></td>
+            <td style="text-align:right;font-variant-numeric:tabular-nums">₲ <%= number_with_delimiter(@sin_etapa[:monto]) %></td>
+            <td></td>
+            <td></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="card" style="margin-top:16px">
+  <div class="table-wrap">
+    <table>
+      <tbody>
+        <tr>
+          <th style="width:260px">Ticket promedio de las ganadas</th>
+          <td style="font-weight:600">₲ <%= number_with_delimiter(@ticket_promedio) %></td>
+        </tr>
+        <tr>
+          <th>Oportunidades cerradas</th>
+          <td><%= @ganadas.size + @perdidas.size %></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

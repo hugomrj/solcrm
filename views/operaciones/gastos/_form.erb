@@ -1,0 +1,62 @@
+<a href="<%= t('/gastos') %>" class="backlink">
+  <i data-lucide="arrow-left"></i> Volver a gastos
+</a>
+
+<div class="page-head">
+  <div>
+    <h1><%= @page_title %></h1>
+    <p class="sub">Datos del gasto</p>
+  </div>
+</div>
+
+<form method="post" action="<%= @gasto ? t("/gastos/#{@gasto[:id]}") : t('/gastos') %>">
+  <div class="card form-card">
+    <div class="form-grid">
+
+      <div class="field span2">
+        <label for="concepto">Concepto *</label>
+        <input type="text" id="concepto" name="concepto" required
+               value="<%= @gasto ? @gasto[:concepto] : '' %>"
+               placeholder="Ej: Alquiler oficina noviembre">
+      </div>
+
+      <div class="field">
+        <label for="monto">Monto (₲) *</label>
+        <input type="number" id="monto" name="monto" min="0.01" step="0.01" required
+               value="<%= @gasto ? numero_input(@gasto[:monto]) : '' %>" placeholder="0">
+      </div>
+
+      <div class="field">
+        <label for="fecha">Fecha</label>
+        <input type="date" id="fecha" name="fecha"
+               value="<%= @gasto ? @gasto[:fecha] : Date.today %>">
+      </div>
+
+      <div class="field span2">
+        <label for="categoria">Categoría</label>
+        <input type="text" id="categoria" name="categoria" list="categorias"
+               value="<%= @gasto && @gasto[:categoria] ? @gasto[:categoria] : '' %>"
+               placeholder="operativo, servicios, impuestos…">
+        <datalist id="categorias">
+          <% @categorias_sugeridas.each do |c| %>
+            <option value="<%= c %>"></option>
+          <% end %>
+        </datalist>
+      </div>
+
+      <div class="field span2">
+        <label for="notas">Notas</label>
+        <textarea id="notas" name="notas"><%= @gasto && @gasto[:notas] ? @gasto[:notas] : '' %></textarea>
+      </div>
+
+    </div>
+
+    <div class="form-foot">
+      <a href="<%= t('/gastos') %>" class="btn btn-ghost">Cancelar</a>
+      <div class="spacer"></div>
+      <button type="submit" class="btn btn-primary">
+        <%= @gasto ? 'Guardar cambios' : 'Registrar gasto' %>
+      </button>
+    </div>
+  </div>
+</form>

@@ -1,0 +1,111 @@
+<div class="page-head">
+  <div>
+    <h1>Proveedores</h1>
+    <p class="sub">Empresas y personas a las que les comprás</p>
+  </div>
+  <div class="head-actions">
+    <a href="<%= t('/proveedores/nuevo') %>" class="btn btn-primary">
+      <i data-lucide="plus"></i> Nuevo proveedor
+    </a>
+  </div>
+</div>
+
+<form method="get" action="<%= t('/proveedores') %>" class="toolbar">
+  <label class="search">
+    <i data-lucide="search"></i>
+    <input type="text" name="q" value="<%= @filtros[:q] %>" placeholder="Buscar nombre, RUC, email…">
+  </label>
+
+  <div class="sel">
+    <select name="estado" onchange="this.form.submit()">
+      <option value="">Todos</option>
+      <option value="activos"   <%= 'selected' if @filtros[:estado] == 'activos' %>>Activos</option>
+      <option value="inactivos" <%= 'selected' if @filtros[:estado] == 'inactivos' %>>Inactivos</option>
+    </select>
+  </div>
+
+  <button type="submit" class="btn btn-ghost"><i data-lucide="search"></i> Buscar</button>
+</form>
+
+
+<div class="card">
+  <% if @proveedores.empty? %>
+    <div class="empty">
+      <i data-lucide="truck"></i>
+      <b>No hay proveedores</b>
+      <p>Cargá el primero para poder emitir órdenes de compra</p>
+      <a href="<%= t('/proveedores/nuevo') %>" class="btn btn-primary">Crear proveedor</a>
+    </div>
+  <% else %>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Documento</th>
+            <th>Email</th>
+            <th>Teléfono</th>
+            <th>Dirección</th>
+            <th>Estado</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @proveedores.each do |p| %>
+            <tr>
+              <td><div class="cell-name"><b><%= p[:nombre] %></b></div></td>
+              <td><%= p[:documento] && !p[:documento].empty? ? p[:documento] : '—' %></td>
+              <td><%= p[:email] && !p[:email].empty? ? p[:email] : '—' %></td>
+              <td><%= p[:telefono] && !p[:telefono].empty? ? p[:telefono] : '—' %></td>
+              <td><span class="sub"><%= p[:direccion] && !p[:direccion].empty? ? p[:direccion] : '—' %></span></td>
+              <td>
+                <% if p[:activo] %>
+                  <span class="badge b-green">activo</span>
+                <% else %>
+                  <span class="badge b-gray">inactivo</span>
+                <% end %>
+              </td>
+              <td>
+                <div class="row-actions">
+                  <a href="<%= t("/proveedores/#{p[:id]}/editar") %>" class="icon-act" title="Editar"><i data-lucide="pencil"></i></a>
+                  <form method="post" action="<%= t("/proveedores/#{p[:id]}/eliminar") %>" style="display:inline"
+                        data-confirm="¿Eliminar <%= p[:nombre] %>?"
+                        data-confirm-type="danger"
+                        data-confirm-ok="Eliminar">
+                    <button type="submit" class="icon-act danger" title="Eliminar"><i data-lucide="trash-2"></i></button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+
+    <% if @proveedores.page_count >= 1 %>
+      <div class="pagination">
+        <span>Página <%= @proveedores.current_page %> de <%= @proveedores.page_count %></span>
+        <div class="pages">
+          <% qs = "q=#{@filtros[:q]}&estado=#{@filtros[:estado]}" %>
+          <% if @proveedores.prev_page %>
+            <a href="<%= t("/proveedores?page=#{@proveedores.prev_page}&#{qs}") %>">←</a>
+          <% else %>
+            <span class="disabled">←</span>
+          <% end %>
+          <% (1..@proveedores.page_count).each do |n| %>
+            <% if n == @proveedores.current_page %>
+              <span class="current"><%= n %></span>
+            <% else %>
+              <a href="<%= t("/proveedores?page=#{n}&#{qs}") %>"><%= n %></a>
+            <% end %>
+          <% end %>
+          <% if @proveedores.next_page %>
+            <a href="<%= t("/proveedores?page=#{@proveedores.next_page}&#{qs}") %>">→</a>
+          <% else %>
+            <span class="disabled">→</span>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  <% end %>
+</div>

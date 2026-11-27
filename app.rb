@@ -6,6 +6,9 @@ require "bcrypt"
 require_relative "lib/db"
 require_relative "helpers/auth_helpers"
 require_relative "helpers/flash_helpers"
+require_relative "helpers/ventas_helpers"
+require_relative "helpers/inventario_helpers"
+require_relative "helpers/informes_helpers"
 
 
 class BaseApp < Sinatra::Base
@@ -24,6 +27,9 @@ class BaseApp < Sinatra::Base
 
   # Rutas que NO llevan slug de tenant
   NON_TENANT = %w[css js images favicon.ico super doc].freeze
+
+  # Filas por página en todos los listados paginados (.paginate)
+  ITEMS_POR_PAGINA = 12
 
   # Extrae el tenant del primer segmento de la URL y reescribe el path
   before do
@@ -56,6 +62,9 @@ class BaseApp < Sinatra::Base
 
   helpers AuthHelpers
   helpers FlashHelpers
+  helpers VentasHelpers
+  helpers InventarioHelpers
+  helpers InformesHelpers
 end
 
 class SolCRM < BaseApp

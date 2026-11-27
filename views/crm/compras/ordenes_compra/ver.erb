@@ -1,0 +1,76 @@
+<a href="<%= t('/ordenes_compra') %>" class="backlink"><i data-lucide="arrow-left"></i> Volver a órdenes de compra</a>
+
+<div class="page-head" style="margin-bottom:24px">
+  <div>
+    <h1>Orden <%= @orden[:numero] %></h1>
+    <p class="sub" style="display:flex;align-items:center;gap:8px">
+      <%= @proveedor ? @proveedor[:nombre] : '—' %>
+      <span style="color:var(--border-strong)">|</span>
+      <%= @orden[:fecha] %>
+      <% badge = { "borrador"=>"b-gray","emitida"=>"b-blue","recibida"=>"b-green","anulada"=>"b-red" }[@orden[:estado]] || "b-gray" %>
+      <span class="badge <%= badge %>" style="margin-left:8px"><%= @orden[:estado] %></span>
+    </p>
+  </div>
+  <div class="head-actions" style="display:flex;gap:8px">
+    <% if @orden[:estado] == "borrador" %>
+      <a href="<%= t("/ordenes_compra/#{@orden[:id]}/editar") %>" class="btn btn-ghost"><i data-lucide="pencil"></i> Editar</a>
+      <form method="post" action="<%= t("/ordenes_compra/#{@orden[:id]}/estado") %>" style="display:inline">
+        <input type="hidden" name="estado" value="emitida">
+        <button type="submit" class="btn btn-primary"><i data-lucide="send"></i> Emitir</button>
+      </form>
+    <% elsif @orden[:estado] == "emitida" %>
+      <form method="post" action="<%= t("/ordenes_compra/#{@orden[:id]}/estado") %>" style="display:inline">
+        <input type="hidden" name="estado" value="recibida">
+        <button type="submit" class="btn btn-primary"><i data-lucide="package-check"></i> Marcar recibida</button>
+      </form>
+    <% end %>
+
+    <% unless %w[recibida anulada].include?(@orden[:estado]) %>
+      <form method="post" action="<%= t("/ordenes_compra/#{@orden[:id]}/eliminar") %>" style="display:inline"
+            data-confirm="¿Anular la orden <%= @orden[:numero] %>?"
+            data-confirm-type="danger"
+            data-confirm-ok="Anular">
+        <button type="submit" class="btn btn-ghost"><i data-lucide="x-circle"></i> Anular</button>
+      </form>
+    <% end %>
+  </div>
+</div>
+
+<div class="card" style="padding:24px 28px">
+  <div class="table-wrap">
+    <table style="margin-bottom:24px">
+      <thead>
+        <tr>
+          <th>Descripción</th>
+          <th style="text-align:right">Cantidad</th>
+          <th style="text-align:right">Precio Unit.</th>
+          <th style="text-align:right">Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @items.each do |it| %>
+          <tr>
+            <td><%= it[:descripcion] %></td>
+            <td style="text-align:right"><%= numero_input(it[:cantidad]) %></td>
+            <td style="text-align:right">₲ <%= number_with_delimiter(it[:precio]) %></td>
+            <td style="text-align:right;font-weight:600">₲ <%= number_with_delimiter(it[:total]) %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+
+  <div style="border-top:1px solid var(--border); padding-top:24px; display:flex; justify-content:flex-end">
+    <div style="width:300px; display:flex; justify-content:space-between; font-size:18px; font-weight:700;">
+      <span>Total:</span>
+      <span style="font-variant-numeric:tabular-nums">₲ <%= number_with_delimiter(@orden[:total]) %></span>
+    </div>
+  </div>
+
+  <% if @orden[:notas] && !@orden[:notas].empty? %>
+    <div style="margin-top:24px; padding:16px; background:var(--surface-2); border-radius:9px; border:1px solid var(--border); font-size:13.5px; color:var(--text-2); line-height:1.6;">
+      <b style="color:var(--text);">Notas:</b><br>
+      <%= @orden[:notas] %>
+    </div>
+  <% end %>
+</div>

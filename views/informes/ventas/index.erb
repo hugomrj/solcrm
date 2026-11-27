@@ -1,0 +1,122 @@
+<div class="page-head">
+  <div>
+    <h1>Informe de ventas</h1>
+    <p class="sub">Facturación y cobranza del período</p>
+  </div>
+</div>
+
+<form method="get" action="<%= t('/informes_ventas') %>" class="toolbar">
+  <label class="search" style="max-width:190px">
+    <i data-lucide="calendar"></i>
+    <input type="date" name="desde" value="<%= @desde %>">
+  </label>
+  <label class="search" style="max-width:190px">
+    <i data-lucide="calendar"></i>
+    <input type="date" name="hasta" value="<%= @hasta %>">
+  </label>
+  <button type="submit" class="btn btn-ghost"><i data-lucide="search"></i> Aplicar</button>
+</form>
+
+<div class="stats">
+  <div class="card stat">
+    <div class="top">
+      <span class="mi-ic ic-green"><i data-lucide="trending-up"></i></span>
+      <span>Facturado</span>
+    </div>
+    <div class="big">₲ <%= number_with_delimiter(@facturado) %></div>
+    <div class="delta"><%= @cantidad_facturas %> factura(s)</div>
+  </div>
+
+  <div class="card stat">
+    <div class="top">
+      <span class="mi-ic ic-brand"><i data-lucide="credit-card"></i></span>
+      <span>Cobrado</span>
+    </div>
+    <div class="big">₲ <%= number_with_delimiter(@cobrado) %></div>
+    <div class="delta"><%= porcentaje(@cobrado, @facturado) %>% del facturado</div>
+  </div>
+
+  <div class="card stat">
+    <div class="top">
+      <span class="mi-ic ic-warn"><i data-lucide="clock"></i></span>
+      <span>Saldo pendiente</span>
+    </div>
+    <div class="big">₲ <%= number_with_delimiter(@saldo) %></div>
+    <div class="delta">acreditado: ₲ <%= number_with_delimiter(@acreditado) %></div>
+  </div>
+
+  <div class="card stat">
+    <div class="top">
+      <span class="mi-ic ic-purple"><i data-lucide="receipt"></i></span>
+      <span>Ticket promedio</span>
+    </div>
+    <div class="big">₲ <%= number_with_delimiter(@ticket_promedio) %></div>
+    <div class="delta">por factura</div>
+  </div>
+</div>
+
+<div class="card">
+  <div style="padding:18px 22px 0">
+    <h3 style="margin:0;font-size:15px">Facturación vs. cobranza por mes</h3>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Mes</th>
+          <th style="text-align:right">Facturado</th>
+          <th style="text-align:right">Cobrado</th>
+          <th style="width:180px"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @por_mes.each do |m| %>
+          <tr>
+            <td><%= m[:etiqueta] %></td>
+            <td style="text-align:right;font-variant-numeric:tabular-nums">₲ <%= number_with_delimiter(m[:facturado]) %></td>
+            <td style="text-align:right;font-variant-numeric:tabular-nums;color:var(--text-2)">₲ <%= number_with_delimiter(m[:cobrado]) %></td>
+            <td>
+              <div style="height:6px;background:var(--border);border-radius:999px;overflow:hidden">
+                <div style="height:100%;width:<%= (m[:facturado] / @max_mes * 100).round(1) %>%;background:var(--brand);border-radius:999px"></div>
+              </div>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="card" style="margin-top:16px">
+  <div style="padding:18px 22px 0">
+    <h3 style="margin:0;font-size:15px">Top 5 clientes</h3>
+  </div>
+  <% if @top_clientes.empty? %>
+    <div class="empty">
+      <i data-lucide="users"></i>
+      <b>Sin facturación en el período</b>
+      <p>Probá con otro rango de fechas</p>
+    </div>
+  <% else %>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Cliente</th>
+            <th style="text-align:right">Facturado</th>
+            <th style="text-align:right">% del total</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @top_clientes.each do |t| %>
+            <tr>
+              <td><b><%= t[:cliente] ? t[:cliente][:nombre] : '—' %></b></td>
+              <td style="text-align:right;font-variant-numeric:tabular-nums">₲ <%= number_with_delimiter(t[:monto]) %></td>
+              <td style="text-align:right"><%= porcentaje(t[:monto], @facturado) %>%</td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+</div>

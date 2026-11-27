@@ -1,0 +1,138 @@
+<div class="page-head">
+  <div>
+    <h1>Informe de gastos</h1>
+    <p class="sub">Egresos del período por categoría</p>
+  </div>
+</div>
+
+<form method="get" action="<%= t('/informes_gastos') %>" class="toolbar">
+  <label class="search" style="max-width:190px">
+    <i data-lucide="calendar"></i>
+    <input type="date" name="desde" value="<%= @desde %>">
+  </label>
+  <label class="search" style="max-width:190px">
+    <i data-lucide="calendar"></i>
+    <input type="date" name="hasta" value="<%= @hasta %>">
+  </label>
+  <button type="submit" class="btn btn-ghost"><i data-lucide="search"></i> Aplicar</button>
+</form>
+
+<div class="stats">
+  <div class="card stat">
+    <div class="top">
+      <span class="mi-ic ic-red"><i data-lucide="arrow-down-circle"></i></span>
+      <span>Total gastos</span>
+    </div>
+    <div class="big">₲ <%= number_with_delimiter(@total) %></div>
+    <div class="delta"><%= @cantidad %> movimiento(s)</div>
+  </div>
+
+  <div class="card stat">
+    <div class="top">
+      <span class="mi-ic ic-warn"><i data-lucide="calculator"></i></span>
+      <span>Promedio</span>
+    </div>
+    <div class="big">₲ <%= number_with_delimiter(@promedio) %></div>
+    <div class="delta">por gasto</div>
+  </div>
+
+  <div class="card stat">
+    <div class="top">
+      <span class="mi-ic ic-purple"><i data-lucide="tags"></i></span>
+      <span>Categorías</span>
+    </div>
+    <div class="big"><%= @categorias.size %></div>
+    <div class="delta">con movimiento</div>
+  </div>
+</div>
+
+<% if @cantidad == 0 %>
+  <div class="card">
+    <div class="empty">
+      <i data-lucide="receipt"></i>
+      <b>Sin gastos registrados en el período</b>
+      <p>El módulo de Gastos todavía no está implementado; cuando lo esté, este informe se llena solo.</p>
+    </div>
+  </div>
+<% else %>
+  <div class="card">
+    <div style="padding:18px 22px 0">
+      <h3 style="margin:0;font-size:15px">Por categoría</h3>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Categoría</th>
+            <th style="text-align:right">Monto</th>
+            <th style="text-align:right">%</th>
+            <th style="width:180px"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @categorias.each do |c| %>
+            <tr>
+              <td><b><%= c[:categoria] %></b></td>
+              <td style="text-align:right;font-variant-numeric:tabular-nums">₲ <%= number_with_delimiter(c[:monto]) %></td>
+              <td style="text-align:right"><%= c[:pct] %>%</td>
+              <td>
+                <div style="height:6px;background:var(--border);border-radius:999px;overflow:hidden">
+                  <div style="height:100%;width:<%= c[:pct] %>%;background:var(--red);border-radius:999px"></div>
+                </div>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px">
+    <div style="padding:18px 22px 0">
+      <h3 style="margin:0;font-size:15px">Evolución mensual</h3>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Mes</th><th style="text-align:right">Monto</th><th style="width:180px"></th></tr>
+        </thead>
+        <tbody>
+          <% @por_mes.each do |m| %>
+            <tr>
+              <td><%= m[:etiqueta] %></td>
+              <td style="text-align:right;font-variant-numeric:tabular-nums">₲ <%= number_with_delimiter(m[:monto]) %></td>
+              <td>
+                <div style="height:6px;background:var(--border);border-radius:999px;overflow:hidden">
+                  <div style="height:100%;width:<%= (m[:monto] / @max_mes * 100).round(1) %>%;background:var(--red);border-radius:999px"></div>
+                </div>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px">
+    <div style="padding:18px 22px 0">
+      <h3 style="margin:0;font-size:15px">Últimos gastos</h3>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Fecha</th><th>Concepto</th><th>Categoría</th><th style="text-align:right">Monto</th></tr>
+        </thead>
+        <tbody>
+          <% @ultimos.each do |g| %>
+            <tr>
+              <td><%= g[:fecha] %></td>
+              <td><%= g[:concepto] %></td>
+              <td><span class="sub"><%= g[:categoria] && !g[:categoria].empty? ? g[:categoria] : '—' %></span></td>
+              <td style="text-align:right;font-variant-numeric:tabular-nums;font-weight:600">₲ <%= number_with_delimiter(g[:monto]) %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+<% end %>

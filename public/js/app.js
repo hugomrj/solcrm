@@ -103,6 +103,25 @@ document.addEventListener('click', (e) => {
 const globalSearch = document.getElementById('globalSearch');
 const menuResults  = document.getElementById('menuResults');
 
+// Normaliza: sin acentos, minúsculas y espacios colapsados.
+// Así "orden" encuentra "Órdenes" y "compra" encuentra "Compras".
+function normalizarBusqueda(texto) {
+  return (texto || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+// Matchea si CADA palabra de la consulta es prefijo de alguna palabra del texto.
+// "orden de compra" -> ["orden","de","compra"] contra "ordenes de compra".
+function coincideBusqueda(texto, consulta) {
+  const palabras = normalizarBusqueda(texto).split(/[\s/]+/).filter(Boolean);
+  const tokens   = normalizarBusqueda(consulta).split(' ').filter(Boolean);
+  return tokens.length > 0 && tokens.every(tok => palabras.some(p => p.startsWith(tok)));
+}
+
 function getMenuItems() {
   const items = [];
   document.querySelectorAll('#sidebar .menu-item, #sidebar .sub-item').forEach(a => {
@@ -125,8 +144,7 @@ function renderResults(query) {
     return;
   }
 
-  const q = query.toLowerCase();
-  const matches = menuItems.filter(i => i.texto.toLowerCase().includes(q)).slice(0, 8);
+  const matches = menuItems.filter(i => coincideBusqueda(i.texto, query)).slice(0, 8);
 
   if (matches.length === 0) {
     menuResults.innerHTML = '<div class="mr-empty">Sin resultados</div>';

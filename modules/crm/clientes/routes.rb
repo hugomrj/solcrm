@@ -43,7 +43,7 @@ class ClientesRoutes < BaseApp
         )
       end
   
-      @clientes = dataset.order(:nombre).paginate(page, 25)
+      @clientes = dataset.order(:nombre).paginate(page, ITEMS_POR_PAGINA)
       @filtros  = { q: q, estado: params[:estado], tipo: params[:tipo] }
   
       erb :"crm/clientes/index"

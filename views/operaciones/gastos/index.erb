@@ -1,0 +1,108 @@
+<div class="page-head">
+  <div>
+    <h1>Gastos</h1>
+    <p class="sub">Egresos de la empresa</p>
+  </div>
+  <div class="head-actions">
+    <a href="<%= t('/gastos/nuevo') %>" class="btn btn-primary">
+      <i data-lucide="plus"></i> Nuevo gasto
+    </a>
+  </div>
+</div>
+
+<form method="get" action="<%= t('/gastos') %>" class="toolbar">
+  <label class="search">
+    <i data-lucide="search"></i>
+    <input type="text" name="q" value="<%= @filtros[:q] %>" placeholder="Buscar concepto, notas…">
+  </label>
+
+  <div class="sel">
+    <select name="categoria" onchange="this.form.submit()">
+      <option value="">Todas las categorías</option>
+      <% @categorias.each do |c| %>
+        <option value="<%= c %>" <%= 'selected' if @filtros[:categoria] == c %>><%= c %></option>
+      <% end %>
+    </select>
+  </div>
+
+  <button type="submit" class="btn btn-ghost"><i data-lucide="search"></i> Buscar</button>
+</form>
+
+<div class="card">
+  <% if @gastos.empty? %>
+    <div class="empty">
+      <i data-lucide="receipt"></i>
+      <b>No hay gastos</b>
+      <p>Cargá el primero para ver el informe de gastos completo</p>
+      <a href="<%= t('/gastos/nuevo') %>" class="btn btn-primary">Registrar gasto</a>
+    </div>
+  <% else %>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Concepto</th>
+            <th>Categoría</th>
+            <th style="text-align:right">Monto</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @gastos.each do |g| %>
+            <tr>
+              <td><%= g[:fecha] %></td>
+              <td>
+                <div class="cell-name"><b><%= g[:concepto] %></b></div>
+                <% if g[:notas] && !g[:notas].empty? %>
+                  <div class="sub" style="font-size:12px"><%= g[:notas].length > 60 ? g[:notas][0, 60] + "…" : g[:notas] %></div>
+                <% end %>
+              </td>
+              <td>
+                <% if g[:categoria] && !g[:categoria].empty? %>
+                  <span class="badge b-gray"><%= g[:categoria] %></span>
+                <% else %>
+                  <span class="sub">—</span>
+                <% end %>
+              </td>
+              <td style="text-align:right;font-variant-numeric:tabular-nums;font-weight:600;">
+                ₲ <%= number_with_delimiter(g[:monto]) %>
+              </td>
+              <td>
+                <div class="row-actions">
+                  <a href="<%= t("/gastos/#{g[:id]}/editar") %>" class="icon-act" title="Editar"><i data-lucide="pencil"></i></a>
+                </div>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+
+    <% if @gastos.page_count >= 1 %>
+      <div class="pagination">
+        <span>Página <%= @gastos.current_page %> de <%= @gastos.page_count %> · Total filtrado: ₲ <%= number_with_delimiter(@total) %></span>
+        <div class="pages">
+          <% qs = "q=#{@filtros[:q]}&categoria=#{@filtros[:categoria]}" %>
+          <% if @gastos.prev_page %>
+            <a href="<%= t("/gastos?page=#{@gastos.prev_page}&#{qs}") %>">←</a>
+          <% else %>
+            <span class="disabled">←</span>
+          <% end %>
+          <% (1..@gastos.page_count).each do |n| %>
+            <% if n == @gastos.current_page %>
+              <span class="current"><%= n %></span>
+            <% else %>
+              <a href="<%= t("/gastos?page=#{n}&#{qs}") %>"><%= n %></a>
+            <% end %>
+          <% end %>
+          <% if @gastos.next_page %>
+            <a href="<%= t("/gastos?page=#{@gastos.next_page}&#{qs}") %>">→</a>
+          <% else %>
+            <span class="disabled">→</span>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  <% end %>
+</div>

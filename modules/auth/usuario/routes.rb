@@ -153,7 +153,7 @@ class UsuarioRoutes < BaseApp
       )
     end
 
-    @usuarios = dataset.order(:usuario).paginate(page, 25)
+    @usuarios = dataset.order(:usuario).paginate(page, ITEMS_POR_PAGINA)
     @filtros  = { q: q, estado: params[:estado] }
 
     erb :"auth/usuario/index"

@@ -1,0 +1,126 @@
+<div class="page-head">
+  <div>
+    <h1>Informe de actividad</h1>
+    <p class="sub">Tareas, llamadas, reuniones y notas del período</p>
+  </div>
+</div>
+
+<form method="get" action="<%= t('/informes_actividad') %>" class="toolbar">
+  <label class="search" style="max-width:190px">
+    <i data-lucide="calendar"></i>
+    <input type="date" name="desde" value="<%= @desde %>">
+  </label>
+  <label class="search" style="max-width:190px">
+    <i data-lucide="calendar"></i>
+    <input type="date" name="hasta" value="<%= @hasta %>">
+  </label>
+  <button type="submit" class="btn btn-ghost"><i data-lucide="search"></i> Aplicar</button>
+</form>
+
+<div class="stats">
+  <div class="card stat">
+    <div class="top">
+      <span class="mi-ic ic-brand"><i data-lucide="activity"></i></span>
+      <span>Actividades</span>
+    </div>
+    <div class="big"><%= @total %></div>
+    <div class="delta">en el período</div>
+  </div>
+
+  <div class="card stat">
+    <div class="top">
+      <span class="mi-ic ic-green"><i data-lucide="check-circle"></i></span>
+      <span>Completadas</span>
+    </div>
+    <div class="big"><%= @completadas %></div>
+    <div class="delta"><%= @cumplimiento %>% de cumplimiento</div>
+  </div>
+
+  <div class="card stat">
+    <div class="top">
+      <span class="mi-ic ic-warn"><i data-lucide="clock"></i></span>
+      <span>Pendientes</span>
+    </div>
+    <div class="big"><%= @pendientes %></div>
+    <div class="delta">sin cerrar</div>
+  </div>
+</div>
+
+<div class="card">
+  <div style="padding:18px 22px 0">
+    <h3 style="margin:0;font-size:15px">Por tipo</h3>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Tipo</th><th style="text-align:right">Total</th><th style="text-align:right">Completadas</th><th style="width:180px">Avance</th></tr>
+      </thead>
+      <tbody>
+        <% @por_tipo.each do |t| %>
+          <tr>
+            <td><b><%= t[:tipo].capitalize %></b></td>
+            <td style="text-align:right"><%= t[:total] %></td>
+            <td style="text-align:right"><%= t[:completadas] %></td>
+            <td>
+              <div style="height:6px;background:var(--border);border-radius:999px;overflow:hidden">
+                <div style="height:100%;width:<%= t[:pct] %>%;background:var(--green);border-radius:999px"></div>
+              </div>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="card" style="margin-top:16px">
+  <div style="padding:18px 22px 0">
+    <h3 style="margin:0;font-size:15px">Por usuario</h3>
+  </div>
+  <% if @por_usuario.empty? %>
+    <div class="empty">
+      <i data-lucide="user"></i>
+      <b>Sin actividades en el período</b>
+      <p>Probá con otro rango de fechas</p>
+    </div>
+  <% else %>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Usuario</th><th style="text-align:right">Actividades</th><th style="text-align:right">Completadas</th></tr>
+        </thead>
+        <tbody>
+          <% @por_usuario.each do |u| %>
+            <tr>
+              <td><b><%= u[:nombre] %></b></td>
+              <td style="text-align:right"><%= u[:total] %></td>
+              <td style="text-align:right"><%= u[:completadas] %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+</div>
+
+<div class="card" style="margin-top:16px">
+  <div style="padding:18px 22px 0">
+    <h3 style="margin:0;font-size:15px">Evolución mensual</h3>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Mes</th><th style="text-align:right">Total</th><th style="text-align:right">Completadas</th></tr>
+      </thead>
+      <tbody>
+        <% @por_mes.each do |m| %>
+          <tr>
+            <td><%= m[:etiqueta] %></td>
+            <td style="text-align:right"><%= m[:total] %></td>
+            <td style="text-align:right"><%= m[:completadas] %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>

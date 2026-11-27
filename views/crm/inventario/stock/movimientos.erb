@@ -1,0 +1,103 @@
+<a href="<%= t('/stock') %>" class="backlink"><i data-lucide="arrow-left"></i> Volver a stock</a>
+
+<div class="page-head">
+  <div>
+    <h1>Movimientos de stock</h1>
+    <p class="sub">Entradas, salidas y ajustes</p>
+  </div>
+  <div class="head-actions">
+    <a href="<%= t('/stock/movimientos/nuevo') %>" class="btn btn-primary">
+      <i data-lucide="plus"></i> Nuevo movimiento
+    </a>
+  </div>
+</div>
+
+<form method="get" action="<%= t('/stock/movimientos') %>" class="toolbar">
+  <div class="sel">
+    <select name="articulo_id" onchange="this.form.submit()">
+      <option value="">Todos los artículos</option>
+      <% @articulos.each do |a| %>
+        <option value="<%= a[:id] %>" <%= 'selected' if @filtros[:articulo_id].to_s == a[:id].to_s %>><%= a[:nombre] %></option>
+      <% end %>
+    </select>
+  </div>
+
+  <div class="sel">
+    <select name="tipo" onchange="this.form.submit()">
+      <option value="">Todos los tipos</option>
+      <% InventarioHelpers::TIPOS_MOVIMIENTO.each do |t| %>
+        <option value="<%= t %>" <%= 'selected' if @filtros[:tipo] == t %>><%= t.capitalize %></option>
+      <% end %>
+    </select>
+  </div>
+
+  <button type="submit" class="btn btn-ghost"><i data-lucide="search"></i> Filtrar</button>
+</form>
+
+<div class="card">
+  <% if @movimientos.empty? %>
+    <div class="empty">
+      <i data-lucide="list"></i>
+      <b>No hay movimientos</b>
+      <p>Registrá una entrada o salida para empezar a llevar el stock</p>
+      <a href="<%= t('/stock/movimientos/nuevo') %>" class="btn btn-primary">Nuevo movimiento</a>
+    </div>
+  <% else %>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Artículo</th>
+            <th>Tipo</th>
+            <th style="text-align:right">Cantidad</th>
+            <th>Referencia</th>
+            <th>Motivo</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @movimientos.each do |m| %>
+            <% art = @articulos_por_id[m[:articulo_id]] %>
+            <tr>
+              <td><%= m[:created_at].strftime("%d/%m/%Y %H:%M") %></td>
+              <td><%= art ? art[:nombre] : '—' %></td>
+              <td>
+                <% badge = { "entrada"=>"b-green", "salida"=>"b-red", "ajuste"=>"b-warn" }[m[:tipo]] || "b-gray" %>
+                <span class="badge <%= badge %>"><%= m[:tipo] %></span>
+              </td>
+              <td style="text-align:right;font-variant-numeric:tabular-nums;font-weight:600;"><%= numero_input(m[:cantidad]) %></td>
+              <td><span class="sub"><%= m[:referencia] && !m[:referencia].empty? ? m[:referencia] : '—' %></span></td>
+              <td><span class="sub"><%= m[:motivo] && !m[:motivo].empty? ? m[:motivo] : '—' %></span></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+
+    <% if @movimientos.page_count >= 1 %>
+      <div class="pagination">
+        <span>Página <%= @movimientos.current_page %> de <%= @movimientos.page_count %></span>
+        <div class="pages">
+          <% qs = "tipo=#{@filtros[:tipo]}&articulo_id=#{@filtros[:articulo_id]}" %>
+          <% if @movimientos.prev_page %>
+            <a href="<%= t("/stock/movimientos?page=#{@movimientos.prev_page}&#{qs}") %>">←</a>
+          <% else %>
+            <span class="disabled">←</span>
+          <% end %>
+          <% (1..@movimientos.page_count).each do |n| %>
+            <% if n == @movimientos.current_page %>
+              <span class="current"><%= n %></span>
+            <% else %>
+              <a href="<%= t("/stock/movimientos?page=#{n}&#{qs}") %>"><%= n %></a>
+            <% end %>
+          <% end %>
+          <% if @movimientos.next_page %>
+            <a href="<%= t("/stock/movimientos?page=#{@movimientos.next_page}&#{qs}") %>">→</a>
+          <% else %>
+            <span class="disabled">→</span>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  <% end %>
+</div>

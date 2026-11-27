@@ -1,0 +1,65 @@
+<a href="<%= t('/soporte') %>" class="backlink"><i data-lucide="arrow-left"></i> Volver a soporte</a>
+
+<div class="page-head" style="margin-bottom:24px">
+  <div>
+    <h1><%= @ticket[:numero] %> · <%= @ticket[:asunto] %></h1>
+    <p class="sub" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+      <%= @cliente ? @cliente[:nombre] : 'Sin cliente' %>
+      <span style="color:var(--border-strong)">|</span>
+      <%= @ticket[:created_at].strftime("%d/%m/%Y %H:%M") %>
+      <% ebadge = { "abierto"=>"b-blue","en_progreso"=>"b-warn","resuelto"=>"b-green","cerrado"=>"b-gray" }[@ticket[:estado]] || "b-gray" %>
+      <span class="badge <%= ebadge %>"><%= @ticket[:estado].tr('_', ' ') %></span>
+      <% pbadge = { "baja"=>"b-gray","normal"=>"b-blue","alta"=>"b-warn","urgente"=>"b-red" }[@ticket[:prioridad]] || "b-gray" %>
+      <span class="badge <%= pbadge %>"><%= @ticket[:prioridad] %></span>
+    </p>
+  </div>
+  <div class="head-actions">
+    <select name="estado" class="vanilla-select" style="min-width:170px"
+            onchange="document.getElementById('formEstado').estado.value=this.value; document.getElementById('formEstado').submit();">
+      <% SoporteRoutes::ESTADOS.each do |e| %>
+        <option value="<%= e %>" <%= 'selected' if @ticket[:estado] == e %>><%= e.tr('_', ' ').capitalize %></option>
+      <% end %>
+    </select>
+    <form method="post" action="<%= t("/soporte/#{@ticket[:id]}/estado") %>" id="formEstado" style="display:none">
+      <input type="hidden" name="estado" value="<%= @ticket[:estado] %>">
+    </form>
+  </div>
+</div>
+
+<div class="card" style="padding:24px 28px; margin-bottom:16px">
+  <% if @ticket[:descripcion] && !@ticket[:descripcion].empty? %>
+    <div style="font-size:14px; line-height:1.65; white-space:pre-wrap"><%= @ticket[:descripcion] %></div>
+  <% else %>
+    <p class="sub" style="margin:0">Sin descripción.</p>
+  <% end %>
+</div>
+
+<div class="card" style="padding:24px 28px">
+  <h3 style="margin:0 0 16px; font-size:15px">Conversación</h3>
+
+  <% if @mensajes.empty? %>
+    <p class="sub" style="margin:0 0 16px">Todavía no hay mensajes.</p>
+  <% else %>
+    <% @mensajes.each do |m| %>
+      <% autor = @usuarios_por_id[m[:usuario_id]] %>
+      <div style="padding:12px 0; border-bottom:1px solid var(--border)">
+        <div style="display:flex; justify-content:space-between; gap:12px; margin-bottom:4px">
+          <b style="font-size:13px"><%= autor ? autor[:nombre] : 'Sistema' %></b>
+          <span class="sub" style="font-size:12px"><%= m[:created_at].strftime("%d/%m/%Y %H:%M") %></span>
+        </div>
+        <div style="font-size:14px; line-height:1.6; white-space:pre-wrap"><%= m[:mensaje] %></div>
+      </div>
+    <% end %>
+  <% end %>
+
+  <form method="post" action="<%= t("/soporte/#{@ticket[:id]}/mensaje") %>" style="margin-top:16px">
+    <div class="field">
+      <label for="mensaje">Nuevo mensaje</label>
+      <textarea id="mensaje" name="mensaje" placeholder="Escribí una respuesta o una nota interna" required></textarea>
+    </div>
+    <div class="form-foot">
+      <div class="spacer"></div>
+      <button type="submit" class="btn btn-primary"><i data-lucide="send"></i> Enviar mensaje</button>
+    </div>
+  </form>
+</div>

@@ -1,0 +1,51 @@
+<div class="page-head">
+  <div>
+    <h1>Roles y permisos</h1>
+    <p class="sub">Qué puede hacer cada rol del sistema</p>
+  </div>
+  <div class="head-actions">
+    <a href="<%= t('/roles/nuevo') %>" class="btn btn-primary">
+      <i data-lucide="plus"></i> Nuevo rol
+    </a>
+  </div>
+</div>
+
+<div class="note" style="background:var(--surface-2); border-left:3px solid var(--warn); padding:10px 14px; border-radius:0 8px 8px 0; font-size:13px; color:var(--text-2); margin-bottom:16px;">
+  Los roles y sus permisos son <b>globales</b> (no por empresa): cambiarlos afecta a todos los tenants que usan ese rol.
+</div>
+
+<div class="card">
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Rol</th>
+          <th>Descripción</th>
+          <th style="text-align:right">Permisos</th>
+          <th style="text-align:right">Usuarios</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @roles.each do |r| %>
+          <% n_permisos = @permisos_por_rol[r[:id]].to_i %>
+          <tr>
+            <td><div class="cell-name"><b><%= r[:nombre] %></b></div></td>
+            <td><span class="sub"><%= r[:descripcion] && !r[:descripcion].empty? ? r[:descripcion] : '—' %></span></td>
+            <td style="text-align:right">
+              <span class="badge <%= n_permisos == @total_permisos ? 'b-green' : (n_permisos > 0 ? 'b-blue' : 'b-gray') %>">
+                <%= n_permisos %> / <%= @total_permisos %>
+              </span>
+            </td>
+            <td style="text-align:right"><%= @usuarios_por_rol[r[:id]].to_i %></td>
+            <td>
+              <div class="row-actions">
+                <a href="<%= t("/roles/#{r[:id]}") %>" class="icon-act" title="Editar permisos"><i data-lucide="shield-check"></i></a>
+              </div>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>

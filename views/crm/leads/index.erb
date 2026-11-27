@@ -47,10 +47,6 @@
   </button>
 </form>
 
-<div class="count-line">
-  <%= @leads.pagination_record_count %> lead(s)
-</div>
-
 <div class="card">
   <% if @leads.empty? %>
     <div class="empty">
@@ -139,7 +135,7 @@
       </table>
     </div>
 
-    <% if @leads.page_count > 1 %>
+    <% if @leads.page_count >= 1 %>
       <div class="pagination">
         <span>Página <%= @leads.current_page %> de <%= @leads.page_count %></span>
         <div class="pages">

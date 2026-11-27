@@ -37,10 +37,6 @@
   </button>
 </form>
 
-<div class="count-line">
-  <%= @clientes.pagination_record_count %> cliente(s)
-</div>
-
 <div class="card">
   <% if @clientes.empty? %>
     <div class="empty">
@@ -112,7 +108,7 @@
       </table>
     </div>
 
-    <% if @clientes.page_count > 1 %>
+    <% if @clientes.page_count >= 1 %>
       <div class="pagination">
         <span>Página <%= @clientes.current_page %> de <%= @clientes.page_count %></span>
         <div class="pages">

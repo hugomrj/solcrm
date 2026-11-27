@@ -1,0 +1,32 @@
+<a href="<%= t('/roles') %>" class="backlink"><i data-lucide="arrow-left"></i> Volver a roles</a>
+
+<div class="page-head">
+  <div>
+    <h1>Nuevo rol</h1>
+    <p class="sub">Después de crearlo le asignás los permisos</p>
+  </div>
+</div>
+
+<form method="post" action="<%= t('/roles') %>">
+  <div class="card form-card">
+    <div class="form-grid">
+
+      <div class="field">
+        <label for="nombre">Nombre *</label>
+        <input type="text" id="nombre" name="nombre" required placeholder="Ej: cobranzas">
+      </div>
+
+      <div class="field span2">
+        <label for="descripcion">Descripción</label>
+        <input type="text" id="descripcion" name="descripcion" placeholder="Para qué sirve este rol">
+      </div>
+
+    </div>
+
+    <div class="form-foot">
+      <a href="<%= t('/roles') %>" class="btn btn-ghost">Cancelar</a>
+      <div class="spacer"></div>
+      <button type="submit" class="btn btn-primary">Crear rol</button>
+    </div>
+  </div>
+</form>

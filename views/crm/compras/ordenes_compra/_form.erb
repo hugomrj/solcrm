@@ -1,0 +1,105 @@
+<a href="<%= t('/ordenes_compra') %>" class="backlink">
+  <i data-lucide="arrow-left"></i> Volver a órdenes de compra
+</a>
+
+<div class="page-head">
+  <div>
+    <h1><%= @page_title %></h1>
+    <p class="sub">Proveedor e ítems del pedido</p>
+  </div>
+</div>
+
+<form method="post" action="<%= @orden ? t("/ordenes_compra/#{@orden[:id]}") : t('/ordenes_compra') %>" id="ordenForm">
+  <div class="card form-card">
+    <div class="form-grid">
+
+      <div class="field">
+        <label>Proveedor *</label>
+        <select name="proveedor_id" class="vanilla-select" required>
+          <option value="">— Elegir —</option>
+          <% @proveedores.each do |p| %>
+            <option value="<%= p[:id] %>" <%= 'selected' if @orden && @orden[:proveedor_id] == p[:id] %>><%= p[:nombre] %></option>
+          <% end %>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="fecha">Fecha</label>
+        <input type="date" id="fecha" name="fecha" value="<%= @orden ? @orden[:fecha] : Date.today %>">
+      </div>
+
+      <div class="field span2">
+        <label for="notas">Notas</label>
+        <textarea id="notas" name="notas"><%= @orden && @orden[:notas] ? @orden[:notas] : '' %></textarea>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="card form-card" style="margin-top:16px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <h3 style="margin:0; font-size:15px;">Ítems del pedido</h3>
+      <button type="button" class="btn btn-ghost btn-sm" onclick="addItemRow()">
+        <i data-lucide="plus"></i> Agregar ítem
+      </button>
+    </div>
+
+    <div class="items-grid-header">
+      <div>Artículo / Descripción</div>
+      <div>Cant.</div>
+      <div>Precio Unit.</div>
+      <div>Total</div>
+      <div></div>
+    </div>
+
+    <div id="itemsContainer"></div>
+
+    <div class="invoice-totals">
+      <div class="invoice-totals-inner">
+        <div class="invoice-totals-row grand-total">
+          <span>Total:</span>
+          <span>₲ <span id="total">0</span></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-foot">
+    <a href="<%= t('/ordenes_compra') %>" class="btn btn-ghost">Cancelar</a>
+    <div class="spacer"></div>
+    <button type="submit" class="btn btn-primary">
+      <%= @orden ? 'Guardar cambios' : 'Crear orden' %>
+    </button>
+  </div>
+</form>
+
+<template id="itemRowTpl">
+  <div class="item-row">
+    <div class="field">
+      <input type="hidden" name="items[__i__][descripcion]" class="item-desc">
+      <select name="items[__i__][articulo_id]" class="vanilla-select">
+        <option value="">— Elegir artículo —</option>
+        <% @articulos.each do |a| %>
+          <option value="<%= a[:id] %>" data-precio="<%= numero_input(a[:precio]) %>" data-nombre="<%= a[:nombre] %>"><%= a[:nombre] %></option>
+        <% end %>
+      </select>
+    </div>
+    <div class="field">
+      <input type="number" name="items[__i__][cantidad]" value="1" min="0.01" step="0.01" class="item-cant">
+    </div>
+    <div class="field">
+      <input type="number" name="items[__i__][precio]" value="0" min="0" step="0.01" class="item-precio">
+    </div>
+    <div class="field">
+      <input type="text" class="item-total" value="0" readonly>
+    </div>
+    <button type="button" class="icon-act danger" onclick="this.closest('.item-row').remove(); window.recalc();">
+      <i data-lucide="trash-2"></i>
+    </button>
+  </div>
+</template>
+
+<script>
+  window.itemsIniciales = <%= (@items || []).map { |it| { descripcion: it[:descripcion], cantidad: it[:cantidad].to_f, precio: it[:precio].to_f, articulo_id: it[:articulo_id] } }.to_json %>;
+</script>
+<script src="/js/app/ordenes_compra.js" defer></script>

@@ -38,10 +38,6 @@
   </button>
 </form>
 
-<div class="count-line">
-  <%= @actividades.pagination_record_count %> actividad(es)
-</div>
-
 <div class="card">
   <% if @actividades.empty? %>
     <div class="empty">
@@ -92,7 +88,7 @@
       <% end %>
     </div>
 
-    <% if @actividades.page_count > 1 %>
+    <% if @actividades.page_count >= 1 %>
       <div class="pagination">
         <span>Página <%= @actividades.current_page %> de <%= @actividades.page_count %></span>
         <div class="pages">

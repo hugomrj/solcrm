@@ -51,3 +51,6 @@ desktop.ini
 *.sublime-project
 *.sublime-workspace
 *.iml
+
+# Archivos subidos por los tenants
+storage/

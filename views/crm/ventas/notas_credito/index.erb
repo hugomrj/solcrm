@@ -1,0 +1,99 @@
+<div class="page-head">
+  <div>
+    <h1>Notas de crédito</h1>
+    <p class="sub">Acreditaciones sobre facturas</p>
+  </div>
+  <div class="head-actions">
+    <a href="<%= t('/ventas/notas_credito/nuevo') %>" class="btn btn-primary">
+      <i data-lucide="plus"></i> Nueva nota de crédito
+    </a>
+  </div>
+</div>
+
+<form method="get" action="<%= t('/ventas/notas_credito') %>" class="toolbar">
+  <label class="search">
+    <i data-lucide="search"></i>
+    <input type="text" name="q" value="<%= @filtros[:q] %>" placeholder="Buscar número, motivo…">
+  </label>
+
+  <button type="submit" class="btn btn-ghost"><i data-lucide="search"></i> Buscar</button>
+</form>
+
+
+<div class="card">
+  <% if @notas.empty? %>
+    <div class="empty">
+      <i data-lucide="rotate-ccw"></i>
+      <b>No hay notas de crédito</b>
+      <p>Usá una nota de crédito para acreditar total o parcialmente una factura</p>
+      <a href="<%= t('/ventas/notas_credito/nuevo') %>" class="btn btn-primary">Crear nota de crédito</a>
+    </div>
+  <% else %>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Número</th>
+            <th>Factura</th>
+            <th>Cliente</th>
+            <th>Fecha</th>
+            <th style="text-align:right">Monto</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @notas.each do |n| %>
+            <% fac = @facturas_por_id[n[:factura_id]] %>
+            <% cli = @clientes_por_id[n[:cliente_id]] %>
+            <tr>
+              <td><b><%= n[:numero] %></b></td>
+              <td>
+                <% if fac %>
+                  <a href="<%= t("/ventas/facturas/#{fac[:id]}") %>"><%= fac[:numero] %></a>
+                <% else %>
+                  <span class="sub">—</span>
+                <% end %>
+              </td>
+              <td><%= cli ? cli[:nombre] : '—' %></td>
+              <td><%= n[:fecha] %></td>
+              <td style="text-align:right;font-variant-numeric:tabular-nums;font-weight:600;">
+                ₲ <%= number_with_delimiter(n[:monto]) %>
+              </td>
+              <td>
+                <div class="row-actions">
+                  <a href="<%= t("/ventas/notas_credito/#{n[:id]}") %>" class="icon-act" title="Ver"><i data-lucide="eye"></i></a>
+                </div>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+
+    <% if @notas.page_count >= 1 %>
+      <div class="pagination">
+        <span>Página <%= @notas.current_page %> de <%= @notas.page_count %></span>
+        <div class="pages">
+          <% qs = "q=#{@filtros[:q]}" %>
+          <% if @notas.prev_page %>
+            <a href="<%= t("/ventas/notas_credito?page=#{@notas.prev_page}&#{qs}") %>">←</a>
+          <% else %>
+            <span class="disabled">←</span>
+          <% end %>
+          <% (1..@notas.page_count).each do |p| %>
+            <% if p == @notas.current_page %>
+              <span class="current"><%= p %></span>
+            <% else %>
+              <a href="<%= t("/ventas/notas_credito?page=#{p}&#{qs}") %>"><%= p %></a>
+            <% end %>
+          <% end %>
+          <% if @notas.next_page %>
+            <a href="<%= t("/ventas/notas_credito?page=#{@notas.next_page}&#{qs}") %>">→</a>
+          <% else %>
+            <span class="disabled">→</span>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  <% end %>
+</div>

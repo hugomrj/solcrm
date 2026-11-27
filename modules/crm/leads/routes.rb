@@ -51,7 +51,7 @@ class LeadsRoutes < BaseApp
         )
       end
   
-      @leads   = dataset.order(Sequel.desc(:created_at)).paginate(page, 25)
+      @leads   = dataset.order(Sequel.desc(:created_at)).paginate(page, ITEMS_POR_PAGINA)
       @filtros = {
         q:       q,
         estado:  params[:estado],

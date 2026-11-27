@@ -4,13 +4,13 @@
     <p class="sub">Catálogo de productos y servicios</p>
   </div>
   <div class="head-actions">
-    <a href="<%= t('/articulos/nuevo') %>" class="btn btn-primary">
+    <a href="<%= t('/ventas/articulos/nuevo') %>" class="btn btn-primary">
       <i data-lucide="plus"></i> Nuevo artículo
     </a>
   </div>
 </div>
 
-<form method="get" action="<%= t('/articulos') %>" class="toolbar">
+<form method="get" action="<%= t('/ventas/articulos') %>" class="toolbar">
   <label class="search">
     <i data-lucide="search"></i>
     <input type="text" name="q" value="<%= @filtros[:q] %>" placeholder="Buscar nombre, código…">
@@ -37,17 +37,13 @@
   </button>
 </form>
 
-<div class="count-line">
-  <%= @articulos.pagination_record_count %> artículo(s)
-</div>
-
 <div class="card">
   <% if @articulos.empty? %>
     <div class="empty">
       <i data-lucide="package"></i>
       <b>No hay artículos</b>
       <p>Creá el primero para empezar a facturar</p>
-      <a href="<%= t('/articulos/nuevo') %>" class="btn btn-primary">Crear artículo</a>
+      <a href="<%= t('/ventas/articulos/nuevo') %>" class="btn btn-primary">Crear artículo</a>
     </div>
   <% else %>
     <div class="table-wrap">
@@ -95,10 +91,10 @@
               </td>
               <td>
                 <div class="row-actions">
-                  <a href="<%= t("/articulos/#{a[:id]}/editar") %>" class="icon-act" title="Editar">
+                  <a href="<%= t("/ventas/articulos/#{a[:id]}/editar") %>" class="icon-act" title="Editar">
                     <i data-lucide="pencil"></i>
                   </a>
-                  <form method="post" action="<%= t("/articulos/#{a[:id]}/eliminar") %>" style="display:inline"
+                  <form method="post" action="<%= t("/ventas/articulos/#{a[:id]}/eliminar") %>" style="display:inline"
                         data-confirm="¿Eliminar <%= a[:nombre] %>?"
                         data-confirm-type="danger"
                         data-confirm-ok="Eliminar">
@@ -114,12 +110,12 @@
       </table>
     </div>
 
-    <% if @articulos.page_count > 1 %>
+    <% if @articulos.page_count >= 1 %>
       <div class="pagination">
         <span>Página <%= @articulos.current_page %> de <%= @articulos.page_count %></span>
         <div class="pages">
           <% if @articulos.prev_page %>
-            <a href="<%= t("/articulos?page=#{@articulos.prev_page}&q=#{@filtros[:q]}&tipo=#{@filtros[:tipo]}&estado=#{@filtros[:estado]}") %>">←</a>
+            <a href="<%= t("/ventas/articulos?page=#{@articulos.prev_page}&q=#{@filtros[:q]}&tipo=#{@filtros[:tipo]}&estado=#{@filtros[:estado]}") %>">←</a>
           <% else %>
             <span class="disabled">←</span>
           <% end %>
@@ -128,12 +124,12 @@
             <% if p == @articulos.current_page %>
               <span class="current"><%= p %></span>
             <% else %>
-              <a href="<%= t("/articulos?page=#{p}&q=#{@filtros[:q]}&tipo=#{@filtros[:tipo]}&estado=#{@filtros[:estado]}") %>"><%= p %></a>
+              <a href="<%= t("/ventas/articulos?page=#{p}&q=#{@filtros[:q]}&tipo=#{@filtros[:tipo]}&estado=#{@filtros[:estado]}") %>"><%= p %></a>
             <% end %>
           <% end %>
 
           <% if @articulos.next_page %>
-            <a href="<%= t("/articulos?page=#{@articulos.next_page}&q=#{@filtros[:q]}&tipo=#{@filtros[:tipo]}&estado=#{@filtros[:estado]}") %>">→</a>
+            <a href="<%= t("/ventas/articulos?page=#{@articulos.next_page}&q=#{@filtros[:q]}&tipo=#{@filtros[:tipo]}&estado=#{@filtros[:estado]}") %>">→</a>
           <% else %>
             <span class="disabled">→</span>
           <% end %>

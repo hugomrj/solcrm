@@ -1,0 +1,50 @@
+<div class="page-head">
+  <div>
+    <h1>Nuevo ticket</h1>
+    <p class="sub">Registrá una consulta o reclamo</p>
+  </div>
+</div>
+
+<form method="post" action="<%= t('/soporte') %>">
+  <div class="card form-card">
+    <div class="form-grid">
+
+      <div class="field">
+        <label>Cliente</label>
+        <select name="cliente_id" class="vanilla-select">
+          <option value="">— Sin cliente —</option>
+          <% @clientes.each do |c| %>
+            <option value="<%= c[:id] %>"><%= c[:nombre] %></option>
+          <% end %>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Prioridad</label>
+        <select name="prioridad" class="vanilla-select">
+          <% SoporteRoutes::PRIORIDADES.each do |p| %>
+            <option value="<%= p %>" <%= 'selected' if p == 'normal' %>><%= p.capitalize %></option>
+          <% end %>
+        </select>
+      </div>
+
+      <div class="field span2">
+        <label for="asunto">Asunto *</label>
+        <input type="text" id="asunto" name="asunto" required
+               placeholder="Ej: No imprime el PDF de la factura">
+      </div>
+
+      <div class="field span2">
+        <label for="descripcion">Descripción</label>
+        <textarea id="descripcion" name="descripcion" placeholder="Detalle del problema o consulta"></textarea>
+      </div>
+
+    </div>
+
+    <div class="form-foot">
+      <a href="<%= t('/soporte') %>" class="btn btn-ghost">Cancelar</a>
+      <div class="spacer"></div>
+      <button type="submit" class="btn btn-primary">Crear ticket</button>
+    </div>
+  </div>
+</form>

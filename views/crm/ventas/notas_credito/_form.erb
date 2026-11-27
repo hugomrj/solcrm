@@ -1,0 +1,56 @@
+<a href="<%= t('/ventas/notas_credito') %>" class="backlink"><i data-lucide="arrow-left"></i> Volver a notas de crédito</a>
+
+<div class="page-head">
+  <div>
+    <h1><%= @page_title %></h1>
+    <p class="sub">Acreditación sobre una factura</p>
+  </div>
+</div>
+
+<form method="post" action="<%= t('/ventas/notas_credito') %>">
+  <div class="card form-card">
+    <div class="form-grid">
+
+      <div class="field span2">
+        <label>Factura *</label>
+        <select name="factura_id" class="vanilla-select" required>
+          <option value="">— Elegir factura con saldo —</option>
+          <% @facturas_abiertas.each do |f| %>
+            <% cli = @clientes_por_id[f[:cliente_id]] %>
+            <% saldo = saldo_factura(f) %>
+            <option value="<%= f[:id] %>" <%= 'selected' if @factura_id.to_s == f[:id].to_s %>>
+              <%= f[:numero] %> — <%= cli ? cli[:nombre] : '—' %> — saldo ₲ <%= number_with_delimiter(saldo) %>
+            </option>
+          <% end %>
+        </select>
+        <% if @facturas_abiertas.empty? %>
+          <p class="sub" style="margin-top:8px">No hay facturas con saldo pendiente.</p>
+        <% end %>
+      </div>
+
+      <div class="field">
+        <label for="monto">Monto (₲) *</label>
+        <input type="number" id="monto" name="monto" min="0.01" step="0.01" required placeholder="0">
+      </div>
+
+      <div class="field">
+        <label for="fecha">Fecha</label>
+        <input type="date" id="fecha" name="fecha" value="<%= Date.today %>">
+      </div>
+
+      <div class="field span2">
+        <label for="motivo">Motivo</label>
+        <textarea id="motivo" name="motivo" placeholder="Devolución, descuento, error de facturación…"></textarea>
+      </div>
+
+    </div>
+
+    <div class="form-foot">
+      <a href="<%= t('/ventas/notas_credito') %>" class="btn btn-ghost">Cancelar</a>
+      <div class="spacer"></div>
+      <button type="submit" class="btn btn-primary" <%= @facturas_abiertas.empty? ? 'disabled' : '' %>>
+        Crear nota de crédito
+      </button>
+    </div>
+  </div>
+</form>

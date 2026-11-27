@@ -37,7 +37,7 @@ class ActividadesRoutes < BaseApp
       )
     end
 
-    @actividades = dataset.order(Sequel.desc(:fecha), Sequel.desc(:created_at)).paginate(page, 25)
+    @actividades = dataset.order(Sequel.desc(:fecha), Sequel.desc(:created_at)).paginate(page, ITEMS_POR_PAGINA)
     @filtros     = { q: q, tipo: params[:tipo], estado: params[:estado] }
 
     erb :"crm/actividades/index"
@@ -60,7 +60,7 @@ class ActividadesRoutes < BaseApp
     when "completadas" then dataset = dataset.where(completada: true)
     end
 
-    @actividades = dataset.order(Sequel.asc(:completada), Sequel.asc(:fecha)).paginate(page, 25)
+    @actividades = dataset.order(Sequel.asc(:completada), Sequel.asc(:fecha)).paginate(page, ITEMS_POR_PAGINA)
     @filtros     = { estado: params[:estado] }
 
     erb :"crm/actividades/lista_tareas"
@@ -77,7 +77,7 @@ class ActividadesRoutes < BaseApp
     page = 1 if page < 1
 
     dataset = tenant_db(:actividades).where(tipo: "llamada")
-    @actividades = dataset.order(Sequel.desc(:fecha)).paginate(page, 25)
+    @actividades = dataset.order(Sequel.desc(:fecha)).paginate(page, ITEMS_POR_PAGINA)
     @filtros = {}
 
     erb :"crm/actividades/lista_llamadas"

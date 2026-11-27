@@ -33,8 +33,8 @@
   .kpi.highlight b{color:var(--brand)}
   .progress{height:6px;background:var(--line);border-radius:999px;margin-top:8px;overflow:hidden}
   .progress > div{height:100%;background:var(--brand);border-radius:999px;transition:width .3s}
-  .progress.ok > div{background:var(--ok)}
   .progress.warn > div{background:var(--warn)}
+  .progress.err > div{background:var(--err)}
   .tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:20px;flex-wrap:wrap}
   .tab{padding:10px 16px;cursor:pointer;border:none;background:none;color:var(--muted);
        font:inherit;border-bottom:2px solid transparent}
@@ -68,7 +68,7 @@
 <header>
   <div>
     <h1>SolCRM — Documentación técnica</h1>
-    <small>Fuente: <code>scripts/schema.sql</code> + <code>scripts/crear_estructura.rb</code> + <code>_sidebar.erb</code> · 2026-11-25</small>
+    <small>Actualizado: 26/11/2026 · Fuente: <code>schema.sql</code> + <code>_sidebar.erb</code> + <code>config/routes.rb</code></small>
   </div>
   <button class="toggle" id="theme">Tema</button>
 </header>
@@ -77,12 +77,12 @@
 
   <div class="kpis">
     <div class="kpi highlight">
-      <b>10 / 35</b><span>Ítems del menú OK</span>
-      <div class="progress warn"><div style="width:29%"></div></div>
+      <b>30 / 30</b><span>Ítems del menú OK</span>
+      <div class="progress"><div style="width:100%"></div></div>
     </div>
-    <div class="kpi"><b>26</b><span>Tablas</span></div>
-    <div class="kpi"><b>8</b><span>Módulos implementados</span></div>
-    <div class="kpi"><b>18</b><span>Módulos pendientes</span></div>
+    <div class="kpi"><b>31</b><span>Tablas</span></div>
+    <div class="kpi"><b>27</b><span>Módulos implementados</span></div>
+    <div class="kpi"><b>0</b><span>Ítems pendientes</span></div>
     <div class="kpi"><b>33</b><span>Permisos</span></div>
     <div class="kpi"><b>3</b><span>Roles</span></div>
   </div>
@@ -90,22 +90,50 @@
   <div class="tabs" role="tablist">
     <button class="tab" role="tab" data-panel="avance" aria-selected="true">Avance del menú</button>
     <button class="tab" role="tab" data-panel="estado" aria-selected="false">Estado de módulos</button>
+    <button class="tab" role="tab" data-panel="deuda" aria-selected="false">Deuda técnica / Gotchas</button>
     <button class="tab" role="tab" data-panel="schema" aria-selected="false">Schema</button>
-    <button class="tab" role="tab" data-panel="permisos" aria-selected="false">Permisos</button>
-    <button class="tab" role="tab" data-panel="deuda" aria-selected="false">Deuda técnica</button>
   </div>
 
   <!-- ============ AVANCE ============ -->
   <section class="panel active" id="panel-avance">
     <div class="note warn">
-      Si <code>cargar_demo.rb</code> falla con <code>relation "X" does not exist</code>:
-      correr <code>bundle exec ruby scripts/crear_estructura.rb</code> (DROP + recrear),
-      luego <code>crear_tenant.rb</code> y de nuevo <code>cargar_demo.rb</code>.
+      <b>Roadmap cumplido:</b> los 30 ítems del menú están implementados. Lo que sigue es endurecer: tests automatizados, integración SIFEN (factura electrónica) y las deudas anotadas abajo.
     </div>
 
     <div class="note">
-      Regla de cálculo: tabla en schema (20%) + permiso en crear_estructura (10%) +
-      ítem en sidebar (10%) + <code>routes.rb</code> (30%) + vistas (30%). Objetivo, no depende de memoria.
+      <b>Cerrado en Sprint 8 (Propuestas y presupuestos):</b> tabla única <code>documentos_venta</code> (<code>tipo</code> = propuesta | presupuesto) con ítems, numeración por tipo (<code>PRO-</code> / <code>PPTO-</code>), estados borrador → enviada → aceptada/rechazada y <b>conversión a factura</b> copiando ítems y totales.
+    </div>
+
+    <div class="note">
+      <b>Cerrado en Sprint 7 (Archivos y suscripciones):</b> explorador con subida real (archivos en <code>storage/archivos/&lt;tenant&gt;/</code>, fuera de <code>public/</code>), descarga autenticada y tamaño total; suscripciones con plan, periodicidad, estados e ingreso mensual normalizado (MRR). <code>compartir</code> quedó fuera del menú: no hay modelo de enlaces/permisos.
+    </div>
+
+    <div class="note">
+      <b>Cerrado en Sprint 6 (Sistema):</b> editor de permisos por rol (agrupados por área, con contador de usuarios asignados) y configuración de la empresa (nombre y plan). Ojo: <code>roles</code>, <code>permisos</code> y <code>roles_permisos</code> son globales, no por tenant.
+    </div>
+
+    <div class="note">
+      <b>Cerrado en Sprint 5 (Operaciones):</b> <code>gastos</code> (CRUD con categorías y total filtrado), <code>proyectos</code> (cliente, estado, fechas y presupuesto; cancelar = estado <code>cancelado</code>) y <code>soporte/tickets</code> con numeración <code>TKT-</code>, prioridades, hilo de mensajes y reapertura automática al responder un ticket cerrado.
+    </div>
+
+    <div class="note">
+      <b>Cerrado en Sprint 4 (Informes):</b> ventas (facturado vs. cobrado por mes, top clientes, ticket promedio), gastos (por categoría y evolución), pipeline (oportunidades por etapa, tasa de conversión) y actividad (por tipo, usuario y cumplimiento), todos con filtro de fechas.
+    </div>
+
+    <div class="note">
+      <b>Cerrado en Sprint 3 (Inventario):</b> stock calculado desde <code>stock_movimientos</code> (entrada/salida/ajuste, sin columna materializada), ajustes contra conteo físico, y movimientos automáticos: salida al emitir una factura y entrada al recibir una orden de compra (idempotentes por referencia <code>FAC:</code> / <code>OC:</code>).
+    </div>
+
+    <div class="note">
+      <b>Cerrado en Sprint 2 (Abastecimiento):</b> CRUD completo de <code>proveedores</code> (con soft delete y validación de documento único) y de <code>ordenes_compra</code> con ítems dinámicos, totales y estados borrador → emitida → recibida → anulada.
+    </div>
+
+    <div class="note">
+      <b>Cerrado en Sprint 1 (Cobranza):</b> <code>ventas/pagos</code> y <code>ventas/notas_credito</code> completos, saldo por factura (<code>total − pagos − notas</code>), paso automático a <code>pagada</code>, botón "Registrar pago" desde la factura, circuito "nueva factura → cobro → nueva factura", paginación global con <code>ITEMS_POR_PAGINA</code> y spinners numéricos eliminados.
+    </div>
+
+    <div class="note">
+      Regla de cálculo: tabla en schema (20%) + permiso en crear_estructura (10%) + ítem en sidebar (10%) + <code>routes.rb</code> (30%) + vistas (30%).
     </div>
 
     <h3 style="margin-top:24px">Avance por sección del menú</h3>
@@ -116,16 +144,22 @@
             <td><span class="bar"><div style="width:100%"></div></span><span class="pct">100%</span></td></tr>
         <tr><td>Actividad</td><td>3</td><td>3</td><td>0</td>
             <td><span class="bar"><div style="width:100%"></div></span><span class="pct">100%</span></td></tr>
-        <tr><td>Ventas</td><td>6</td><td>1</td><td>5</td>
-            <td><span class="bar err"><div style="width:17%"></div></span><span class="pct">17%</span></td></tr>
-        <tr><td>Operaciones</td><td>9</td><td>0</td><td>9</td>
-            <td><span class="bar err"><div style="width:0%"></div></span><span class="pct">0%</span></td></tr>
-        <tr><td>Herramientas</td><td>6</td><td>0</td><td>6</td>
-            <td><span class="bar err"><div style="width:0%"></div></span><span class="pct">0%</span></td></tr>
-        <tr><td>Sistema</td><td>3</td><td>1</td><td>2</td>
-            <td><span class="bar warn"><div style="width:33%"></div></span><span class="pct">33%</span></td></tr>
-        <tr style="font-weight:600"><td>Total</td><td>32</td><td>10</td><td>22</td>
-            <td><span class="bar warn"><div style="width:31%"></div></span><span class="pct">31%</span></td></tr>
+        <tr><td>Ventas</td><td>6</td><td>6</td><td>0</td>
+            <td><span class="bar"><div style="width:100%"></div></span><span class="pct">100%</span></td></tr>
+        <tr><td>Compras</td><td>2</td><td>2</td><td>0</td>
+            <td><span class="bar"><div style="width:100%"></div></span><span class="pct">100%</span></td></tr>
+        <tr><td>Inventario</td><td>2</td><td>2</td><td>0</td>
+            <td><span class="bar"><div style="width:100%"></div></span><span class="pct">100%</span></td></tr>
+        <tr><td>Archivos</td><td>1</td><td>1</td><td>0</td>
+            <td><span class="bar"><div style="width:100%"></div></span><span class="pct">100%</span></td></tr>
+        <tr><td>Informes</td><td>4</td><td>4</td><td>0</td>
+            <td><span class="bar"><div style="width:100%"></div></span><span class="pct">100%</span></td></tr>
+        <tr><td>Operaciones</td><td>4</td><td>4</td><td>0</td>
+            <td><span class="bar"><div style="width:100%"></div></span><span class="pct">100%</span></td></tr>
+        <tr><td>Configuración</td><td>3</td><td>3</td><td>0</td>
+            <td><span class="bar"><div style="width:100%"></div></span><span class="pct">100%</span></td></tr>
+        <tr style="font-weight:600"><td>Total</td><td>30</td><td>30</td><td>0</td>
+            <td><span class="bar"><div style="width:100%"></div></span><span class="pct">100%</span></td></tr>
       </tbody>
     </table>
 
@@ -153,70 +187,61 @@
             <td><span class="bar"><div style="width:100%"></div></span><span class="pct">100%</span></td></tr>
 
         <tr><td>Ventas</td><td>Propuestas</td><td><code>/propuestas</code></td>
-            <td><span class="bar err"><div style="width:20%"></div></span><span class="pct">20%</span></td></tr>
+            <td><span class="bar"><div style="width:100%"></div></span><span class="pct">100%</span></td></tr>
         <tr><td>Ventas</td><td>Presupuestos</td><td><code>/presupuestos</code></td>
-            <td><span class="bar err"><div style="width:20%"></div></span><span class="pct">20%</span></td></tr>
-        <tr><td>Ventas</td><td>Facturas</td><td><code>/facturas</code></td>
-            <td><span class="bar warn"><div style="width:40%"></div></span><span class="pct">40%</span></td></tr>
-        <tr><td>Ventas</td><td>Pagos</td><td><code>/pagos</code></td>
-            <td><span class="bar warn"><div style="width:40%"></div></span><span class="pct">40%</span></td></tr>
-        <tr><td>Ventas</td><td>Notas de crédito</td><td><code>/notas_credito</code></td>
-            <td><span class="bar warn"><div style="width:40%"></div></span><span class="pct">40%</span></td></tr>
-        <tr><td>Ventas</td><td>Artículos</td><td><code>/articulos</code></td>
+            <td><span class="bar"><div style="width:100%"></div></span><span class="pct">100%</span></td></tr>
+        <tr><td>Ventas</td><td>Facturas</td><td><code>/ventas/facturas</code></td>
+            <td><span class="bar"><div style="width:100%"></div></span><span class="pct">100%</span></td></tr>
+        <tr><td>Ventas</td><td>Pagos</td><td><code>/ventas/pagos</code></td>
+            <td><span class="bar"><div style="width:100%"></div></span><span class="pct">100%</span></td></tr>
+        <tr><td>Ventas</td><td>Notas de crédito</td><td><code>/ventas/notas_credito</code></td>
+            <td><span class="bar"><div style="width:100%"></div></span><span class="pct">100%</span></td></tr>
+        <tr><td>Ventas</td><td>Artículos</td><td><code>/ventas/articulos</code></td>
+            <td><span class="bar"><div style="width:100%"></div></span><span class="pct">100%</span></td></tr>
+
+        <tr><td>Compras</td><td>Proveedores</td><td><code>/proveedores</code></td>
+            <td><span class="bar"><div style="width:100%"></div></span><span class="pct">100%</span></td></tr>
+        <tr><td>Compras</td><td>Órdenes de Compra</td><td><code>/ordenes_compra</code></td>
+            <td><span class="bar"><div style="width:100%"></div></span><span class="pct">100%</span></td></tr>
+        <tr><td>Compras</td><td><i>Contratos (fuera del menú)</i></td><td><code>/contratos_compra</code></td>
+            <td><span class="bar err"><div style="width:0%"></div></span><span class="pct">sin tabla</span></td></tr>
+
+        <tr><td>Inventario</td><td><i>Productos (fuera del menú)</i></td><td><code>/productos</code></td>
+            <td><span class="bar"><div style="width:100%"></div></span><span class="pct">redirect a Artículos</span></td></tr>
+        <tr><td>Inventario</td><td>Stock</td><td><code>/stock</code></td>
+            <td><span class="bar"><div style="width:100%"></div></span><span class="pct">100%</span></td></tr>
+        <tr><td>Inventario</td><td>Ajustes</td><td><code>/ajustes_inventario</code></td>
+            <td><span class="bar"><div style="width:100%"></div></span><span class="pct">100%</span></td></tr>
+
+        <tr><td>Archivos</td><td>Explorador</td><td><code>/explorador</code></td>
+            <td><span class="bar"><div style="width:100%"></div></span><span class="pct">100%</span></td></tr>
+        <tr><td>Archivos</td><td><i>Compartir (fuera del menú)</i></td><td><code>/compartir</code></td>
+            <td><span class="bar err"><div style="width:0%"></div></span><span class="pct">redirect al explorador</span></td></tr>
+
+        <tr><td>Informes</td><td>Ventas</td><td><code>/informes_ventas</code></td>
+            <td><span class="bar"><div style="width:100%"></div></span><span class="pct">100%</span></td></tr>
+        <tr><td>Informes</td><td>Gastos</td><td><code>/informes_gastos</code></td>
+            <td><span class="bar"><div style="width:100%"></div></span><span class="pct">100%</span></td></tr>
+        <tr><td>Informes</td><td>Conversión</td><td><code>/informes_pipeline</code></td>
+            <td><span class="bar"><div style="width:100%"></div></span><span class="pct">100%</span></td></tr>
+        <tr><td>Informes</td><td>Actividad</td><td><code>/informes_actividad</code></td>
             <td><span class="bar"><div style="width:100%"></div></span><span class="pct">100%</span></td></tr>
 
         <tr><td>Operaciones</td><td>Proyectos</td><td><code>/proyectos</code></td>
-            <td><span class="bar warn"><div style="width:40%"></div></span><span class="pct">40%</span></td></tr>
-        <tr><td>Operaciones</td><td>Proveedores</td><td><code>/proveedores</code></td>
-            <td><span class="bar warn"><div style="width:40%"></div></span><span class="pct">40%</span></td></tr>
-        <tr><td>Operaciones</td><td>Órdenes de Compra</td><td><code>/ordenes_compra</code></td>
-            <td><span class="bar warn"><div style="width:40%"></div></span><span class="pct">40%</span></td></tr>
-        <tr><td>Operaciones</td><td>Contratos</td><td><code>/contratos_compra</code></td>
-            <td><span class="bar err"><div style="width:20%"></div></span><span class="pct">20%</span></td></tr>
-        <tr><td>Operaciones</td><td>Productos</td><td><code>/productos</code></td>
-            <td><span class="bar err"><div style="width:20%"></div></span><span class="pct">20%</span></td></tr>
-        <tr><td>Operaciones</td><td>Stock</td><td><code>/stock</code></td>
-            <td><span class="bar warn"><div style="width:40%"></div></span><span class="pct">40%</span></td></tr>
-        <tr><td>Operaciones</td><td>Ajustes</td><td><code>/ajustes_inventario</code></td>
-            <td><span class="bar warn"><div style="width:40%"></div></span><span class="pct">40%</span></td></tr>
-        <tr><td>Operaciones</td><td>Gastos</td><td><code>/gastos</code></td>
-            <td><span class="bar warn"><div style="width:40%"></div></span><span class="pct">40%</span></td></tr>
-
-        <tr><td>Herramientas</td><td>Explorador</td><td><code>/explorador</code></td>
-            <td><span class="bar warn"><div style="width:40%"></div></span><span class="pct">40%</span></td></tr>
-        <tr><td>Herramientas</td><td>Compartir</td><td><code>/compartir</code></td>
-            <td><span class="bar warn"><div style="width:40%"></div></span><span class="pct">40%</span></td></tr>
-        <tr><td>Herramientas</td><td>Informe Ventas</td><td><code>/informes_ventas</code></td>
-            <td><span class="bar err"><div style="width:20%"></div></span><span class="pct">20%</span></td></tr>
-        <tr><td>Herramientas</td><td>Informe Gastos</td><td><code>/informes_gastos</code></td>
-            <td><span class="bar err"><div style="width:20%"></div></span><span class="pct">20%</span></td></tr>
-        <tr><td>Herramientas</td><td>Informe Conversión</td><td><code>/informes_pipeline</code></td>
-            <td><span class="bar err"><div style="width:20%"></div></span><span class="pct">20%</span></td></tr>
-        <tr><td>Herramientas</td><td>Informe Actividad</td><td><code>/informes_actividad</code></td>
-            <td><span class="bar err"><div style="width:20%"></div></span><span class="pct">20%</span></td></tr>
-
-        <tr><td>Sistema</td><td>Usuarios</td><td><code>/usuarios</code></td>
             <td><span class="bar"><div style="width:100%"></div></span><span class="pct">100%</span></td></tr>
-        <tr><td>Sistema</td><td>Roles</td><td><code>/roles</code></td>
-            <td><span class="bar warn"><div style="width:40%"></div></span><span class="pct">40%</span></td></tr>
-        <tr><td>Sistema</td><td>Ajustes</td><td><code>/configuracion</code></td>
-            <td><span class="bar err"><div style="width:20%"></div></span><span class="pct">20%</span></td></tr>
-      </tbody>
-    </table>
+        <tr><td>Operaciones</td><td>Soporte</td><td><code>/soporte</code></td>
+            <td><span class="bar"><div style="width:100%"></div></span><span class="pct">100%</span></td></tr>
+        <tr><td>Operaciones</td><td>Suscripciones</td><td><code>/suscripciones</code></td>
+            <td><span class="bar"><div style="width:100%"></div></span><span class="pct">100%</span></td></tr>
+        <tr><td>Operaciones</td><td>Gastos</td><td><code>/gastos</code></td>
+            <td><span class="bar"><div style="width:100%"></div></span><span class="pct">100%</span></td></tr>
 
-    <h3 style="margin-top:24px">Orden sugerido para seguir</h3>
-    <table>
-      <thead><tr><th>#</th><th>Módulo</th><th>Motivo</th></tr></thead>
-      <tbody>
-        <tr><td>1</td><td><code>ventas/facturas</code></td><td>Tablas + clientes + artículos ya listos. Mayor retorno inmediato.</td></tr>
-        <tr><td>2</td><td><code>ventas/pagos</code></td><td>Depende de facturas.</td></tr>
-        <tr><td>3</td><td><code>ventas/notas_credito</code></td><td>Depende de facturas.</td></tr>
-        <tr><td>4</td><td><code>proveedores</code></td><td>Aislado, bajo esfuerzo.</td></tr>
-        <tr><td>5</td><td><code>ordenes_compra</code></td><td>Depende de proveedores + artículos.</td></tr>
-        <tr><td>6</td><td><code>soporte/tickets</code></td><td>Depende de clientes (listo).</td></tr>
-        <tr><td>7</td><td><code>gastos</code>, <code>proyectos</code>, <code>suscripciones</code></td><td>Aislados, fáciles.</td></tr>
-        <tr><td>8</td><td><code>informes_*</code></td><td>Al final, cuando haya datos.</td></tr>
-        <tr><td>—</td><td><code>productos</code>, <code>contratos_compra</code></td><td>Decidir si se eliminan del sidebar antes de codear nada.</td></tr>
+        <tr><td>Configuración</td><td>Usuarios</td><td><code>/usuarios</code></td>
+            <td><span class="bar"><div style="width:100%"></div></span><span class="pct">100%</span></td></tr>
+        <tr><td>Configuración</td><td>Roles</td><td><code>/roles</code></td>
+            <td><span class="bar"><div style="width:100%"></div></span><span class="pct">100%</span></td></tr>
+        <tr><td>Configuración</td><td>Ajustes</td><td><code>/configuracion</code></td>
+            <td><span class="bar"><div style="width:100%"></div></span><span class="pct">100%</span></td></tr>
       </tbody>
     </table>
   </section>
@@ -225,169 +250,67 @@
   <section class="panel" id="panel-estado">
     <input type="search" placeholder="Filtrar módulos…" data-filter="estado">
     <table>
-      <thead><tr><th>Módulo</th><th>Ruta</th><th>Tabla(s)</th><th>Avance</th><th>Estado</th></tr></thead>
+      <thead><tr><th>Módulo</th><th>Ruta URL</th><th>Tabla(s)</th><th>Estado</th></tr></thead>
       <tbody>
-        <tr><td>auth/usuario</td><td><code>/login</code>, <code>/perfil</code>, <code>/usuarios</code></td><td>usuarios, usuarios_roles, roles</td>
-            <td><span class="bar"><div style="width:100%"></div></span><span class="pct">100%</span></td>
+        <tr><td>auth/usuario</td><td><code>/login</code>, <code>/perfil</code>, <code>/usuarios</code></td><td>usuarios, roles</td>
             <td><span class="tag ok">implementado</span></td></tr>
         <tr><td>crm/clientes</td><td><code>/clientes</code></td><td>clientes</td>
-            <td><span class="bar"><div style="width:100%"></div></span><span class="pct">100%</span></td>
             <td><span class="tag ok">implementado</span></td></tr>
         <tr><td>crm/contactos</td><td><code>/contactos</code></td><td>contactos</td>
-            <td><span class="bar"><div style="width:100%"></div></span><span class="pct">100%</span></td>
             <td><span class="tag ok">implementado</span></td></tr>
         <tr><td>crm/leads</td><td><code>/leads</code></td><td>leads</td>
-            <td><span class="bar"><div style="width:100%"></div></span><span class="pct">100%</span></td>
             <td><span class="tag ok">implementado</span></td></tr>
-        <tr><td>crm/pipeline</td><td><code>/pipeline</code></td><td>oportunidades, pipeline_etapas, oportunidades_historial</td>
-            <td><span class="bar"><div style="width:100%"></div></span><span class="pct">100%</span></td>
+        <tr><td>crm/pipeline</td><td><code>/pipeline</code></td><td>oportunidades, pipeline_etapas</td>
             <td><span class="tag ok">implementado</span></td></tr>
-        <tr><td>crm/actividades</td><td><code>/actividades</code>, <code>/calendario</code>, <code>/tareas</code>, <code>/llamadas</code></td><td>actividades</td>
-            <td><span class="bar"><div style="width:100%"></div></span><span class="pct">100%</span></td>
-            <td><span class="tag ok">implementado</span></td></tr>
-        <tr><td>ventas/articulos</td><td><code>/articulos</code></td><td>articulos</td>
-            <td><span class="bar"><div style="width:100%"></div></span><span class="pct">100%</span></td>
+        <tr><td>crm/actividades</td><td><code>/actividades</code>, <code>/calendario</code></td><td>actividades</td>
             <td><span class="tag ok">implementado</span></td></tr>
         <tr><td>sistema/dashboard</td><td><code>/dashboard</code></td><td>(agregados)</td>
-            <td><span class="bar"><div style="width:100%"></div></span><span class="pct">100%</span></td>
+            <td><span class="tag ok">implementado</span></td></tr>
+        <tr><td>ventas/articulos</td><td><code>/ventas/articulos</code></td><td>articulos</td>
+            <td><span class="tag ok">implementado</span></td></tr>
+        <tr><td><b>ventas/facturas</b></td><td><code>/ventas/facturas</code></td><td>facturas, facturas_items</td>
+            <td><span class="tag ok">implementado (con PDF)</span></td></tr>
+        <tr><td><b>ventas/pagos</b></td><td><code>/ventas/pagos</code></td><td>pagos</td>
+            <td><span class="tag ok">implementado</span></td></tr>
+        <tr><td><b>ventas/notas_credito</b></td><td><code>/ventas/notas_credito</code></td><td>notas_credito</td>
             <td><span class="tag ok">implementado</span></td></tr>
 
-        <tr><td>ventas/facturas</td><td><code>/facturas</code></td><td>facturas, facturas_items</td>
-            <td><span class="bar warn"><div style="width:40%"></div></span><span class="pct">40%</span></td>
-            <td><span class="tag warn">tabla lista, falta módulo</span></td></tr>
-        <tr><td>ventas/pagos</td><td><code>/pagos</code></td><td>pagos</td>
-            <td><span class="bar warn"><div style="width:40%"></div></span><span class="pct">40%</span></td>
-            <td><span class="tag warn">tabla lista, falta módulo</span></td></tr>
-        <tr><td>ventas/notas_credito</td><td><code>/notas_credito</code></td><td>notas_credito</td>
-            <td><span class="bar warn"><div style="width:40%"></div></span><span class="pct">40%</span></td>
-            <td><span class="tag warn">tabla lista, falta módulo</span></td></tr>
-        <tr><td>ventas/propuestas</td><td><code>/propuestas</code></td><td>—</td>
-            <td><span class="bar err"><div style="width:20%"></div></span><span class="pct">20%</span></td>
-            <td><span class="tag err">sin tabla ni módulo</span></td></tr>
-        <tr><td>ventas/presupuestos</td><td><code>/presupuestos</code></td><td>—</td>
-            <td><span class="bar err"><div style="width:20%"></div></span><span class="pct">20%</span></td>
-            <td><span class="tag err">sin tabla ni módulo</span></td></tr>
-        <tr><td>soporte/tickets</td><td><code>/soporte</code></td><td>tickets, tickets_mensajes</td>
-            <td><span class="bar warn"><div style="width:40%"></div></span><span class="pct">40%</span></td>
-            <td><span class="tag warn">tablas listas, falta módulo</span></td></tr>
-        <tr><td>suscripciones</td><td><code>/suscripciones</code></td><td>suscripciones</td>
-            <td><span class="bar warn"><div style="width:40%"></div></span><span class="pct">40%</span></td>
-            <td><span class="tag warn">tabla lista, falta módulo</span></td></tr>
-        <tr><td>proyectos</td><td><code>/proyectos</code></td><td>proyectos</td>
-            <td><span class="bar warn"><div style="width:40%"></div></span><span class="pct">40%</span></td>
-            <td><span class="tag warn">tabla lista, falta módulo</span></td></tr>
-        <tr><td>proveedores</td><td><code>/proveedores</code></td><td>proveedores</td>
-            <td><span class="bar warn"><div style="width:40%"></div></span><span class="pct">40%</span></td>
-            <td><span class="tag warn">tabla lista, falta módulo</span></td></tr>
-        <tr><td>ordenes_compra</td><td><code>/ordenes_compra</code></td><td>ordenes_compra, _items</td>
-            <td><span class="bar warn"><div style="width:40%"></div></span><span class="pct">40%</span></td>
-            <td><span class="tag warn">tablas listas, falta módulo</span></td></tr>
-        <tr><td>contratos_compra</td><td><code>/contratos_compra</code></td><td>—</td>
-            <td><span class="bar err"><div style="width:20%"></div></span><span class="pct">20%</span></td>
-            <td><span class="tag err">sin tabla ni módulo</span></td></tr>
-        <tr><td>stock</td><td><code>/stock</code></td><td>stock_movimientos</td>
-            <td><span class="bar warn"><div style="width:40%"></div></span><span class="pct">40%</span></td>
-            <td><span class="tag warn">tabla lista, falta módulo</span></td></tr>
-        <tr><td>ajustes_inventario</td><td><code>/ajustes_inventario</code></td><td>stock_movimientos</td>
-            <td><span class="bar warn"><div style="width:40%"></div></span><span class="pct">40%</span></td>
-            <td><span class="tag warn">reusa stock_movimientos</span></td></tr>
+        <tr><td><b>ventas/documentos_venta</b></td><td><code>/propuestas</code>, <code>/presupuestos</code></td><td>documentos_venta, documentos_venta_items</td>
+            <td><span class="tag ok">implementado</span></td></tr>
+        
+        <tr><td><b>compras/proveedores</b></td><td><code>/proveedores</code></td><td>proveedores</td>
+            <td><span class="tag ok">implementado</span></td></tr>
+        <tr><td><b>compras/ordenes_compra</b></td><td><code>/ordenes_compra</code></td><td>ordenes_compra, ordenes_compra_items</td>
+            <td><span class="tag ok">implementado</span></td></tr>
+        <tr><td>compras/contratos</td><td><code>/contratos_compra</code></td><td>—</td>
+            <td><span class="tag err">sin tabla; quitado del menú</span></td></tr>
+        <tr><td><b>inventario/stock</b></td><td><code>/stock</code>, <code>/ajustes_inventario</code></td><td>stock_movimientos</td>
+            <td><span class="tag ok">implementado</span></td></tr>
+        <tr><td><b>soporte/tickets</b></td><td><code>/soporte</code></td><td>tickets, tickets_mensajes</td>
+            <td><span class="tag ok">implementado</span></td></tr>
+        <tr><td><b>proyectos</b></td><td><code>/proyectos</code></td><td>proyectos</td>
+            <td><span class="tag ok">implementado</span></td></tr>
+        <tr><td><b>gastos</b></td><td><code>/gastos</code></td><td>gastos</td>
+            <td><span class="tag ok">implementado</span></td></tr>
+        <tr><td><b>suscripciones</b></td><td><code>/suscripciones</code></td><td>suscripciones</td>
+            <td><span class="tag ok">implementado</span></td></tr>
+        <tr><td><b>archivos</b></td><td><code>/explorador</code> (<code>/compartir</code> redirige)</td><td>archivos</td>
+            <td><span class="tag ok">implementado</span></td></tr>
+
+        <tr><td><b>sistema/roles</b></td><td><code>/roles</code></td><td>roles, permisos, roles_permisos</td>
+            <td><span class="tag ok">implementado</span></td></tr>
+        <tr><td><b>sistema/configuracion</b></td><td><code>/configuracion</code></td><td>tenants</td>
+            <td><span class="tag ok">implementado</span></td></tr>
+        <tr><td><b>informes/ventas</b></td><td><code>/informes_ventas</code></td><td>facturas, pagos, notas_credito</td>
+            <td><span class="tag ok">implementado</span></td></tr>
+        <tr><td><b>informes/gastos</b></td><td><code>/informes_gastos</code></td><td>gastos</td>
+            <td><span class="tag ok">implementado</span></td></tr>
+        <tr><td><b>informes/pipeline</b></td><td><code>/informes_pipeline</code></td><td>oportunidades, pipeline_etapas</td>
+            <td><span class="tag ok">implementado</span></td></tr>
+        <tr><td><b>informes/actividad</b></td><td><code>/informes_actividad</code></td><td>actividades</td>
+            <td><span class="tag ok">implementado</span></td></tr>
         <tr><td>productos</td><td><code>/productos</code></td><td>—</td>
-            <td><span class="bar err"><div style="width:20%"></div></span><span class="pct">20%</span></td>
-            <td><span class="tag err">¿sinónimo de articulos?</span></td></tr>
-        <tr><td>gastos</td><td><code>/gastos</code></td><td>gastos</td>
-            <td><span class="bar warn"><div style="width:40%"></div></span><span class="pct">40%</span></td>
-            <td><span class="tag warn">tabla lista, falta módulo</span></td></tr>
-        <tr><td>explorador / compartir</td><td><code>/explorador</code>, <code>/compartir</code></td><td>archivos</td>
-            <td><span class="bar warn"><div style="width:40%"></div></span><span class="pct">40%</span></td>
-            <td><span class="tag warn">tabla lista, falta módulo</span></td></tr>
-        <tr><td>informes_*</td><td><code>/informes_*</code></td><td>(agregados)</td>
-            <td><span class="bar err"><div style="width:20%"></div></span><span class="pct">20%</span></td>
-            <td><span class="tag err">sin código</span></td></tr>
-        <tr><td>roles / configuracion</td><td><code>/roles</code>, <code>/configuracion</code></td><td>roles, permisos, roles_permisos</td>
-            <td><span class="bar warn"><div style="width:40%"></div></span><span class="pct">40%</span></td>
-            <td><span class="tag err">sin UI</span></td></tr>
-      </tbody>
-    </table>
-  </section>
-
-  <!-- ============ SCHEMA ============ -->
-  <section class="panel" id="panel-schema">
-    <input type="search" placeholder="Filtrar tablas o columnas…" data-filter="schema">
-    <table>
-      <thead><tr><th>Tabla</th><th>Tenant</th><th>FKs</th><th>Únicos / índices</th><th>Notas</th></tr></thead>
-      <tbody>
-        <tr><td><code>super_admins</code></td><td>—</td><td>—</td><td><code>usuario</code></td><td>fuera del modelo tenant (ruta <code>/super</code>)</td></tr>
-        <tr><td><code>tenants</code></td><td>—</td><td>—</td><td><code>codigo</code></td><td>resuelve el tenant por URL</td></tr>
-        <tr><td><code>roles</code></td><td>—</td><td>—</td><td><code>nombre</code></td><td>global, no por tenant</td></tr>
-        <tr><td><code>permisos</code></td><td>—</td><td>—</td><td><code>modulo</code></td><td>global, no por tenant</td></tr>
-        <tr><td><code>roles_permisos</code></td><td>—</td><td>rol_id, permiso_id</td><td><code>(rol_id, permiso_id)</code></td><td>sin tenant_id</td></tr>
-        <tr><td><code>usuarios</code></td><td>Si</td><td>tenant_id</td><td><code>(tenant_id, usuario)</code></td><td>soft delete (<code>activo</code>)</td></tr>
-        <tr><td><code>usuarios_roles</code></td><td>Si</td><td>usuario_id, rol_id</td><td><code>(usuario_id, rol_id)</code></td><td>el tenant_id es redundante pero aísla</td></tr>
-        <tr><td><code>clientes</code></td><td>Si</td><td>tenant_id, created_by</td><td><code>(tenant_id, documento)</code></td><td>soft delete</td></tr>
-        <tr><td><code>contactos</code></td><td>Si</td><td>cliente_id</td><td>idx (cliente_id) parcial</td><td>soft delete</td></tr>
-        <tr><td><code>leads</code></td><td>Si</td><td>responsable_id, convertido_a_cliente_id</td><td>idx (tenant_id) parcial</td><td>soft delete</td></tr>
-        <tr><td><code>pipeline_etapas</code></td><td>Si</td><td>—</td><td><code>(tenant_id, nombre)</code></td><td>orden por tenant</td></tr>
-        <tr><td><code>oportunidades</code></td><td>Si</td><td>cliente_id, lead_id, etapa_id, responsable_id</td><td>—</td><td>cierre real/estimado</td></tr>
-        <tr><td><code>oportunidades_historial</code></td><td>Si</td><td>oportunidad_id, etapas, usuario_id</td><td>—</td><td>auditoría de movimientos</td></tr>
-        <tr><td><code>actividades</code></td><td>Si</td><td>usuario_id</td><td>idx (tenant_id, entidad_tipo, entidad_id), idx (tenant_id, fecha)</td><td>polimórfico sin FK</td></tr>
-        <tr><td><code>articulos</code></td><td>Si</td><td>—</td><td><code>(tenant_id, codigo)</code></td><td>soft delete</td></tr>
-        <tr><td><code>facturas</code></td><td>Si</td><td>cliente_id</td><td><code>(tenant_id, numero)</code></td><td>—</td></tr>
-        <tr><td><code>facturas_items</code></td><td>—</td><td>factura_id, articulo_id</td><td>—</td><td>hereda tenant del padre</td></tr>
-        <tr><td><code>pagos</code></td><td>Si</td><td>factura_id, cliente_id</td><td>—</td><td>—</td></tr>
-        <tr><td><code>notas_credito</code></td><td>Si</td><td>cliente_id, factura_id</td><td><code>(tenant_id, numero)</code></td><td>—</td></tr>
-        <tr><td><code>proveedores</code></td><td>Si</td><td>—</td><td><code>(tenant_id, documento)</code></td><td>soft delete</td></tr>
-        <tr><td><code>ordenes_compra</code></td><td>Si</td><td>proveedor_id</td><td><code>(tenant_id, numero)</code></td><td>—</td></tr>
-        <tr><td><code>ordenes_compra_items</code></td><td>—</td><td>orden_compra_id, articulo_id</td><td>—</td><td>hereda tenant del padre</td></tr>
-        <tr><td><code>stock_movimientos</code></td><td>Si</td><td>articulo_id, usuario_id</td><td>idx (articulo_id)</td><td>—</td></tr>
-        <tr><td><code>proyectos</code></td><td>Si</td><td>cliente_id</td><td>—</td><td>—</td></tr>
-        <tr><td><code>gastos</code></td><td>Si</td><td>—</td><td>idx (tenant_id, fecha)</td><td>—</td></tr>
-        <tr><td><code>tickets</code></td><td>Si</td><td>cliente_id, asignado_id</td><td><code>(tenant_id, numero)</code>, idx (tenant_id, estado)</td><td>—</td></tr>
-        <tr><td><code>tickets_mensajes</code></td><td>—</td><td>ticket_id, usuario_id</td><td>—</td><td>hereda tenant del padre</td></tr>
-        <tr><td><code>suscripciones</code></td><td>Si</td><td>cliente_id</td><td>—</td><td>—</td></tr>
-        <tr><td><code>archivos</code></td><td>Si</td><td>usuario_id</td><td>idx (tenant_id, entidad_tipo, entidad_id)</td><td>polimórfico sin FK</td></tr>
-      </tbody>
-    </table>
-  </section>
-
-  <!-- ============ PERMISOS ============ -->
-  <section class="panel" id="panel-permisos">
-    <input type="search" placeholder="Filtrar permisos…" data-filter="permisos">
-    <table>
-      <thead><tr><th>Módulo</th><th>admin</th><th>vendedor</th><th>soporte</th></tr></thead>
-      <tbody>
-        <tr><td>dashboard</td><td>Si</td><td>Si</td><td>Si</td></tr>
-        <tr><td>pipeline</td><td>Si</td><td>Si</td><td>—</td></tr>
-        <tr><td>clientes</td><td>Si</td><td>Si</td><td>Si</td></tr>
-        <tr><td>contactos</td><td>Si</td><td>Si</td><td>Si</td></tr>
-        <tr><td>leads</td><td>Si</td><td>Si</td><td>—</td></tr>
-        <tr><td>calendario</td><td>Si</td><td>Si</td><td>Si</td></tr>
-        <tr><td>tareas</td><td>Si</td><td>Si</td><td>Si</td></tr>
-        <tr><td>llamadas</td><td>Si</td><td>Si</td><td>Si</td></tr>
-        <tr><td>propuestas</td><td>Si</td><td>Si</td><td>—</td></tr>
-        <tr><td>presupuestos</td><td>Si</td><td>Si</td><td>—</td></tr>
-        <tr><td>facturas</td><td>Si</td><td>Si</td><td>—</td></tr>
-        <tr><td>pagos</td><td>Si</td><td>Si</td><td>—</td></tr>
-        <tr><td>notas_credito</td><td>Si</td><td>Si</td><td>—</td></tr>
-        <tr><td>articulos_venta</td><td>Si</td><td>Si</td><td>—</td></tr>
-        <tr><td>soporte</td><td>Si</td><td>—</td><td>Si</td></tr>
-        <tr><td>suscripciones</td><td>Si</td><td>—</td><td>—</td></tr>
-        <tr><td>proyectos</td><td>Si</td><td>Si</td><td>—</td></tr>
-        <tr><td>proveedores</td><td>Si</td><td>—</td><td>—</td></tr>
-        <tr><td>ordenes_compra</td><td>Si</td><td>—</td><td>—</td></tr>
-        <tr><td>contratos_compra</td><td>Si</td><td>—</td><td>—</td></tr>
-        <tr><td>productos</td><td>Si</td><td>—</td><td>—</td></tr>
-        <tr><td>stock</td><td>Si</td><td>—</td><td>—</td></tr>
-        <tr><td>ajustes_inventario</td><td>Si</td><td>—</td><td>—</td></tr>
-        <tr><td>gastos</td><td>Si</td><td>—</td><td>—</td></tr>
-        <tr><td>explorador</td><td>Si</td><td>—</td><td>—</td></tr>
-        <tr><td>compartir</td><td>Si</td><td>—</td><td>—</td></tr>
-        <tr><td>informes_ventas</td><td>Si</td><td>Si</td><td>—</td></tr>
-        <tr><td>informes_gastos</td><td>Si</td><td>—</td><td>—</td></tr>
-        <tr><td>informes_pipeline</td><td>Si</td><td>Si</td><td>—</td></tr>
-        <tr><td>informes_actividad</td><td>Si</td><td>Si</td><td>—</td></tr>
-        <tr><td>usuarios</td><td>Si</td><td>—</td><td>—</td></tr>
-        <tr><td>roles</td><td>Si</td><td>—</td><td>—</td></tr>
-        <tr><td>configuracion</td><td>Si</td><td>—</td><td>—</td></tr>
+            <td><span class="tag ok">redirect a /ventas/articulos?tipo=producto (fuera del menú)</span></td></tr>
       </tbody>
     </table>
   </section>
@@ -396,16 +319,107 @@
   <section class="panel" id="panel-deuda">
     <input type="search" placeholder="Filtrar deuda…" data-filter="deuda">
     <table>
-      <thead><tr><th>Ítem</th><th>Impacto</th><th>Acción sugerida</th></tr></thead>
+      <thead><tr><th>Gotcha / Deuda</th><th>Impacto</th><th>Solución aplicada</th></tr></thead>
       <tbody>
-        <tr><td>Schema aplicado puede divergir de <code>schema.sql</code></td><td><code>cargar_demo.rb</code> y cualquier módulo fallan con <code>PG::UndefinedTable</code></td><td>Verificar con <code>DB.tables</code> antes de cargar demo. Documentar que <code>crear_estructura.rb</code> es destructivo (DROP CASCADE).</td></tr>
-        <tr><td><code>contratos_compra</code> en sidebar sin tabla</td><td>Link roto para admin</td><td>Crear tabla o quitar del sidebar/permisos</td></tr>
-        <tr><td><code>productos</code> vs <code>articulos</code></td><td>Duplicación conceptual</td><td>Decidir: unificar en <code>articulos</code> o crear tabla</td></tr>
-        <tr><td><code>roles_permisos</code> sin <code>tenant_id</code></td><td>Permisos globales</td><td>Verificar que <code>puede?</code> combine con <code>usuarios_roles.tenant_id</code></td></tr>
-        <tr><td>Sin tests</td><td>Riesgo de regresión</td><td>Agregar mínimo de request specs a los 8 módulos hechos</td></tr>
-        <tr><td>Referencias polimórficas (<code>actividades</code>, <code>archivos</code>)</td><td>Huérfanos posibles</td><td>Job de limpieza o validación en modelo</td></tr>
-        <tr><td><code>facturas_items</code>, <code>ordenes_compra_items</code>, <code>tickets_mensajes</code> sin tenant</td><td>Acceso indirecto</td><td>Asegurar <code>tenant_db(:x).join(:padre)</code> en cualquier consulta</td></tr>
-        <tr><td>Sin seed fuera de <code>cargar_demo.rb</code></td><td>Onboarding lento</td><td><code>scripts/crear_tenant.rb</code> ya cubre etapas; documentar</td></tr>
+        <tr>
+          <td><b>Orden de rutas en Sinatra</b></td>
+          <td>Si <code>get "/:id"</code> está antes de <code>get "/nuevo"</code>, "nuevo" se toma como ID y explota con <code>PG::InvalidTextRepresentation</code>.</td>
+          <td>Las rutas estáticas van siempre primero (<code>/ventas/pagos/nuevo</code> antes de <code>/ventas/pagos/:id</code>).</td>
+        </tr>
+        <tr>
+          <td><b>Schema divergente</b></td>
+          <td>Error <code>PG::UndefinedTable</code> al consultar.</td>
+          <td>Correr <code>bundle exec ruby scripts/crear_estructura.rb</code> (borra y recrea todo) y recargar tenant.</td>
+        </tr>
+        <tr>
+          <td><b>Sequel: <code>group(...).sum(...)</code></b></td>
+          <td><code>PG::GroupingError: column "tabla.id" must appear in the GROUP BY clause</code>. Sequel envuelve el agregado en un subselect.</td>
+          <td>Usar <code>select(:fk, Sequel.function(:sum, :col).as(:total)).group(:fk).all</code> (helper <code>sumar_por_factura</code>).</td>
+        </tr>
+        <tr>
+          <td><b>BigDecimal en inputs (<code>0.1e1</code>)</b></td>
+          <td>Los <code>NUMERIC</code> de Postgres llegan como <code>BigDecimal</code>; su <code>to_s</code> escribe notación científica en inputs y en el JSON del JS.</td>
+          <td>Helper <code>numero_input(valor)</code> (<code>"1"</code>, <code>"1500000"</code>). Aplicado en formulario de factura, ítems, detalle y monto de pagos.</td>
+        </tr>
+        <tr>
+          <td><b>WickedPDF no carga CSS</b></td>
+          <td>El PDF sale sin estilos (Times New Roman, sin colores).</td>
+          <td>En <code>pdf.erb</code>, inyectar el CSS con <code>&lt;%= File.read(File.join(settings.root, "public/css/styles.css")) %&gt;</code>.</td>
+        </tr>
+        <tr>
+          <td><b>VanillaSelect no se inicializa</b></td>
+          <td>El select se ve nativo, feo y sin buscador.</td>
+          <td>Agregar <code>.vanilla-select</code> al <code>&lt;select&gt;</code>; el JS lo inicializa solo.</td>
+        </tr>
+        <tr>
+          <td><b>Rutas del sidebar desalineadas</b></td>
+          <td><code>/pagos</code>, <code>/notas_credito</code>, <code>/articulos</code> daban 404 porque los módulos viven bajo <code>/ventas/</code>.</td>
+          <td>Alineado a <code>/ventas/pagos</code>, <code>/ventas/notas_credito</code>, <code>/ventas/articulos</code>. Revisar siempre con <code>curl</code> cuando se mueve una ruta.</td>
+        </tr>
+        <tr>
+          <td><b><code>pagos</code> y <code>notas_credito</code> sin <code>activo</code>/<code>updated_at</code></b></td>
+          <td>No se pueden editar ni anular: se registran como asiento inmutable.</td>
+          <td>Si se necesita revertir un cobro, agregar columnas y pasar a soft delete.</td>
+        </tr>
+        <tr>
+          <td><b><code>contratos_compra</code></b></td>
+          <td>Link roto para admin (no existe tabla).</td>
+          <td>Quitado del sidebar; el permiso <code>:contratos_compra</code> sigue creado para cuando se implemente.</td>
+        </tr>
+        <tr>
+          <td><b><code>roles_permisos</code> sin <code>tenant_id</code></b></td>
+          <td>Permisos globales.</td>
+          <td>Verificar que <code>puede?</code> combine con <code>usuarios_roles.tenant_id</code>.</td>
+        </tr>
+        <tr>
+          <td><b>Sin tests automatizados</b></td>
+          <td>Riesgo de regresión; los bugs se encuentran a mano.</td>
+          <td>Agregar specs a medida que se estabilicen los módulos.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ============ SCHEMA ============ -->
+  <section class="panel" id="panel-schema">
+    <div class="note">
+      <b>Actualizar una base existente sin perder datos:</b> <code>bundle exec ruby scripts/migrar.rb</code>.
+      Aplica los <code>scripts/migraciones/*.sql</code> pendientes y los registra en <code>schema_migrations</code>.
+      <code>crear_estructura.rb</code> sigue siendo el reset total.
+    </div>
+    <input type="search" placeholder="Filtrar tablas o columnas…" data-filter="schema">
+    <table>
+      <thead><tr><th>Tabla</th><th>Tenant</th><th>FKs</th><th>Notas</th></tr></thead>
+      <tbody>
+        <tr><td><code>super_admins</code></td><td>—</td><td>—</td><td>fuera del modelo tenant (ruta <code>/super</code>)</td></tr>
+        <tr><td><code>tenants</code></td><td>—</td><td>—</td><td>resuelve el tenant por URL</td></tr>
+        <tr><td><code>roles</code> / <code>permisos</code> / <code>roles_permisos</code></td><td>—</td><td>—</td><td>global, no por tenant</td></tr>
+        <tr><td><code>usuarios</code></td><td>Sí</td><td>tenant_id</td><td>soft delete</td></tr>
+        <tr><td><code>usuarios_roles</code></td><td>Sí</td><td>usuario_id, rol_id</td><td>asignación por tenant</td></tr>
+        <tr><td><code>clientes</code></td><td>Sí</td><td>tenant_id</td><td>soft delete</td></tr>
+        <tr><td><code>contactos</code></td><td>Sí</td><td>cliente_id</td><td>soft delete</td></tr>
+        <tr><td><code>leads</code></td><td>Sí</td><td>responsable_id</td><td>soft delete</td></tr>
+        <tr><td><code>pipeline_etapas</code></td><td>Sí</td><td>—</td><td>orden por tenant</td></tr>
+        <tr><td><code>oportunidades</code></td><td>Sí</td><td>cliente_id, lead_id, etapa_id</td><td>cierre real/estimado</td></tr>
+        <tr><td><code>oportunidades_historial</code></td><td>Sí</td><td>oportunidad_id</td><td>historial de etapas (kanban)</td></tr>
+        <tr><td><code>actividades</code></td><td>Sí</td><td>usuario_id</td><td>polimórfico sin FK</td></tr>
+        <tr><td><code>articulos</code></td><td>Sí</td><td>—</td><td>soft delete · catálogo de venta</td></tr>
+        <tr><td><code>facturas</code></td><td>Sí</td><td>cliente_id</td><td>único (tenant_id, numero) · estados borrador/emitida/pagada/anulada</td></tr>
+        <tr><td><code>facturas_items</code></td><td>—</td><td>factura_id, articulo_id</td><td>hereda tenant del padre</td></tr>
+        <tr><td><code>documentos_venta</code></td><td>Sí</td><td>cliente_id, factura_id</td><td>propuesta | presupuesto · único (tenant_id, tipo, numero)</td></tr>
+        <tr><td><code>documentos_venta_items</code></td><td>—</td><td>documento_venta_id, articulo_id</td><td>hereda tenant del padre</td></tr>
+        <tr><td><code>pagos</code></td><td>Sí</td><td>factura_id, cliente_id</td><td>asiento inmutable · sin <code>activo</code>/<code>updated_at</code></td></tr>
+        <tr><td><code>notas_credito</code></td><td>Sí</td><td>cliente_id, factura_id</td><td>asiento inmutable · único (tenant_id, numero)</td></tr>
+        <tr><td><code>proveedores</code></td><td>Sí</td><td>—</td><td>soft delete</td></tr>
+        <tr><td><code>ordenes_compra</code></td><td>Sí</td><td>proveedor_id</td><td>pendiente de módulo</td></tr>
+        <tr><td><code>ordenes_compra_items</code></td><td>—</td><td>orden_compra_id, articulo_id</td><td>hereda tenant del padre</td></tr>
+        <tr><td><code>stock_movimientos</code></td><td>Sí</td><td>articulo_id, usuario_id</td><td>entradas/salidas/ajustes</td></tr>
+        <tr><td><code>proyectos</code></td><td>Sí</td><td>cliente_id</td><td>—</td></tr>
+        <tr><td><code>gastos</code></td><td>Sí</td><td>—</td><td>alimenta informes de gastos</td></tr>
+        <tr><td><code>tickets</code></td><td>Sí</td><td>cliente_id</td><td>—</td></tr>
+        <tr><td><code>tickets_mensajes</code></td><td>—</td><td>ticket_id, usuario_id</td><td>hilo de conversación</td></tr>
+        <tr><td><code>suscripciones</code></td><td>Sí</td><td>cliente_id</td><td>—</td></tr>
+        <tr><td><code>archivos</code></td><td>Sí</td><td>usuario_id</td><td>polimórfico sin FK</td></tr>
       </tbody>
     </table>
   </section>

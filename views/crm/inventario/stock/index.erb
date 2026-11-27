@@ -1,0 +1,114 @@
+<div class="page-head">
+  <div>
+    <h1>Stock</h1>
+    <p class="sub">Existencias calculadas a partir de los movimientos</p>
+  </div>
+  <div class="head-actions" style="display:flex;gap:8px">
+    <a href="<%= t('/stock/movimientos') %>" class="btn btn-ghost">
+      <i data-lucide="list"></i> Movimientos
+    </a>
+    <a href="<%= t('/stock/movimientos/nuevo') %>" class="btn btn-primary">
+      <i data-lucide="plus"></i> Nuevo movimiento
+    </a>
+  </div>
+</div>
+
+<form method="get" action="<%= t('/stock') %>" class="toolbar">
+  <label class="search">
+    <i data-lucide="search"></i>
+    <input type="text" name="q" value="<%= @filtros[:q] %>" placeholder="Buscar código, nombre…">
+  </label>
+
+  <div class="sel">
+    <select name="estado" onchange="this.form.submit()">
+      <option value="">Todos</option>
+      <option value="activos"   <%= 'selected' if @filtros[:estado] == 'activos' %>>Activos</option>
+      <option value="inactivos" <%= 'selected' if @filtros[:estado] == 'inactivos' %>>Inactivos</option>
+    </select>
+  </div>
+
+  <button type="submit" class="btn btn-ghost"><i data-lucide="search"></i> Buscar</button>
+</form>
+
+<div class="card">
+  <% if @articulos.empty? %>
+    <div class="empty">
+      <i data-lucide="layers"></i>
+      <b>No hay artículos</b>
+      <p>Creá artículos en el catálogo para controlar su stock</p>
+      <a href="<%= t('/ventas/articulos/nuevo') %>" class="btn btn-primary">Crear artículo</a>
+    </div>
+  <% else %>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Artículo</th>
+            <th>Tipo</th>
+            <th style="text-align:right">Stock</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @articulos.each do |a| %>
+            <% disponible = @stock[a[:id]].to_f %>
+            <tr>
+              <td><span class="sub"><%= a[:codigo] && !a[:codigo].empty? ? a[:codigo] : '—' %></span></td>
+              <td><div class="cell-name"><b><%= a[:nombre] %></b></div></td>
+              <td>
+                <% if a[:tipo] == "producto" %>
+                  <span class="badge b-blue">producto</span>
+                <% else %>
+                  <span class="badge b-purple">servicio</span>
+                <% end %>
+              </td>
+              <td style="text-align:right">
+                <% if a[:tipo] == "servicio" %>
+                  <span class="sub">—</span>
+                <% elsif disponible <= 0 %>
+                  <span class="badge b-red">sin stock</span>
+                <% else %>
+                  <span class="badge b-green"><%= numero_input(disponible) %></span>
+                <% end %>
+              </td>
+              <td>
+                <div class="row-actions">
+                  <a href="<%= t("/stock/movimientos/nuevo?articulo_id=#{a[:id]}") %>" class="icon-act" title="Registrar movimiento">
+                    <i data-lucide="arrow-left-right"></i>
+                  </a>
+                </div>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+
+    <% if @articulos.page_count >= 1 %>
+      <div class="pagination">
+        <span>Página <%= @articulos.current_page %> de <%= @articulos.page_count %></span>
+        <div class="pages">
+          <% qs = "q=#{@filtros[:q]}&estado=#{@filtros[:estado]}" %>
+          <% if @articulos.prev_page %>
+            <a href="<%= t("/stock?page=#{@articulos.prev_page}&#{qs}") %>">←</a>
+          <% else %>
+            <span class="disabled">←</span>
+          <% end %>
+          <% (1..@articulos.page_count).each do |n| %>
+            <% if n == @articulos.current_page %>
+              <span class="current"><%= n %></span>
+            <% else %>
+              <a href="<%= t("/stock?page=#{n}&#{qs}") %>"><%= n %></a>
+            <% end %>
+          <% end %>
+          <% if @articulos.next_page %>
+            <a href="<%= t("/stock?page=#{@articulos.next_page}&#{qs}") %>">→</a>
+          <% else %>
+            <span class="disabled">→</span>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  <% end %>
+</div>

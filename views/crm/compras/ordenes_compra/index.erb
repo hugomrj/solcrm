@@ -1,0 +1,124 @@
+<div class="page-head">
+  <div>
+    <h1>Órdenes de compra</h1>
+    <p class="sub">Pedidos a proveedores</p>
+  </div>
+  <div class="head-actions">
+    <a href="<%= t('/ordenes_compra/nuevo') %>" class="btn btn-primary">
+      <i data-lucide="plus"></i> Nueva orden
+    </a>
+  </div>
+</div>
+
+<form method="get" action="<%= t('/ordenes_compra') %>" class="toolbar">
+  <label class="search">
+    <i data-lucide="search"></i>
+    <input type="text" name="q" value="<%= @filtros[:q] %>" placeholder="Buscar número, notas…">
+  </label>
+
+  <div class="sel">
+    <select name="proveedor_id" onchange="this.form.submit()">
+      <option value="">Todos los proveedores</option>
+      <% @proveedores.each do |p| %>
+        <option value="<%= p[:id] %>" <%= 'selected' if @filtros[:proveedor_id].to_s == p[:id].to_s %>><%= p[:nombre] %></option>
+      <% end %>
+    </select>
+  </div>
+
+  <div class="sel">
+    <select name="estado" onchange="this.form.submit()">
+      <option value="">Todos</option>
+      <% OrdenesCompraRoutes::ESTADOS.each do |e| %>
+        <option value="<%= e %>" <%= 'selected' if @filtros[:estado] == e %>><%= e.capitalize %></option>
+      <% end %>
+    </select>
+  </div>
+
+  <button type="submit" class="btn btn-ghost"><i data-lucide="search"></i> Buscar</button>
+</form>
+
+
+<div class="card">
+  <% if @ordenes.empty? %>
+    <div class="empty">
+      <i data-lucide="clipboard-list"></i>
+      <b>No hay órdenes de compra</b>
+      <p>Creá la primera para pedirle mercadería a un proveedor</p>
+      <a href="<%= t('/ordenes_compra/nuevo') %>" class="btn btn-primary">Crear orden</a>
+    </div>
+  <% else %>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Número</th>
+            <th>Proveedor</th>
+            <th>Fecha</th>
+            <th style="text-align:right">Total</th>
+            <th>Estado</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @ordenes.each do |o| %>
+            <% prov = @proveedores_por_id[o[:proveedor_id]] %>
+            <tr>
+              <td><b><%= o[:numero] %></b></td>
+              <td><%= prov ? prov[:nombre] : '—' %></td>
+              <td><%= o[:fecha] %></td>
+              <td style="text-align:right;font-variant-numeric:tabular-nums;font-weight:600;">
+                ₲ <%= number_with_delimiter(o[:total]) %>
+              </td>
+              <td>
+                <% badge = { "borrador"=>"b-gray","emitida"=>"b-blue","recibida"=>"b-green","anulada"=>"b-red" }[o[:estado]] || "b-gray" %>
+                <span class="badge <%= badge %>"><%= o[:estado] %></span>
+              </td>
+              <td>
+                <div class="row-actions">
+                  <a href="<%= t("/ordenes_compra/#{o[:id]}") %>" class="icon-act" title="Ver"><i data-lucide="eye"></i></a>
+                  <% if o[:estado] == "borrador" %>
+                    <a href="<%= t("/ordenes_compra/#{o[:id]}/editar") %>" class="icon-act" title="Editar"><i data-lucide="pencil"></i></a>
+                  <% end %>
+                  <% unless %w[recibida anulada].include?(o[:estado]) %>
+                    <form method="post" action="<%= t("/ordenes_compra/#{o[:id]}/eliminar") %>" style="display:inline"
+                          data-confirm="¿Anular la orden <%= o[:numero] %>?"
+                          data-confirm-type="danger"
+                          data-confirm-ok="Anular">
+                      <button type="submit" class="icon-act danger" title="Anular"><i data-lucide="x-circle"></i></button>
+                    </form>
+                  <% end %>
+                </div>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+
+    <% if @ordenes.page_count >= 1 %>
+      <div class="pagination">
+        <span>Página <%= @ordenes.current_page %> de <%= @ordenes.page_count %></span>
+        <div class="pages">
+          <% qs = "q=#{@filtros[:q]}&estado=#{@filtros[:estado]}&proveedor_id=#{@filtros[:proveedor_id]}" %>
+          <% if @ordenes.prev_page %>
+            <a href="<%= t("/ordenes_compra?page=#{@ordenes.prev_page}&#{qs}") %>">←</a>
+          <% else %>
+            <span class="disabled">←</span>
+          <% end %>
+          <% (1..@ordenes.page_count).each do |n| %>
+            <% if n == @ordenes.current_page %>
+              <span class="current"><%= n %></span>
+            <% else %>
+              <a href="<%= t("/ordenes_compra?page=#{n}&#{qs}") %>"><%= n %></a>
+            <% end %>
+          <% end %>
+          <% if @ordenes.next_page %>
+            <a href="<%= t("/ordenes_compra?page=#{@ordenes.next_page}&#{qs}") %>">→</a>
+          <% else %>
+            <span class="disabled">→</span>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  <% end %>
+</div>

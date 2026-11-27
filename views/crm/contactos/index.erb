@@ -40,10 +40,6 @@
   </button>
 </form>
 
-<div class="count-line">
-  <%= @contactos.pagination_record_count %> contacto(s)
-</div>
-
 <div class="card">
   <% if @contactos.empty? %>
     <div class="empty">
@@ -113,7 +109,7 @@
       </table>
     </div>
 
-    <% if @contactos.page_count > 1 %>
+    <% if @contactos.page_count >= 1 %>
       <div class="pagination">
         <span>Página <%= @contactos.current_page %> de <%= @contactos.page_count %></span>
         <div class="pages">

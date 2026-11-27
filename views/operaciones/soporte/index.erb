@@ -1,0 +1,115 @@
+<div class="page-head">
+  <div>
+    <h1>Tickets de soporte</h1>
+    <p class="sub">Consultas y reclamos de clientes</p>
+  </div>
+  <div class="head-actions">
+    <a href="<%= t('/soporte/nuevo') %>" class="btn btn-primary">
+      <i data-lucide="plus"></i> Nuevo ticket
+    </a>
+  </div>
+</div>
+
+<form method="get" action="<%= t('/soporte') %>" class="toolbar">
+  <label class="search">
+    <i data-lucide="search"></i>
+    <input type="text" name="q" value="<%= @filtros[:q] %>" placeholder="Buscar número, asunto…">
+  </label>
+
+  <div class="sel">
+    <select name="estado" onchange="this.form.submit()">
+      <option value="">Todos los estados</option>
+      <% SoporteRoutes::ESTADOS.each do |e| %>
+        <option value="<%= e %>" <%= 'selected' if @filtros[:estado] == e %>><%= e.tr('_', ' ').capitalize %></option>
+      <% end %>
+    </select>
+  </div>
+
+  <div class="sel">
+    <select name="prioridad" onchange="this.form.submit()">
+      <option value="">Todas las prioridades</option>
+      <% SoporteRoutes::PRIORIDADES.each do |p| %>
+        <option value="<%= p %>" <%= 'selected' if @filtros[:prioridad] == p %>><%= p.capitalize %></option>
+      <% end %>
+    </select>
+  </div>
+
+  <button type="submit" class="btn btn-ghost"><i data-lucide="search"></i> Buscar</button>
+</form>
+
+<div class="card">
+  <% if @tickets.empty? %>
+    <div class="empty">
+      <i data-lucide="life-buoy"></i>
+      <b>No hay tickets</b>
+      <p>Creá el primero para registrar una consulta de cliente</p>
+      <a href="<%= t('/soporte/nuevo') %>" class="btn btn-primary">Crear ticket</a>
+    </div>
+  <% else %>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Número</th>
+            <th>Asunto</th>
+            <th>Cliente</th>
+            <th>Prioridad</th>
+            <th>Estado</th>
+            <th style="text-align:right">Mensajes</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @tickets.each do |t| %>
+            <% cli = @clientes_por_id[t[:cliente_id]] %>
+            <tr>
+              <td><b><%= t[:numero] %></b></td>
+              <td><%= t[:asunto] %></td>
+              <td><%= cli ? cli[:nombre] : '—' %></td>
+              <td>
+                <% pbadge = { "baja"=>"b-gray","normal"=>"b-blue","alta"=>"b-warn","urgente"=>"b-red" }[t[:prioridad]] || "b-gray" %>
+                <span class="badge <%= pbadge %>"><%= t[:prioridad] %></span>
+              </td>
+              <td>
+                <% ebadge = { "abierto"=>"b-blue","en_progreso"=>"b-warn","resuelto"=>"b-green","cerrado"=>"b-gray" }[t[:estado]] || "b-gray" %>
+                <span class="badge <%= ebadge %>"><%= t[:estado].tr('_', ' ') %></span>
+              </td>
+              <td style="text-align:right"><%= @mensajes_count[t[:id]].to_i %></td>
+              <td>
+                <div class="row-actions">
+                  <a href="<%= t("/soporte/#{t[:id]}") %>" class="icon-act" title="Ver"><i data-lucide="eye"></i></a>
+                </div>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+
+    <% if @tickets.page_count >= 1 %>
+      <div class="pagination">
+        <span>Página <%= @tickets.current_page %> de <%= @tickets.page_count %></span>
+        <div class="pages">
+          <% qs = "q=#{@filtros[:q]}&estado=#{@filtros[:estado]}&prioridad=#{@filtros[:prioridad]}" %>
+          <% if @tickets.prev_page %>
+            <a href="<%= t("/soporte?page=#{@tickets.prev_page}&#{qs}") %>">←</a>
+          <% else %>
+            <span class="disabled">←</span>
+          <% end %>
+          <% (1..@tickets.page_count).each do |n| %>
+            <% if n == @tickets.current_page %>
+              <span class="current"><%= n %></span>
+            <% else %>
+              <a href="<%= t("/soporte?page=#{n}&#{qs}") %>"><%= n %></a>
+            <% end %>
+          <% end %>
+          <% if @tickets.next_page %>
+            <a href="<%= t("/soporte?page=#{@tickets.next_page}&#{qs}") %>">→</a>
+          <% else %>
+            <span class="disabled">→</span>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  <% end %>
+</div>

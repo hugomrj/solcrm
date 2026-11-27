@@ -1,9 +1,13 @@
 -- ============================================================
 -- SolCRM — Schema completo multi-tenant
 -- ============================================================
--- Reset:
+-- Reset (borra todo):
 --   bundle exec ruby scripts/drop_db.rb
 --   bundle exec ruby scripts/crear_estructura.rb
+--
+-- Actualizar una base EXISTENTE sin perder datos:
+--   bundle exec ruby scripts/migrar.rb
+--   (aplica scripts/migraciones/*.sql pendientes, registradas en schema_migrations)
 -- ============================================================
 
 -- ============================================================
@@ -21,6 +25,8 @@ DROP TABLE IF EXISTS stock_movimientos CASCADE;
 DROP TABLE IF EXISTS ordenes_compra_items CASCADE;
 DROP TABLE IF EXISTS ordenes_compra CASCADE;
 DROP TABLE IF EXISTS proveedores CASCADE;
+DROP TABLE IF EXISTS documentos_venta_items CASCADE;
+DROP TABLE IF EXISTS documentos_venta CASCADE;
 DROP TABLE IF EXISTS notas_credito CASCADE;
 DROP TABLE IF EXISTS pagos CASCADE;
 DROP TABLE IF EXISTS facturas_items CASCADE;
@@ -448,3 +454,40 @@ CREATE TABLE archivos (
     created_at   TIMESTAMPTZ  NOT NULL DEFAULT NOW()
 );
 CREATE INDEX idx_archivos_entidad ON archivos(tenant_id, entidad_tipo, entidad_id);
+
+-- ============================================================
+-- FASE 8 — PROPUESTAS Y PRESUPUESTOS
+-- ============================================================
+-- Una sola tabla con `tipo` (propuesta | presupuesto) porque comparten
+-- estructura y ciclo de vida (borrador → enviada → aceptada/rechazada →
+-- convertir en factura).
+
+CREATE TABLE documentos_venta (
+    id          BIGSERIAL PRIMARY KEY,
+    tenant_id   BIGINT       NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+    tipo        VARCHAR(20)  NOT NULL,
+    numero      VARCHAR(50)  NOT NULL,
+    cliente_id  BIGINT       REFERENCES clientes(id),
+    fecha       DATE         NOT NULL DEFAULT CURRENT_DATE,
+    validez     DATE,
+    subtotal    NUMERIC(15,2) NOT NULL DEFAULT 0,
+    impuestos   NUMERIC(15,2) NOT NULL DEFAULT 0,
+    total       NUMERIC(15,2) NOT NULL DEFAULT 0,
+    estado      VARCHAR(20)  NOT NULL DEFAULT 'borrador',
+    notas       TEXT,
+    factura_id  BIGINT       REFERENCES facturas(id),
+    created_at  TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    updated_at  TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    UNIQUE (tenant_id, tipo, numero)
+);
+CREATE INDEX idx_docs_venta_tenant ON documentos_venta(tenant_id, tipo, estado);
+
+CREATE TABLE documentos_venta_items (
+    id                 BIGSERIAL PRIMARY KEY,
+    documento_venta_id BIGINT        NOT NULL REFERENCES documentos_venta(id) ON DELETE CASCADE,
+    articulo_id        BIGINT        REFERENCES articulos(id),
+    descripcion        VARCHAR(255)  NOT NULL,
+    cantidad           NUMERIC(10,2) NOT NULL DEFAULT 1,
+    precio             NUMERIC(15,2) NOT NULL DEFAULT 0,
+    total              NUMERIC(15,2) NOT NULL DEFAULT 0
+);

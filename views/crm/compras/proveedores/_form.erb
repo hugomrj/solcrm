@@ -1,0 +1,70 @@
+<a href="<%= t('/proveedores') %>" class="backlink">
+  <i data-lucide="arrow-left"></i> Volver a proveedores
+</a>
+
+<div class="page-head">
+  <div>
+    <h1><%= @page_title %></h1>
+    <p class="sub">Datos del proveedor</p>
+  </div>
+</div>
+
+<form method="post" action="<%= @proveedor ? t("/proveedores/#{@proveedor[:id]}") : t('/proveedores') %>">
+  <div class="card form-card">
+    <div class="form-grid">
+
+      <div class="field span2">
+        <label for="nombre">Nombre / Razón social *</label>
+        <input type="text" id="nombre" name="nombre"
+               value="<%= @proveedor ? @proveedor[:nombre] : '' %>" required>
+      </div>
+
+      <div class="field">
+        <label for="documento">RUC / CI</label>
+        <input type="text" id="documento" name="documento"
+               value="<%= @proveedor && @proveedor[:documento] ? @proveedor[:documento] : '' %>">
+      </div>
+
+      <div class="field">
+        <label for="telefono">Teléfono</label>
+        <input type="text" id="telefono" name="telefono"
+               value="<%= @proveedor && @proveedor[:telefono] ? @proveedor[:telefono] : '' %>">
+      </div>
+
+      <div class="field span2">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email"
+               value="<%= @proveedor && @proveedor[:email] ? @proveedor[:email] : '' %>">
+      </div>
+
+      <div class="field span2">
+        <label for="direccion">Dirección</label>
+        <input type="text" id="direccion" name="direccion"
+               value="<%= @proveedor && @proveedor[:direccion] ? @proveedor[:direccion] : '' %>">
+      </div>
+
+      <div class="field span2">
+        <label for="notas">Notas</label>
+        <textarea id="notas" name="notas"><%= @proveedor && @proveedor[:notas] ? @proveedor[:notas] : '' %></textarea>
+      </div>
+
+      <% if @proveedor %>
+        <div class="field span2">
+          <label>
+            <input type="checkbox" name="activo" value="1" <%= 'checked' if @proveedor[:activo] %>>
+            Proveedor activo
+          </label>
+        </div>
+      <% end %>
+
+    </div>
+
+    <div class="form-foot">
+      <a href="<%= t('/proveedores') %>" class="btn btn-ghost">Cancelar</a>
+      <div class="spacer"></div>
+      <button type="submit" class="btn btn-primary">
+        <%= @proveedor ? 'Guardar cambios' : 'Crear proveedor' %>
+      </button>
+    </div>
+  </div>
+</form>

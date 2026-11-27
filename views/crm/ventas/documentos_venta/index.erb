@@ -1,0 +1,111 @@
+<div class="page-head">
+  <div>
+    <h1><%= @cfg[:titulo] %></h1>
+    <p class="sub">Documentos previos a la factura</p>
+  </div>
+  <div class="head-actions">
+    <a href="<%= t("#{@base}/nuevo") %>" class="btn btn-primary">
+      <i data-lucide="plus"></i> Nueva <%= @cfg[:singular] %>
+    </a>
+  </div>
+</div>
+
+<form method="get" action="<%= t(@base) %>" class="toolbar">
+  <label class="search">
+    <i data-lucide="search"></i>
+    <input type="text" name="q" value="<%= @filtros[:q] %>" placeholder="Buscar número, notas…">
+  </label>
+
+  <div class="sel">
+    <select name="estado" onchange="this.form.submit()">
+      <option value="">Todos</option>
+      <% DocumentosVentaRoutes::ESTADOS.each do |e| %>
+        <option value="<%= e %>" <%= 'selected' if @filtros[:estado] == e %>><%= e.capitalize %></option>
+      <% end %>
+    </select>
+  </div>
+
+  <button type="submit" class="btn btn-ghost"><i data-lucide="search"></i> Buscar</button>
+</form>
+
+<div class="card">
+  <% if @documentos.empty? %>
+    <div class="empty">
+      <i data-lucide="file-text"></i>
+      <b>No hay <%= @cfg[:titulo].downcase %></b>
+      <p>Creá la primera y después convertila en factura</p>
+      <a href="<%= t("#{@base}/nuevo") %>" class="btn btn-primary">Nueva <%= @cfg[:singular] %></a>
+    </div>
+  <% else %>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Número</th>
+            <th>Cliente</th>
+            <th>Fecha</th>
+            <th>Validez</th>
+            <th style="text-align:right">Total</th>
+            <th>Estado</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @documentos.each do |d| %>
+            <% cli = @clientes_por_id[d[:cliente_id]] %>
+            <tr>
+              <td><b><%= d[:numero] %></b></td>
+              <td><%= cli ? cli[:nombre] : '—' %></td>
+              <td><%= d[:fecha] %></td>
+              <td><%= d[:validez] ? d[:validez] : '—' %></td>
+              <td style="text-align:right;font-variant-numeric:tabular-nums;font-weight:600;">
+                ₲ <%= number_with_delimiter(d[:total]) %>
+              </td>
+              <td>
+                <% badge = { "borrador"=>"b-gray","enviada"=>"b-blue","aceptada"=>"b-green","rechazada"=>"b-red" }[d[:estado]] || "b-gray" %>
+                <span class="badge <%= badge %>"><%= d[:estado] %></span>
+                <% if d[:factura_id] %>
+                  <span class="badge b-purple">facturada</span>
+                <% end %>
+              </td>
+              <td>
+                <div class="row-actions">
+                  <a href="<%= t("#{@base}/#{d[:id]}") %>" class="icon-act" title="Ver"><i data-lucide="eye"></i></a>
+                  <% if d[:estado] == "borrador" %>
+                    <a href="<%= t("#{@base}/#{d[:id]}/editar") %>" class="icon-act" title="Editar"><i data-lucide="pencil"></i></a>
+                  <% end %>
+                </div>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+
+    <% if @documentos.page_count >= 1 %>
+      <div class="pagination">
+        <span>Página <%= @documentos.current_page %> de <%= @documentos.page_count %></span>
+        <div class="pages">
+          <% qs = "q=#{@filtros[:q]}&estado=#{@filtros[:estado]}" %>
+          <% if @documentos.prev_page %>
+            <a href="<%= t("#{@base}?page=#{@documentos.prev_page}&#{qs}") %>">←</a>
+          <% else %>
+            <span class="disabled">←</span>
+          <% end %>
+          <% (1..@documentos.page_count).each do |n| %>
+            <% if n == @documentos.current_page %>
+              <span class="current"><%= n %></span>
+            <% else %>
+              <a href="<%= t("#{@base}?page=#{n}&#{qs}") %>"><%= n %></a>
+            <% end %>
+          <% end %>
+          <% if @documentos.next_page %>
+            <a href="<%= t("#{@base}?page=#{@documentos.next_page}&#{qs}") %>">→</a>
+          <% else %>
+            <span class="disabled">→</span>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  <% end %>
+</div>

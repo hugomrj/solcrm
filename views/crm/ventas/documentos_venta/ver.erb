@@ -1,0 +1,100 @@
+<a href="<%= t(@base) %>" class="backlink"><i data-lucide="arrow-left"></i> Volver a <%= @cfg[:titulo].downcase %></a>
+
+<div class="page-head" style="margin-bottom:24px">
+  <div>
+    <h1><%= @documento[:numero] %></h1>
+    <p class="sub" style="display:flex;align-items:center;gap:8px">
+      <%= @cliente ? @cliente[:nombre] : '—' %>
+      <span style="color:var(--border-strong)">|</span>
+      <%= @documento[:fecha] %>
+      <% badge = { "borrador"=>"b-gray","enviada"=>"b-blue","aceptada"=>"b-green","rechazada"=>"b-red" }[@documento[:estado]] || "b-gray" %>
+      <span class="badge <%= badge %>" style="margin-left:8px"><%= @documento[:estado] %></span>
+      <% if @documento[:factura_id] %>
+        <span class="badge b-purple">facturada</span>
+      <% end %>
+    </p>
+  </div>
+  <div class="head-actions" style="display:flex;gap:8px">
+    <% if @documento[:estado] == "borrador" %>
+      <a href="<%= t("#{@base}/#{@documento[:id]}/editar") %>" class="btn btn-ghost"><i data-lucide="pencil"></i> Editar</a>
+      <form method="post" action="<%= t("#{@base}/#{@documento[:id]}/estado") %>" style="display:inline">
+        <input type="hidden" name="estado" value="enviada">
+        <button type="submit" class="btn btn-primary"><i data-lucide="send"></i> Enviar</button>
+      </form>
+    <% elsif @documento[:estado] == "enviada" %>
+      <form method="post" action="<%= t("#{@base}/#{@documento[:id]}/estado") %>" style="display:inline">
+        <input type="hidden" name="estado" value="rechazada">
+        <button type="submit" class="btn btn-ghost"><i data-lucide="x-circle"></i> Rechazada</button>
+      </form>
+      <form method="post" action="<%= t("#{@base}/#{@documento[:id]}/estado") %>" style="display:inline">
+        <input type="hidden" name="estado" value="aceptada">
+        <button type="submit" class="btn btn-primary"><i data-lucide="check"></i> Aceptada</button>
+      </form>
+    <% end %>
+
+    <% unless @documento[:factura_id] %>
+      <form method="post" action="<%= t("#{@base}/#{@documento[:id]}/convertir") %>" style="display:inline"
+            data-confirm="¿Convertir <%= @documento[:numero] %> en factura?"
+            data-confirm-ok="Convertir">
+        <button type="submit" class="btn btn-primary"><i data-lucide="file-check"></i> Convertir en factura</button>
+      </form>
+    <% else %>
+      <a href="<%= t("/ventas/facturas/#{@factura[:id]}") %>" class="btn btn-ghost">
+        <i data-lucide="file-check"></i> Ver factura <%= @factura ? @factura[:numero] : '' %>
+      </a>
+    <% end %>
+  </div>
+</div>
+
+<div class="card" style="padding:24px 28px">
+  <div class="table-wrap">
+    <table style="margin-bottom:24px">
+      <thead>
+        <tr>
+          <th>Descripción</th>
+          <th style="text-align:right">Cantidad</th>
+          <th style="text-align:right">Precio Unit.</th>
+          <th style="text-align:right">Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @items.each do |it| %>
+          <tr>
+            <td><%= it[:descripcion] %></td>
+            <td style="text-align:right"><%= numero_input(it[:cantidad]) %></td>
+            <td style="text-align:right">₲ <%= number_with_delimiter(it[:precio]) %></td>
+            <td style="text-align:right;font-weight:600">₲ <%= number_with_delimiter(it[:total]) %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+
+  <div style="border-top:1px solid var(--border); padding-top:24px; display:flex; justify-content:flex-end">
+    <div style="width:300px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:12px;font-size:14px;color:var(--text-2)">
+        <span>Subtotal:</span>
+        <span style="font-variant-numeric:tabular-nums">₲ <%= number_with_delimiter(@documento[:subtotal]) %></span>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:16px;font-size:14px;color:var(--text-2)">
+        <span>IVA (10%):</span>
+        <span style="font-variant-numeric:tabular-nums">₲ <%= number_with_delimiter(@documento[:impuestos]) %></span>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:18px;font-weight:700;border-top:1px solid var(--border);padding-top:16px">
+        <span>Total:</span>
+        <span style="font-variant-numeric:tabular-nums">₲ <%= number_with_delimiter(@documento[:total]) %></span>
+      </div>
+    </div>
+  </div>
+
+  <% if @documento[:validez] %>
+    <p class="sub" style="margin:16px 0 0">Válido hasta <%= @documento[:validez] %>.</p>
+  <% end %>
+
+  <% if @documento[:notas] && !@documento[:notas].empty? %>
+    <div style="margin-top:24px; padding:16px; background:var(--surface-2); border-radius:9px; border:1px solid var(--border); font-size:13.5px; color:var(--text-2); line-height:1.6;">
+      <b style="color:var(--text)">Notas:</b><br>
+      <%= @documento[:notas] %>
+    </div>
+  <% end %>
+</div>

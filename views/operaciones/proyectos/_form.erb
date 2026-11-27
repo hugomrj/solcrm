@@ -1,0 +1,76 @@
+<a href="<%= t('/proyectos') %>" class="backlink">
+  <i data-lucide="arrow-left"></i> Volver a proyectos
+</a>
+
+<div class="page-head">
+  <div>
+    <h1><%= @page_title %></h1>
+    <p class="sub">Datos del proyecto</p>
+  </div>
+</div>
+
+<form method="post" action="<%= @proyecto ? t("/proyectos/#{@proyecto[:id]}") : t('/proyectos') %>">
+  <div class="card form-card">
+    <div class="form-grid">
+
+      <div class="field span2">
+        <label for="nombre">Nombre *</label>
+        <input type="text" id="nombre" name="nombre" required
+               value="<%= @proyecto ? @proyecto[:nombre] : '' %>"
+               placeholder="Ej: Implementación sistema POS">
+      </div>
+
+      <div class="field">
+        <label>Cliente</label>
+        <select name="cliente_id" class="vanilla-select">
+          <option value="">— Sin cliente —</option>
+          <% @clientes.each do |c| %>
+            <option value="<%= c[:id] %>" <%= 'selected' if @proyecto && @proyecto[:cliente_id] == c[:id] %>><%= c[:nombre] %></option>
+          <% end %>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Estado</label>
+        <select name="estado" class="vanilla-select">
+          <% ProyectosRoutes::ESTADOS.each do |e| %>
+            <option value="<%= e %>" <%= 'selected' if (@proyecto ? @proyecto[:estado] : 'activo') == e %>><%= e.capitalize %></option>
+          <% end %>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="fecha_inicio">Fecha de inicio</label>
+        <input type="date" id="fecha_inicio" name="fecha_inicio"
+               value="<%= @proyecto && @proyecto[:fecha_inicio] ? @proyecto[:fecha_inicio] : '' %>">
+      </div>
+
+      <div class="field">
+        <label for="fecha_fin">Fecha de fin</label>
+        <input type="date" id="fecha_fin" name="fecha_fin"
+               value="<%= @proyecto && @proyecto[:fecha_fin] ? @proyecto[:fecha_fin] : '' %>">
+      </div>
+
+      <div class="field">
+        <label for="presupuesto">Presupuesto (₲)</label>
+        <input type="number" id="presupuesto" name="presupuesto" min="0" step="0.01"
+               value="<%= @proyecto && @proyecto[:presupuesto] ? numero_input(@proyecto[:presupuesto]) : '' %>"
+               placeholder="0">
+      </div>
+
+      <div class="field span2">
+        <label for="notas">Notas</label>
+        <textarea id="notas" name="notas"><%= @proyecto && @proyecto[:notas] ? @proyecto[:notas] : '' %></textarea>
+      </div>
+
+    </div>
+
+    <div class="form-foot">
+      <a href="<%= t('/proyectos') %>" class="btn btn-ghost">Cancelar</a>
+      <div class="spacer"></div>
+      <button type="submit" class="btn btn-primary">
+        <%= @proyecto ? 'Guardar cambios' : 'Crear proyecto' %>
+      </button>
+    </div>
+  </div>
+</form>

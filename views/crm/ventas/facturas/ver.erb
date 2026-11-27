@@ -16,6 +16,8 @@
 
 <a href="<%= t('/ventas/facturas') %>" class="backlink"><i data-lucide="arrow-left"></i> Volver a facturas</a>
 
+<% saldo = saldo_factura(@factura) %>
+
 <div class="page-head" style="margin-bottom: 24px;">
   <div>
     <h1>Factura <%= @factura[:numero] %></h1>
@@ -29,7 +31,13 @@
     </p>
   </div>
   <div class="head-actions" style="display:flex;gap:8px">
-    
+
+    <% if params[:origen] == "factura" %>
+      <a href="<%= t('/ventas/facturas/nuevo') %>" class="btn btn-primary">
+        <i data-lucide="plus"></i> Nueva factura
+      </a>
+    <% end %>
+
     <!-- Botón para imprimir / generar PDF -->
     <a href="<%= t("/ventas/facturas/#{@factura[:id]}/pdf") %>" target="_blank" class="btn btn-ghost">
       <i data-lucide="printer"></i> Imprimir PDF
@@ -41,11 +49,13 @@
         <input type="hidden" name="estado" value="emitida">
         <button type="submit" class="btn btn-primary"><i data-lucide="send"></i> Emitir</button>
       </form>
-    <% elsif @factura[:estado] == "emitida" %>
-      <form method="post" action="<%= t("/ventas/facturas/#{@factura[:id]}/estado") %>" style="display:inline">
-        <input type="hidden" name="estado" value="pagada">
-        <button type="submit" class="btn btn-primary"><i data-lucide="check"></i> Registrar Pago</button>
-      </form>
+    <% elsif %w[emitida pagada].include?(@factura[:estado]) && saldo > 0.009 %>
+      <a href="<%= t("/ventas/notas_credito/nuevo?factura_id=#{@factura[:id]}") %>" class="btn btn-ghost">
+        <i data-lucide="rotate-ccw"></i> Nota de crédito
+      </a>
+      <a href="<%= t("/ventas/pagos/nuevo?factura_id=#{@factura[:id]}") %>" class="btn btn-primary">
+        <i data-lucide="credit-card"></i> Registrar pago
+      </a>
     <% end %>
     
   </div>
@@ -67,7 +77,7 @@
         <% @items.each do |it| %>
           <tr>
             <td><%= it[:descripcion] %></td>
-            <td style="text-align:right"><%= it[:cantidad].to_f == it[:cantidad].to_i ? it[:cantidad].to_i : it[:cantidad] %></td>
+            <td style="text-align:right"><%= numero_input(it[:cantidad]) %></td>
             <td style="text-align:right">₲ <%= number_with_delimiter(it[:precio]) %></td>
             <td style="text-align:right;font-weight:600">₲ <%= number_with_delimiter(it[:total]) %></td>
           </tr>
@@ -105,3 +115,104 @@
   <% end %>
 
 </div>
+
+<% if @factura[:estado] == "borrador" %>
+<div class="card" style="padding: 24px 28px; margin-top: 16px;">
+  <h3 style="margin:0 0 6px; font-size:15px;">Cobranza</h3>
+  <p class="sub" style="margin:0;">Emití la factura para poder registrar cobros o notas de crédito.</p>
+</div>
+<% else %>
+<div class="card" style="padding: 24px 28px; margin-top: 16px;">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+    <h3 style="margin:0; font-size:15px;">Cobranza</h3>
+    <% if saldo > 0.009 %>
+      <span class="badge b-warn">Saldo pendiente: ₲ <%= number_with_delimiter(saldo) %></span>
+    <% else %>
+      <span class="badge b-green">Cobrada en su totalidad</span>
+    <% end %>
+  </div>
+
+  <div style="display:flex; gap:32px; flex-wrap:wrap; margin-bottom:20px; font-size:13.5px; color:var(--text-2);">
+    <div>
+      <div class="sub" style="font-size:12px;">Cobrado</div>
+      <div style="font-weight:600; font-variant-numeric:tabular-nums;">₲ <%= number_with_delimiter(total_pagado_factura(@factura[:id])) %></div>
+    </div>
+    <div>
+      <div class="sub" style="font-size:12px;">Acreditado</div>
+      <div style="font-weight:600; font-variant-numeric:tabular-nums;">₲ <%= number_with_delimiter(total_notas_factura(@factura[:id])) %></div>
+    </div>
+    <div>
+      <div class="sub" style="font-size:12px;">Saldo</div>
+      <div style="font-weight:600; font-variant-numeric:tabular-nums;">₲ <%= number_with_delimiter(saldo) %></div>
+    </div>
+  </div>
+
+  <% if @pagos.empty? && @notas.empty? %>
+    <p class="sub" style="margin:0;">Todavía no hay pagos ni notas de crédito para esta factura.</p>
+  <% end %>
+
+  <% unless @pagos.empty? %>
+    <h4 style="margin:0 0 8px; font-size:13px; text-transform:uppercase; letter-spacing:.05em; color:var(--text-3);">Pagos</h4>
+    <div class="table-wrap" style="margin-bottom:20px;">
+      <table>
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Método</th>
+            <th>Referencia</th>
+            <th style="text-align:right">Monto</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @pagos.each do |p| %>
+            <tr>
+              <td><%= p[:fecha] %></td>
+              <td><span class="badge b-blue"><%= p[:metodo] %></span></td>
+              <td><span class="sub"><%= p[:referencia] && !p[:referencia].empty? ? p[:referencia] : '—' %></span></td>
+              <td style="text-align:right;font-variant-numeric:tabular-nums;font-weight:600;">₲ <%= number_with_delimiter(p[:monto]) %></td>
+              <td>
+                <div class="row-actions">
+                  <a href="<%= t("/ventas/pagos/#{p[:id]}") %>" class="icon-act" title="Ver pago"><i data-lucide="eye"></i></a>
+                </div>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+
+  <% unless @notas.empty? %>
+    <h4 style="margin:0 0 8px; font-size:13px; text-transform:uppercase; letter-spacing:.05em; color:var(--text-3);">Notas de crédito</h4>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Número</th>
+            <th>Fecha</th>
+            <th>Motivo</th>
+            <th style="text-align:right">Monto</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @notas.each do |n| %>
+            <tr>
+              <td><b><%= n[:numero] %></b></td>
+              <td><%= n[:fecha] %></td>
+              <td><span class="sub"><%= n[:motivo] && !n[:motivo].empty? ? n[:motivo] : '—' %></span></td>
+              <td style="text-align:right;font-variant-numeric:tabular-nums;font-weight:600;">₲ <%= number_with_delimiter(n[:monto]) %></td>
+              <td>
+                <div class="row-actions">
+                  <a href="<%= t("/ventas/notas_credito/#{n[:id]}") %>" class="icon-act" title="Ver nota"><i data-lucide="eye"></i></a>
+                </div>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+</div>
+<% end %>

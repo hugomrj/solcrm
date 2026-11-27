@@ -1,0 +1,64 @@
+<a href="<%= t('/roles') %>" class="backlink"><i data-lucide="arrow-left"></i> Volver a roles</a>
+
+<div class="page-head">
+  <div>
+    <h1>Permisos de <b><%= @rol[:nombre] %></b></h1>
+    <p class="sub">Marcá los módulos a los que este rol tiene acceso</p>
+  </div>
+</div>
+
+<form method="post" action="<%= t("/roles/#{@rol[:id]}") %>">
+  <div class="card form-card">
+    <% RolesRoutes::GRUPOS.each do |grupo, modulos| %>
+      <div style="margin-bottom:24px">
+        <h3 style="margin:0 0 10px; font-size:13px; text-transform:uppercase; letter-spacing:.05em; color:var(--text-3)">
+          <%= grupo %>
+        </h3>
+        <div style="display:flex; flex-wrap:wrap; gap:10px 24px">
+          <% modulos.each do |modulo| %>
+            <% permiso = @permisos.find { |p| p[:modulo] == modulo } %>
+            <% if permiso %>
+              <label style="display:inline-flex; align-items:center; gap:8px; font-size:13.5px">
+                <input type="checkbox" name="permisos[]" value="<%= permiso[:id] %>"
+                       <%= 'checked' if @asignados[permiso[:id]] %>>
+                <%= modulo.tr('_', ' ') %>
+              </label>
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+
+    <%# Permisos que no entran en ningún grupo (por si se agregan nuevos) %>
+    <% sin_grupo = @permisos.reject { |p| RolesRoutes::GRUPOS.values.flatten.include?(p[:modulo]) } %>
+    <% unless sin_grupo.empty? %>
+      <div style="margin-bottom:24px">
+        <h3 style="margin:0 0 10px; font-size:13px; text-transform:uppercase; letter-spacing:.05em; color:var(--text-3)">Otros</h3>
+        <div style="display:flex; flex-wrap:wrap; gap:10px 24px">
+          <% sin_grupo.each do |permiso| %>
+            <label style="display:inline-flex; align-items:center; gap:8px; font-size:13.5px">
+              <input type="checkbox" name="permisos[]" value="<%= permiso[:id] %>"
+                     <%= 'checked' if @asignados[permiso[:id]] %>>
+              <%= permiso[:modulo].tr('_', ' ') %>
+            </label>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+
+    <div class="form-foot">
+      <a href="<%= t('/roles') %>" class="btn btn-ghost">Cancelar</a>
+      <div class="spacer"></div>
+      <button type="submit" class="btn btn-primary">Guardar permisos</button>
+    </div>
+  </div>
+</form>
+
+<div class="card" style="margin-top:16px; padding:20px 24px">
+  <h3 style="margin:0 0 8px; font-size:14px">Usuarios con este rol</h3>
+  <% if @usuarios_asignados.empty? %>
+    <p class="sub" style="margin:0">Ningún usuario de esta empresa tiene el rol asignado.</p>
+  <% else %>
+    <p style="margin:0; font-size:13.5px"><%= @usuarios_asignados.join(", ") %></p>
+  <% end %>
+</div>

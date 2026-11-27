@@ -29,10 +29,6 @@
   </button>
 </form>
 
-<div class="count-line">
-  <%= @usuarios.pagination_record_count %> usuario(s)
-</div>
-
 <div class="card">
   <% if @usuarios.empty? %>
     <div class="empty">
@@ -105,7 +101,7 @@
       </table>
     </div>
 
-    <% if @usuarios.page_count > 1 %>
+    <% if @usuarios.page_count >= 1 %>
       <div class="pagination">
         <span>
           Página <%= @usuarios.current_page %> de <%= @usuarios.page_count %>

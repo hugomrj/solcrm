@@ -37,7 +37,6 @@
   <button type="submit" class="btn btn-ghost"><i data-lucide="search"></i> Buscar</button>
 </form>
 
-<div class="count-line"><%= @facturas.pagination_record_count %> factura(s)</div>
 
 <div class="card">
   <% if @facturas.empty? %>
@@ -98,7 +97,7 @@
       </table>
     </div>
 
-    <% if @facturas.page_count > 1 %>
+    <% if @facturas.page_count >= 1 %>
       <div class="pagination">
         <span>Página <%= @facturas.current_page %> de <%= @facturas.page_count %></span>
         <div class="pages">

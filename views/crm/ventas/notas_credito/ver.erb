@@ -1,0 +1,54 @@
+<a href="<%= t('/ventas/notas_credito') %>" class="backlink"><i data-lucide="arrow-left"></i> Volver a notas de crédito</a>
+
+<div class="page-head" style="margin-bottom:24px">
+  <div>
+    <h1>Nota de crédito <%= @nota[:numero] %></h1>
+    <p class="sub" style="display:flex;align-items:center;gap:8px">
+      <%= @cliente ? @cliente[:nombre] : '—' %>
+      <span style="color:var(--border-strong)">|</span>
+      <%= @nota[:fecha] %>
+    </p>
+  </div>
+  <div class="head-actions" style="display:flex;gap:8px">
+    <% if @factura %>
+      <a href="<%= t("/ventas/facturas/#{@factura[:id]}") %>" class="btn btn-ghost">
+        <i data-lucide="file-check"></i> Ver factura
+      </a>
+    <% end %>
+  </div>
+</div>
+
+<div class="card" style="padding:24px 28px">
+  <div class="table-wrap">
+    <table>
+      <tbody>
+        <tr>
+          <th style="width:200px">Monto acreditado</th>
+          <td style="font-weight:700;font-variant-numeric:tabular-nums">₲ <%= number_with_delimiter(@nota[:monto]) %></td>
+        </tr>
+        <tr>
+          <th>Factura</th>
+          <td>
+            <% if @factura %>
+              <a href="<%= t("/ventas/facturas/#{@factura[:id]}") %>"><b><%= @factura[:numero] %></b></a>
+            <% else %>
+              <span class="sub">Sin factura asociada</span>
+            <% end %>
+          </td>
+        </tr>
+        <tr>
+          <th>Cliente</th>
+          <td><%= @cliente ? @cliente[:nombre] : '—' %></td>
+        </tr>
+        <tr>
+          <th>Fecha</th>
+          <td><%= @nota[:fecha] %></td>
+        </tr>
+        <tr>
+          <th>Motivo</th>
+          <td><%= @nota[:motivo] && !@nota[:motivo].empty? ? @nota[:motivo] : '—' %></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

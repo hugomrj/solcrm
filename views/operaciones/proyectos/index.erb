@@ -1,0 +1,113 @@
+<div class="page-head">
+  <div>
+    <h1>Proyectos</h1>
+    <p class="sub">Trabajos y servicios en curso</p>
+  </div>
+  <div class="head-actions">
+    <a href="<%= t('/proyectos/nuevo') %>" class="btn btn-primary">
+      <i data-lucide="plus"></i> Nuevo proyecto
+    </a>
+  </div>
+</div>
+
+<form method="get" action="<%= t('/proyectos') %>" class="toolbar">
+  <label class="search">
+    <i data-lucide="search"></i>
+    <input type="text" name="q" value="<%= @filtros[:q] %>" placeholder="Buscar nombre, notas…">
+  </label>
+
+  <div class="sel">
+    <select name="estado" onchange="this.form.submit()">
+      <option value="">Todos</option>
+      <% ProyectosRoutes::ESTADOS.each do |e| %>
+        <option value="<%= e %>" <%= 'selected' if @filtros[:estado] == e %>><%= e.capitalize %></option>
+      <% end %>
+    </select>
+  </div>
+
+  <button type="submit" class="btn btn-ghost"><i data-lucide="search"></i> Buscar</button>
+</form>
+
+<div class="card">
+  <% if @proyectos.empty? %>
+    <div class="empty">
+      <i data-lucide="briefcase"></i>
+      <b>No hay proyectos</b>
+      <p>Cargá el primero para hacer seguimiento de entregas y presupuesto</p>
+      <a href="<%= t('/proyectos/nuevo') %>" class="btn btn-primary">Crear proyecto</a>
+    </div>
+  <% else %>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Proyecto</th>
+            <th>Cliente</th>
+            <th>Estado</th>
+            <th>Inicio</th>
+            <th>Fin</th>
+            <th style="text-align:right">Presupuesto</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @proyectos.each do |p| %>
+            <% cli = @clientes_por_id[p[:cliente_id]] %>
+            <tr>
+              <td><div class="cell-name"><b><%= p[:nombre] %></b></div></td>
+              <td><%= cli ? cli[:nombre] : '—' %></td>
+              <td>
+                <% badge = { "activo"=>"b-green","pausado"=>"b-warn","completado"=>"b-blue","cancelado"=>"b-gray" }[p[:estado]] || "b-gray" %>
+                <span class="badge <%= badge %>"><%= p[:estado] %></span>
+              </td>
+              <td><%= p[:fecha_inicio] && !p[:fecha_inicio].to_s.empty? ? p[:fecha_inicio] : '—' %></td>
+              <td><%= p[:fecha_fin] && !p[:fecha_fin].to_s.empty? ? p[:fecha_fin] : '—' %></td>
+              <td style="text-align:right;font-variant-numeric:tabular-nums">
+                <%= p[:presupuesto] ? "₲ #{number_with_delimiter(p[:presupuesto])}" : '—' %>
+              </td>
+              <td>
+                <div class="row-actions">
+                  <a href="<%= t("/proyectos/#{p[:id]}/editar") %>" class="icon-act" title="Editar"><i data-lucide="pencil"></i></a>
+                  <% unless p[:estado] == "cancelado" %>
+                    <form method="post" action="<%= t("/proyectos/#{p[:id]}/eliminar") %>" style="display:inline"
+                          data-confirm="¿Cancelar el proyecto <%= p[:nombre] %>?"
+                          data-confirm-type="danger"
+                          data-confirm-ok="Cancelar">
+                      <button type="submit" class="icon-act danger" title="Cancelar"><i data-lucide="x-circle"></i></button>
+                    </form>
+                  <% end %>
+                </div>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+
+    <% if @proyectos.page_count >= 1 %>
+      <div class="pagination">
+        <span>Página <%= @proyectos.current_page %> de <%= @proyectos.page_count %></span>
+        <div class="pages">
+          <% qs = "q=#{@filtros[:q]}&estado=#{@filtros[:estado]}" %>
+          <% if @proyectos.prev_page %>
+            <a href="<%= t("/proyectos?page=#{@proyectos.prev_page}&#{qs}") %>">←</a>
+          <% else %>
+            <span class="disabled">←</span>
+          <% end %>
+          <% (1..@proyectos.page_count).each do |n| %>
+            <% if n == @proyectos.current_page %>
+              <span class="current"><%= n %></span>
+            <% else %>
+              <a href="<%= t("/proyectos?page=#{n}&#{qs}") %>"><%= n %></a>
+            <% end %>
+          <% end %>
+          <% if @proyectos.next_page %>
+            <a href="<%= t("/proyectos?page=#{@proyectos.next_page}&#{qs}") %>">→</a>
+          <% else %>
+            <span class="disabled">→</span>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  <% end %>
+</div>

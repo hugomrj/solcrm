@@ -1,0 +1,98 @@
+<div class="page-head">
+  <div>
+    <h1>Explorador de archivos</h1>
+    <p class="sub">Documentos y adjuntos de la empresa</p>
+  </div>
+</div>
+
+<form method="post" action="<%= t('/explorador') %>" enctype="multipart/form-data">
+  <div class="card form-card">
+    <div class="form-grid">
+      <div class="field span2">
+        <label for="archivo">Subir archivo</label>
+        <input type="file" id="archivo" name="archivo" required>
+      </div>
+    </div>
+    <div class="form-foot">
+      <div class="spacer"></div>
+      <button type="submit" class="btn btn-primary"><i data-lucide="upload"></i> Subir</button>
+    </div>
+  </div>
+</form>
+
+<form method="get" action="<%= t('/explorador') %>" class="toolbar" style="margin-top:16px">
+  <label class="search">
+    <i data-lucide="search"></i>
+    <input type="text" name="q" value="<%= @filtros[:q] %>" placeholder="Buscar por nombre…">
+  </label>
+  <button type="submit" class="btn btn-ghost"><i data-lucide="search"></i> Buscar</button>
+</form>
+
+<div class="card">
+  <% if @archivos.empty? %>
+    <div class="empty">
+      <i data-lucide="folder"></i>
+      <b>No hay archivos</b>
+      <p>Subí el primero con el formulario de arriba</p>
+    </div>
+  <% else %>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Archivo</th>
+            <th>Tipo</th>
+            <th style="text-align:right">Tamaño</th>
+            <th>Subido por</th>
+            <th>Fecha</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @archivos.each do |a| %>
+            <% usuario = @usuarios_por_id[a[:usuario_id]] %>
+            <tr>
+              <td><div class="cell-name"><b><%= a[:nombre] %></b></div></td>
+              <td><span class="sub"><%= a[:tipo_mime] && !a[:tipo_mime].empty? ? a[:tipo_mime] : '—' %></span></td>
+              <td style="text-align:right;font-variant-numeric:tabular-nums"><%= formato_tamano(a[:tamano]) %></td>
+              <td><%= usuario ? usuario[:nombre] : '—' %></td>
+              <td><%= a[:created_at].strftime("%d/%m/%Y %H:%M") %></td>
+              <td>
+                <div class="row-actions">
+                  <a href="<%= t("/explorador/#{a[:id]}/descargar") %>" class="icon-act" title="Descargar"><i data-lucide="download"></i></a>
+                </div>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination">
+      <span>
+        Página <%= @archivos.current_page %> de <%= [@archivos.page_count, 1].max %> ·
+        <%= @archivos.pagination_record_count %> archivo(s) · <%= formato_tamano(@total_bytes) %> en total
+      </span>
+      <div class="pages">
+        <% qs = "q=#{@filtros[:q]}" %>
+        <% if @archivos.prev_page %>
+          <a href="<%= t("/explorador?page=#{@archivos.prev_page}&#{qs}") %>">←</a>
+        <% else %>
+          <span class="disabled">←</span>
+        <% end %>
+        <% (1..[@archivos.page_count, 1].max).each do |n| %>
+          <% if n == @archivos.current_page %>
+            <span class="current"><%= n %></span>
+          <% else %>
+            <a href="<%= t("/explorador?page=#{n}&#{qs}") %>"><%= n %></a>
+          <% end %>
+        <% end %>
+        <% if @archivos.next_page %>
+          <a href="<%= t("/explorador?page=#{@archivos.next_page}&#{qs}") %>">→</a>
+        <% else %>
+          <span class="disabled">→</span>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+</div>

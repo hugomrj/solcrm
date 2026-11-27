@@ -43,7 +43,7 @@ class ContactosRoutes < BaseApp
       )
     end
 
-    @contactos = dataset.order(:nombre).paginate(page, 25)
+    @contactos = dataset.order(:nombre).paginate(page, ITEMS_POR_PAGINA)
     @clientes  = tenant_db(:clientes).where(activo: true).order(:nombre).all
     @filtros   = {
       q:          q,

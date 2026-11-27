@@ -1,4 +1,4 @@
-<a href="<%= t('/articulos') %>" class="backlink">
+<a href="<%= t('/ventas/articulos') %>" class="backlink">
   <i data-lucide="arrow-left"></i> Volver a artículos
 </a>
 
@@ -9,7 +9,7 @@
   </div>
 </div>
 
-<form method="post" action="<%= @articulo ? t("/articulos/#{@articulo[:id]}") : t('/articulos') %>">
+<form method="post" action="<%= @articulo ? t("/ventas/articulos/#{@articulo[:id]}") : t('/ventas/articulos') %>">
   <div class="card form-card">
     <div class="form-grid">
 
@@ -62,7 +62,7 @@
     </div>
 
     <div class="form-foot">
-      <a href="<%= t('/articulos') %>" class="btn btn-ghost">Cancelar</a>
+      <a href="<%= t('/ventas/articulos') %>" class="btn btn-ghost">Cancelar</a>
       <div class="spacer"></div>
       <button type="submit" class="btn btn-primary">
         <%= @articulo ? 'Guardar cambios' : 'Crear artículo' %>

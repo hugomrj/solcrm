@@ -1,0 +1,138 @@
+<div class="page-head">
+  <div>
+    <h1>Suscripciones</h1>
+    <p class="sub">Planes recurrentes de clientes</p>
+  </div>
+  <div class="head-actions">
+    <a href="<%= t('/suscripciones/nuevo') %>" class="btn btn-primary">
+      <i data-lucide="plus"></i> Nueva suscripción
+    </a>
+  </div>
+</div>
+
+<div class="stats">
+  <div class="card stat">
+    <div class="top">
+      <span class="mi-ic ic-green"><i data-lucide="repeat"></i></span>
+      <span>Ingreso mensual estimado</span>
+    </div>
+    <div class="big">₲ <%= number_with_delimiter(@mrr) %></div>
+    <div class="delta">normalizado a mensual</div>
+  </div>
+  <div class="card stat">
+    <div class="top">
+      <span class="mi-ic ic-brand"><i data-lucide="users"></i></span>
+      <span>Suscripciones</span>
+    </div>
+    <div class="big"><%= @suscripciones.pagination_record_count %></div>
+    <div class="delta">según el filtro actual</div>
+  </div>
+</div>
+
+<form method="get" action="<%= t('/suscripciones') %>" class="toolbar">
+  <div class="sel">
+    <select name="cliente_id" onchange="this.form.submit()">
+      <option value="">Todos los clientes</option>
+      <% @clientes.each do |c| %>
+        <option value="<%= c[:id] %>" <%= 'selected' if @filtros[:cliente_id].to_s == c[:id].to_s %>><%= c[:nombre] %></option>
+      <% end %>
+    </select>
+  </div>
+
+  <div class="sel">
+    <select name="estado" onchange="this.form.submit()">
+      <option value="">Todos los estados</option>
+      <% SuscripcionesRoutes::ESTADOS.each do |e| %>
+        <option value="<%= e %>" <%= 'selected' if @filtros[:estado] == e %>><%= e.capitalize %></option>
+      <% end %>
+    </select>
+  </div>
+
+  <button type="submit" class="btn btn-ghost"><i data-lucide="search"></i> Filtrar</button>
+</form>
+
+<div class="card">
+  <% if @suscripciones.empty? %>
+    <div class="empty">
+      <i data-lucide="repeat"></i>
+      <b>No hay suscripciones</b>
+      <p>Cargá la primera para facturar planes recurrentes</p>
+      <a href="<%= t('/suscripciones/nuevo') %>" class="btn btn-primary">Crear suscripción</a>
+    </div>
+  <% else %>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Cliente</th>
+            <th>Plan</th>
+            <th style="text-align:right">Monto</th>
+            <th>Periodicidad</th>
+            <th>Inicio</th>
+            <th>Fin</th>
+            <th>Estado</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @suscripciones.each do |s| %>
+            <% cli = @clientes_por_id[s[:cliente_id]] %>
+            <tr>
+              <td><div class="cell-name"><b><%= cli ? cli[:nombre] : '—' %></b></div></td>
+              <td><%= s[:plan] %></td>
+              <td style="text-align:right;font-variant-numeric:tabular-nums;font-weight:600;">
+                ₲ <%= number_with_delimiter(s[:monto]) %>
+              </td>
+              <td><span class="badge b-gray"><%= s[:periodicidad] %></span></td>
+              <td><%= s[:fecha_inicio] %></td>
+              <td><%= s[:fecha_fin] ? s[:fecha_fin] : '—' %></td>
+              <td>
+                <% badge = { "activa"=>"b-green","pausada"=>"b-warn","cancelada"=>"b-gray" }[s[:estado]] || "b-gray" %>
+                <span class="badge <%= badge %>"><%= s[:estado] %></span>
+              </td>
+              <td>
+                <div class="row-actions">
+                  <a href="<%= t("/suscripciones/#{s[:id]}/editar") %>" class="icon-act" title="Editar"><i data-lucide="pencil"></i></a>
+                  <% unless s[:estado] == "cancelada" %>
+                    <form method="post" action="<%= t("/suscripciones/#{s[:id]}/eliminar") %>" style="display:inline"
+                          data-confirm="¿Cancelar la suscripción de <%= cli ? cli[:nombre] : 'este cliente' %>?"
+                          data-confirm-type="danger"
+                          data-confirm-ok="Cancelar">
+                      <button type="submit" class="icon-act danger" title="Cancelar"><i data-lucide="x-circle"></i></button>
+                    </form>
+                  <% end %>
+                </div>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+
+    <% if @suscripciones.page_count >= 1 %>
+      <div class="pagination">
+        <span>Página <%= @suscripciones.current_page %> de <%= @suscripciones.page_count %></span>
+        <div class="pages">
+          <% qs = "estado=#{@filtros[:estado]}&cliente_id=#{@filtros[:cliente_id]}" %>
+          <% if @suscripciones.prev_page %>
+            <a href="<%= t("/suscripciones?page=#{@suscripciones.prev_page}&#{qs}") %>">←</a>
+          <% else %>
+            <span class="disabled">←</span>
+          <% end %>
+          <% (1..@suscripciones.page_count).each do |n| %>
+            <% if n == @suscripciones.current_page %>
+              <span class="current"><%= n %></span>
+            <% else %>
+              <a href="<%= t("/suscripciones?page=#{n}&#{qs}") %>"><%= n %></a>
+            <% end %>
+          <% end %>
+          <% if @suscripciones.next_page %>
+            <a href="<%= t("/suscripciones?page=#{@suscripciones.next_page}&#{qs}") %>">→</a>
+          <% else %>
+            <span class="disabled">→</span>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  <% end %>
+</div>
