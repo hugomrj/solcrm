@@ -27,7 +27,7 @@ class BaseApp < Sinatra::Base
 
 
   # Rutas que NO llevan slug de tenant
-  NON_TENANT = %w[css js images favicon.ico super doc].freeze
+  NON_TENANT = %w[css js images favicon.ico super doc ayuda].freeze
 
   # Filas por página en todos los listados paginados (.paginate)
   ITEMS_POR_PAGINA = 12
@@ -58,6 +58,11 @@ class BaseApp < Sinatra::Base
   # ---- Doc técnica (estática) ----
   get "/doc" do
     send_file File.join(settings.root, "doc", "index.html")
+  end
+
+  # ---- Guía de uso para el usuario final (estática, sin login) ----
+  get "/ayuda/?" do
+    send_file File.join(settings.root, "public", "ayuda", "index.html")
   end
 
 

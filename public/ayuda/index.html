@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SolCRM — Guía de uso</title>
+
+<!-- Anti-FOUC: mismo criterio que views/layout/base.erb -->
+<script>
+  (function () {
+    var saved = localStorage.getItem('theme');
+    var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    if (saved === 'dark' || (!saved && prefersDark)) {
+      document.documentElement.classList.add('dark');
+    }
+  })();
+</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+<style>
+  /* ============ Tokens (copiados de public/css/styles.css) ============ */
+  :root {
+    --bg: #F6F7F9; --surface: #FFFFFF; --surface-2: #F9FAFB;
+    --border: #E9EBF1; --border-strong: #D9DCE5;
+    --text: #101828; --text-2: #475467; --text-3: #98A2B3;
+    --hover: #F2F4F7; --row-hover: #FAFBFD;
+    --brand: #465FFF; --t-brand: #3541E3;
+    --purple: #7A5AF8; --t-purple: #6941C6;
+    --blue: #4A6FF3;  --t-blue: #2C4FD8;
+    --warn: #F79009;  --t-warn: #B54708;
+    --green: #12B76A; --t-green: #027948;
+    --red: #F04438;   --t-red: #B42318;
+    --cyan: #0E9384;  --t-cyan: #087443;
+    --shadow: 0 14px 38px -14px rgba(16,24,40,.18);
+    --r: 12px;
+  }
+  html.dark {
+    --bg: #0D1017; --surface: #141926; --surface-2: #1A2030;
+    --border: #242C3D; --border-strong: #33405C;
+    --text: #F0F2F5; --text-2: #A5ADC1; --text-3: #6A7385;
+    --hover: #1B2233; --row-hover: #181F2E;
+    --t-brand: #94A3FF; --t-purple: #BCA5FF; --t-blue: #99ADFF;
+    --t-warn: #FDBA68; --t-green: #62D39B; --t-red: #F98F87; --t-cyan: #5BC9BE;
+    --shadow: 0 14px 38px -14px rgba(0,0,0,.6);
+  }
+
+  * { margin: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; scroll-padding-top: 90px; }
+  body {
+    font-family: 'Outfit', system-ui, sans-serif;
+    font-size: 14px; line-height: 1.6;
+    color: var(--text); background: var(--bg);
+  }
+  a { color: var(--t-brand); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  ::-webkit-scrollbar { width: 9px; height: 9px; }
+  ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 99px; }
+
+  /* ============ Topbar ============ */
+  .top {
+    position: sticky; top: 0; z-index: 40;
+    display: flex; align-items: center; gap: 14px;
+    padding: 12px 24px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 16px; color: var(--text); }
+  .brand svg { border-radius: 8px; }
+  .top .spacer { flex: 1; }
+  .search {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--surface-2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 7px 12px; min-width: 260px;
+  }
+  .search input { border: 0; background: none; outline: none; color: var(--text); font: inherit; width: 100%; }
+  .search i, .search svg { color: var(--text-3); width: 16px; height: 16px; flex: none; }
+  .icon-btn {
+    display: grid; place-items: center;
+    width: 36px; height: 36px; border-radius: 10px;
+    border: 1px solid var(--border); background: var(--surface);
+    color: var(--text-2); cursor: pointer;
+  }
+  .icon-btn:hover { background: var(--hover); color: var(--text); }
+  .icon-btn svg { width: 17px; height: 17px; }
+
+  /* ============ Layout ============ */
+  .wrap { display: grid; grid-template-columns: 250px 1fr; gap: 34px; max-width: 1220px; margin: 0 auto; padding: 28px 24px 80px; }
+
+  /* Nav lateral */
+  .nav { position: sticky; top: 86px; align-self: start; max-height: calc(100vh - 110px); overflow-y: auto; padding-right: 6px; }
+  .nav p {
+    font-size: 11px; letter-spacing: .07em; text-transform: uppercase;
+    color: var(--text-3); font-weight: 600; margin: 18px 0 6px 10px;
+  }
+  .nav p:first-child { margin-top: 0; }
+  .nav a {
+    display: flex; align-items: center; gap: 9px;
+    padding: 6px 10px; border-radius: 8px;
+    color: var(--text-2); font-weight: 500; font-size: 13.5px;
+  }
+  .nav a:hover { background: var(--hover); color: var(--text); text-decoration: none; }
+  .nav a.active { background: color-mix(in srgb, var(--brand) 12%, transparent); color: var(--t-brand); }
+  .nav a svg { width: 15px; height: 15px; flex: none; }
+
+  /* Contenido */
+  main { min-width: 0; }
+  .hero { margin-bottom: 26px; }
+  .hero h1 { font-size: 28px; line-height: 1.25; margin-bottom: 8px; }
+  .hero p { color: var(--text-2); max-width: 70ch; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 11px; border-radius: 999px;
+    background: var(--surface); border: 1px solid var(--border);
+    color: var(--text-2); font-size: 12.5px; font-weight: 500;
+  }
+  .chip svg { width: 13px; height: 13px; }
+
+  .divider { height: 1px; background: var(--border); margin: 30px 0 26px; }
+
+  h2.sec {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 19px; margin: 38px 0 6px;
+  }
+  h2.sec .sec-ic {
+    display: grid; place-items: center;
+    width: 32px; height: 32px; border-radius: 9px;
+    background: color-mix(in srgb, var(--brand) 13%, transparent); color: var(--t-brand);
+  }
+  h2.sec .sec-ic svg { width: 17px; height: 17px; }
+  .sec-desc { color: var(--text-2); margin-bottom: 18px; }
+
+  /* Tarjetas de módulo */
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r); padding: 20px 22px; margin-bottom: 16px;
+  }
+  .card:target { border-color: var(--brand); box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 18%, transparent); }
+  .card-head { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
+  .m-ic {
+    display: grid; place-items: center; flex: none;
+    width: 36px; height: 36px; border-radius: 10px;
+  }
+  .m-ic svg { width: 18px; height: 18px; }
+  .m-title { font-size: 16px; font-weight: 600; line-height: 1.3; }
+  .m-route {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12px; color: var(--text-3);
+  }
+  .m-route a { color: var(--text-3); }
+  .m-route a:hover { color: var(--t-brand); }
+
+  .row { display: grid; grid-template-columns: 118px 1fr; gap: 14px; padding: 7px 0; }
+  .row + .row { border-top: 1px dashed var(--border); }
+  .row .k {
+    font-size: 11px; letter-spacing: .06em; text-transform: uppercase;
+    color: var(--text-3); font-weight: 600; padding-top: 3px;
+  }
+  .row .v { color: var(--text-2); }
+  .row .v strong { color: var(--text); font-weight: 600; }
+  .row ol, .row ul { padding-left: 18px; }
+  .row li { margin: 2px 0; }
+
+  code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12.5px;
+    background: var(--surface-2); border: 1px solid var(--border);
+    border-radius: 5px; padding: 1px 5px; color: var(--text);
+  }
+
+  .ex {
+    display: block;
+    background: var(--surface-2); border: 1px solid var(--border);
+    border-left: 3px solid var(--brand);
+    border-radius: 8px; padding: 9px 12px;
+    font-size: 12.5px; color: var(--text-2); margin-top: 6px;
+  }
+  .ex b { color: var(--text); }
+
+  .tip {
+    display: flex; gap: 10px; align-items: flex-start;
+    background: color-mix(in srgb, var(--warn) 10%, var(--surface));
+    border: 1px solid color-mix(in srgb, var(--warn) 35%, var(--border));
+    border-radius: 10px; padding: 12px 14px; margin: 22px 0;
+    color: var(--text-2); font-size: 13.5px;
+  }
+  .tip svg { width: 17px; height: 17px; color: var(--t-warn); flex: none; margin-top: 2px; }
+
+  footer { max-width: 1220px; margin: 0 auto; padding: 24px; color: var(--text-3); font-size: 12.5px; border-top: 1px solid var(--border); }
+
+  /* Colores de íconos (equivalentes a .ic-* del sidebar) */
+  .ic-blue  { background: color-mix(in srgb, var(--blue) 14%, transparent);   color: var(--t-blue); }
+  .ic-green { background: color-mix(in srgb, var(--green) 14%, transparent);  color: var(--t-green); }
+  .ic-purple{ background: color-mix(in srgb, var(--purple) 14%, transparent); color: var(--t-purple); }
+  .ic-cyan  { background: color-mix(in srgb, var(--cyan) 14%, transparent);   color: var(--t-cyan); }
+  .ic-warn  { background: color-mix(in srgb, var(--warn) 16%, transparent);   color: var(--t-warn); }
+  .ic-red   { background: color-mix(in srgb, var(--red) 14%, transparent);    color: var(--t-red); }
+  .ic-brand { background: color-mix(in srgb, var(--brand) 14%, transparent);  color: var(--t-brand); }
+  .ic-gray  { background: var(--hover); color: var(--text-2); }
+
+  @media (max-width: 900px) {
+    .wrap { grid-template-columns: 1fr; padding-top: 18px; }
+    .nav { display: none; }
+    .row { grid-template-columns: 1fr; gap: 2px; }
+    .search { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <a class="brand" href="#inicio">
+    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+      <rect width="32" height="32" rx="8" fill="#465FFF" />
+      <circle cx="16" cy="16" r="5" stroke="white" stroke-width="2" />
+      <path d="M16 7V9 M16 23V25 M7 16H9 M23 16H25 M9.6 9.6L11 11 M21 21L22.4 22.4 M22.4 9.6L21 11 M11 21L9.6 22.4" stroke="white" stroke-width="2" stroke-linecap="round" />
+    </svg>
+    <span>SolCRM · Guía de uso</span>
+  </a>
+  <div class="spacer"></div>
+  <label class="search">
+    <i data-lucide="search"></i>
+    <input id="q" type="search" placeholder="Buscar un módulo… (ej: factura)" autocomplete="off">
+  </label>
+  <button class="icon-btn" id="themeBtn" title="Cambiar tema" aria-label="Cambiar tema">
+    <i data-lucide="moon"></i>
+  </button>
+</header>
+
+<div class="wrap">
+
+  <!-- ================= NAV ================= -->
+  <nav class="nav" id="nav">
+    <p>Empezar</p>
+    <a href="#inicio"><i data-lucide="rocket"></i> ¿Qué es SolCRM?</a>
+    <a href="#flujo"><i data-lucide="route"></i> El flujo completo</a>
+
+    <p>CRM</p>
+    <a href="#dashboard"><i data-lucide="layout-dashboard"></i> Tablero</a>
+    <a href="#pipeline"><i data-lucide="kanban"></i> Pipeline de ventas</a>
+    <a href="#clientes"><i data-lucide="users"></i> Clientes</a>
+    <a href="#contactos"><i data-lucide="contact"></i> Contactos</a>
+    <a href="#leads"><i data-lucide="user-plus"></i> Clientes potenciales</a>
+    <a href="#actividad"><i data-lucide="calendar-check"></i> Actividad</a>
+
+    <p>Ventas</p>
+    <a href="#propuestas"><i data-lucide="file-text"></i> Propuestas</a>
+    <a href="#presupuestos"><i data-lucide="calculator"></i> Presupuestos</a>
+    <a href="#facturas"><i data-lucide="file-check"></i> Facturas</a>
+    <a href="#pagos"><i data-lucide="credit-card"></i> Pagos</a>
+    <a href="#notas_credito"><i data-lucide="rotate-ccw"></i> Notas de crédito</a>
+    <a href="#articulos"><i data-lucide="package"></i> Artículos</a>
+    <a href="#soporte"><i data-lucide="life-buoy"></i> Soporte</a>
+    <a href="#suscripciones"><i data-lucide="refresh-cw"></i> Suscripciones</a>
+
+    <p>Operaciones</p>
+    <a href="#proyectos"><i data-lucide="briefcase"></i> Proyectos</a>
+    <a href="#proveedores"><i data-lucide="truck"></i> Proveedores</a>
+    <a href="#ordenes_compra"><i data-lucide="clipboard-list"></i> Órdenes de compra</a>
+    <a href="#stock"><i data-lucide="layers"></i> Stock</a>
+    <a href="#ajustes_inventario"><i data-lucide="sliders-horizontal"></i> Ajustes de inventario</a>
+    <a href="#gastos"><i data-lucide="receipt"></i> Gastos</a>
+
+    <p>Herramientas</p>
+    <a href="#explorador"><i data-lucide="folder-open"></i> Explorador</a>
+    <a href="#informes"><i data-lucide="bar-chart-3"></i> Informes</a>
+
+    <p>Sistema</p>
+    <a href="#usuarios"><i data-lucide="user-cog"></i> Usuarios</a>
+    <a href="#roles"><i data-lucide="shield"></i> Roles</a>
+    <a href="#configuracion"><i data-lucide="sliders"></i> Ajustes</a>
+  </nav>
+
+  <!-- ================= CONTENIDO ================= -->
+  <main>
+
+    <!-- ---------- INICIO ---------- -->
+    <section class="hero" id="inicio">
+      <h1>¿Qué es SolCRM y para qué sirve?</h1>
+      <p>
+        SolCRM es un <strong>CRM</strong> (gestión de la relación con los clientes). Te ayuda a
+        ordenar en un solo lugar toda la vida de una venta: desde que un cliente te escribe por
+        primera vez, pasando por la propuesta y la factura, hasta el cobro y el seguimiento.
+        Reemplaza la mezcla de planillas, cuadernos y WhatsApp por un sistema donde cada cosa
+        queda registrada y en su lugar.
+      </p>
+      <div class="chips">
+        <span class="chip"><i data-lucide="users"></i> Clientes y contactos</span>
+        <span class="chip"><i data-lucide="kanban"></i> Embudo de ventas</span>
+        <span class="chip"><i data-lucide="file-check"></i> Facturación con PDF</span>
+        <span class="chip"><i data-lucide="credit-card"></i> Cobranzas</span>
+        <span class="chip"><i data-lucide="warehouse"></i> Inventario</span>
+        <span class="chip"><i data-lucide="bar-chart-3"></i> Informes</span>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- ---------- FLUJO ---------- -->
+    <section id="flujo">
+      <h2 class="sec"><span class="sec-ic"><i data-lucide="route"></i></span> El flujo completo, de punta a punta</h2>
+      <p class="sec-desc">Este es el recorrido normal de una venta dentro de SolCRM. Si es tu primera vez, empezá por el punto 1.</p>
+
+      <div class="card">
+        <div class="row">
+          <div class="k">1. Captar</div>
+          <div class="v">
+            Un interesado te llega por la web, un referido o una llamada. Lo registrás en
+            <strong>Clientes potenciales</strong> y lo movés por el <strong>Pipeline</strong>.
+            <span class="ex">Ejemplo: “Roberto Silva / Silva Import” entró por la web (estado <b>nuevo</b>) → lo contactás → pasa a <b>calificado</b>.</span>
+          </div>
+        </div>
+        <div class="row">
+          <div class="k">2. Cotizar</div>
+          <div class="v">
+            Ya es cliente. Armás una <strong>Propuesta</strong> o un <strong>Presupuesto</strong>
+            con los <strong>Artículos</strong> del catálogo, y se lo enviás.
+            <span class="ex">Ejemplo: propuesta <b>PRO-000001</b> con “Sistema POS Avanzado × 1” por ₲ 2.800.000.</span>
+          </div>
+        </div>
+        <div class="row">
+          <div class="k">3. Facturar</div>
+          <div class="v">
+            Se acepta y facturás. La factura calcula solo el <strong>subtotal</strong> y el
+            <strong>IVA 10 %</strong>, y genera el <strong>PDF</strong> para el cliente.
+            <span class="ex">Ejemplo: factura <b>FAC-000001</b> → total ₲ 5.500.000.</span>
+          </div>
+        </div>
+        <div class="row">
+          <div class="k">4. Cobrar</div>
+          <div class="v">
+            Cuando entra el dinero, lo cargás en <strong>Pagos</strong>. La factura pasa sola a
+            <strong>pagada</strong> cuando el saldo llega a cero. Si hubo un descuento posterior,
+            usás una <strong>Nota de crédito</strong>.
+            <span class="ex">Ejemplo: cobro parcial de ₲ 500.000 sobre FAC-000003 → queda saldo ₲ 1.205.000.</span>
+          </div>
+        </div>
+        <div class="row">
+          <div class="k">5. Analizar</div>
+          <div class="v">
+            En <strong>Informes</strong> ves cuánto vendiste, cuánto tenés para cobrar y cómo
+            avanza el embudo.
+          </div>
+        </div>
+      </div>
+
+      <div class="tip">
+        <i data-lucide="lightbulb"></i>
+        <div>
+          <strong>Truco para probar sin miedo:</strong> si entraste como usuario de prueba
+          (por ejemplo <code>/acme/login</code> con <code>admin / admin</code>), ya tenés datos
+          cargados. Tocá <strong>Ventas → Facturas → FAC-000001 → Imprimir PDF</strong> y vas a
+          ver un PDF real en un segundo.
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= CRM ================= -->
+    <h2 class="sec" id="crm"><span class="sec-ic"><i data-lucide="users-round"></i></span> CRM</h2>
+    <p class="sec-desc">Todo lo relacionado con tus clientes y el proceso de venta antes de facturar.</p>
+
+    <article class="card" id="dashboard">
+      <div class="card-head">
+        <span class="m-ic ic-blue"><i data-lucide="layout-dashboard"></i></span>
+        <div>
+          <div class="m-title">Tablero</div>
+          <div class="m-route"><a href="#" data-route="/dashboard">/dashboard</a></div>
+        </div>
+      </div>
+      <div class="row"><div class="k">Qué es</div><div class="v">La pantalla de inicio: un resumen de tu negocio en el momento en que entrás.</div></div>
+      <div class="row"><div class="k">Para qué sirve</div><div class="v">Ver de un vistazo lo pendiente del día: ventas del mes, facturas por cobrar, tareas y actividades próximas, oportunidades abiertas.</div></div>
+      <div class="row"><div class="k">Cómo se usa</div><div class="v"><ol><li>Entrás y ves los números arriba y las listas abajo.</li><li>Tocás cualquier tarjeta (ej: “Facturas por cobrar”) para ir al módulo con el filtro ya puesto.</li><li>Usás el buscador del menú (<code>Ctrl + K</code>) para saltar a cualquier sección.</li></ol></div></div>
+      <div class="row"><div class="k">Ejemplo</div><div class="v"><span class="ex">“Ventas del mes: ₲ 12.345.000” → tocás y se abre <b>Informes → Ventas</b> con el período ya seleccionado.</span></div></div>
+    </article>
+
+    <article class="card" id="pipeline">
+      <div class="card-head">
+        <span class="m-ic ic-green"><i data-lucide="kanban"></i></span>
+        <div>
+          <div class="m-title">Pipeline de ventas</div>
+          <div class="m-route"><a href="#" data-route="/pipeline">/pipeline</a></div>
+        </div>
+      </div>
+      <div class="row"><div class="k">Qué es</div><div class="v">El embudo de ventas en formato de tablero: cada oportunidad es una tarjeta que avanza por columnas (etapas) a medida que se acerca al cierre.</div></div>
+      <div class="row"><div class="k">Para qué sirve</div><div class="v">Ver en qué etapa está cada venta posible y cuánto dinero hay en juego. Saber dónde se te traban las ventas.</div></div>
+      <div class="row"><div class="k">Cómo se usa</div><div class="v"><ol><li>Creás una oportunidad (<em>Nueva oportunidad</em>) con título, cliente, monto estimado y fecha de cierre.</li><li>La <strong>arrastrás</strong> de una columna a otra para cambiar de etapa.</li><li>Cuando se gana o se pierde, la pasás a <strong>Ganada</strong> o <strong>Perdida</strong>.</li></ol></div></div>
+      <div class="row"><div class="k">Etapas</div><div class="v"><code>Contacto inicial</code> → <code>Calificación</code> → <code>Propuesta</code> → <code>Negociación</code> → <code>Ganada</code> / <code>Perdida</code></div></div>
+      <div class="row"><div class="k">Ejemplo</div><div class="v"><span class="ex">“Sistema completo para Distribuidora” — ₲ 35.000.000, cierra en 30 días. Arrastrás la tarjeta de <b>Propuesta</b> a <b>Negociación</b> después de la reunión.</span></div></div>
+    </article>
+
+    <article class="card" id="clientes">
+      <div class="card-head">
+        <span class="m-ic ic-purple"><i data-lucide="users"></i></span>
+        <div>
+          <div class="m-title">Clientes</div>
+          <div class="m-route"><a href="#" data-route="/clientes">/clientes</a></div>
+        </div>
+      </div>
+      <div class="row"><div class="k">Qué es</div><div class="v">La ficha de cada cliente: personas o empresas que ya te compran (o que ya te compraron alguna vez).</div></div>
+      <div class="row"><div class="k">Para qué sirve</div><div class="v">Centralizar RUC, email, teléfono y dirección. Es a quien le vas a facturar, cobrar y mandar los PDF.</div></div>
+      <div class="row"><div class="k">Cómo se usa</div><div class="v"><ol><li><em>Nuevo cliente</em>: elegís tipo (<code>empresa</code> o <code>persona</code>) y cargás nombre, documento (RUC/CI), email, teléfono y dirección.</li><li>Buscás por nombre desde el listado y entrás al detalle para ver facturas, oportunidades y actividades.</li><li>Para “borrar” uno, se lo desactiva: no se elimina la historia de ventas.</li></ol></div></div>
+      <div class="row"><div class="k">Ejemplo</div><div class="v"><span class="ex">Tipo <b>empresa</b> — “Distribuidora del Este S.A.”, documento <b>80012345-6</b>, contacto@disteste.com.py.</span></div></div>
+    </article>
+
+    <article class="card" id="contactos">
+      <div class="card-head">
+        <span class="m-ic ic-cyan"><i data-lucide="contact"></i></span>
+        <div>
+          <div class="m-title">Contactos</div>
+          <div class="m-route"><a href="#" data-route="/contactos">/contactos</a></div>
+        </div>
+      </div>
+      <div class="row"><div class="k">Qué es</div><div class="v">Las personas concretas dentro de una empresa cliente.</div></div>
+      <div class="row"><div class="k">Para qué sirve</div><div class="v">Saber a quién llamar, quién decide y quién paga. Un cliente puede tener varios contactos (compras, contaduría, depósito).</div></div>
+      <div class="row"><div class="k">Cómo se usa</div><div class="v"><ol><li><em>Nuevo contacto</em> → elegís el <strong>cliente</strong> al que pertenece.</li><li>Cargás nombre, cargo, email y teléfono.</li><li>La tabla se puede filtrar por cliente.</li></ol></div></div>
+      <div class="row"><div class="k">Ejemplo</div><div class="v"><span class="ex">Cliente: Distribuidora del Este S.A. → “Ana Ríos”, cargo <b>Contadora</b>, ana@disteste.com.py (es la que paga la factura).</span></div></div>
+    </article>
+
+    <article class="card" id="leads">
+      <div class="card-head">
+        <span class="m-ic ic-brand"><i data-lucide="user-plus"></i></span>
+        <div>
+          <div class="m-title">Clientes potenciales (leads)</div>
+          <div class="m-route"><a href="#" data-route="/leads">/leads</a></div>
+        </div>
+      </div>
+      <div class="row"><div class="k">Qué es</div><div class="v">Alguien que podría comprarte pero todavía no es cliente (no tiene RUC cargado, no compró aún).</div></div>
+      <div class="row"><div class="k">Para qué sirve</div><div class="v">No perder los contactos nuevos y saber de dónde vienen. Es la puerta de entrada al CRM.</div></div>
+      <div class="row"><div class="k">Cómo se usa</div><div class="v"><ol><li><em>Nuevo lead</em>: nombre, empresa, email, teléfono y <strong>origen</strong>.</li><li>Cambiás el estado a medida que avanza: <code>nuevo</code> → <code>contactado</code> → <code>calificado</code>.</li><li>Cuando está listo, lo <strong>convertís a cliente</strong> y pasa a la lista de Clientes.</li></ol></div></div>
+      <div class="row"><div class="k">Valores</div><div class="v">Origen: <code>web</code>, <code>referido</code>, <code>llamada</code>, <code>whatsapp</code>, <code>otro</code> · Estado: <code>nuevo</code>, <code>contactado</code>, <code>calificado</code>, <code>convertido</code>, <code>descartado</code></div></div>
+      <div class="row"><div class="k">Ejemplo</div><div class="v"><span class="ex">“Patricia Núñez / Núñez Logística”, origen <b>referido</b>, estado <b>nuevo</b> → la llamás → <b>contactado</b> → convertida en cliente.</span></div></div>
+    </article>
+
+    <article class="card" id="actividad">
+      <div class="card-head">
+        <span class="m-ic ic-purple"><i data-lucide="calendar-check"></i></span>
+        <div>
+          <div class="m-title">Actividad</div>
+          <div class="m-route"><a href="#" data-route="/calendario">/calendario</a> · <a href="#" data-route="/tareas">/tareas</a> · <a href="#" data-route="/llamadas">/llamadas</a></div>
+        </div>
+      </div>
+      <div class="row"><div class="k">Qué es</div><div class="v">El registro de todo lo que hacés con un cliente: llamadas, emails, reuniones, notas y tareas pendientes.</div></div>
+      <div class="row"><div class="k">Para qué sirve</div><div class="v">Que nada se olvide y que cualquiera del equipo sepa qué se habló con ese cliente y cuándo.</div></div>
+      <div class="row"><div class="k">Cómo se usa</div><div class="v"><ol><li><strong>Calendario</strong>: vista por día/semana con todo lo agendado.</li><li><strong>Tareas</strong>: pendientes con fecha; se tildan al completarlas.</li><li><strong>Llamadas</strong>: registro de contactos telefónicos.</li><li>Se pueden asociar a un <strong>cliente</strong>, <strong>lead</strong> u <strong>oportunidad</strong>.</li></ol></div></div>
+      <div class="row"><div class="k">Tipos</div><div class="v"><code>llamada</code>, <code>email</code>, <code>reunion</code>, <code>nota</code>, <code>tarea</code></div></div>
+      <div class="row"><div class="k">Ejemplo</div><div class="v"><span class="ex">Tarea: “Enviar catálogo de productos a Farmacia San Roque” — vence hoy, la tildás y queda como <b>completada</b> con fecha y hora.</span></div></div>
+    </article>
+
+    <!-- ================= VENTAS ================= -->
+    <h2 class="sec" id="ventas"><span class="sec-ic"><i data-lucide="shopping-cart"></i></span> Ventas</h2>
+    <p class="sec-desc">Desde la cotización hasta el cobro final.</p>
+
+    <article class="card" id="propuestas">
+      <div class="card-head">
+        <span class="m-ic ic-green"><i data-lucide="file-text"></i></span>
+        <div>
+          <div class="m-title">Propuestas</div>
+          <div class="m-route"><a href="#" data-route="/propuestas">/propuestas</a></div>
+        </div>
+      </div>
+      <div class="row"><div class="k">Qué es</div><div class="v">El documento que le mandás al cliente para ofrecerle un servicio o trabajo (por ejemplo, “implementación de sistema”).</div></div>
+      <div class="row"><div class="k">Para qué sirve</div><div class="v">Dejar por escrito qué ofrecés, a qué precio y en qué plazo, antes de que se decida.</div></div>
+      <div class="row"><div class="k">Cómo se usa</div><div class="v"><ol><li><em>Nueva propuesta</em> → cliente e ítems del catálogo.</li><li>Se guarda con número automático <code>PRO-000001</code>.</li><li>Desde el detalle se puede revisar y editar mientras no esté aceptada.</li></ol></div></div>
+      <div class="row"><div class="k">Ejemplo</div><div class="v"><span class="ex">Propuesta <b>PRO-000004</b> para Constructora Guaraní: “Mantenimiento anual × 1” + “Entrenamiento avanzado × 2”.</span></div></div>
+    </article>
+
+    <article class="card" id="presupuestos">
+      <div class="card-head">
+        <span class="m-ic ic-green"><i data-lucide="calculator"></i></span>
+        <div>
+          <div class="m-title">Presupuestos</div>
+          <div class="m-route"><a href="#" data-route="/presupuestos">/presupuestos</a></div>
+        </div>
+      </div>
+      <div class="row"><div class="k">Qué es</div><div class="v">Igual que una propuesta, pero enfocado en el <strong>costo estimado</strong> de algo (materiales, mano de obra, insumos).</div></div>
+      <div class="row"><div class="k">Para qué sirve</div><div class="v">Calcular cuánto cuesta un trabajo antes de comprometerte con un precio final.</div></div>
+      <div class="row"><div class="k">Cómo se usa</div><div class="v"><ol><li><em>Nuevo presupuesto</em> → cliente e ítems con cantidades.</li><li>Se guarda con número automático <code>PPTO-000001</code>.</li></ol></div></div>
+      <div class="row"><div class="k">Ejemplo</div><div class="v"><span class="ex">Presupuesto <b>PPTO-000002</b>: “Cajón de dinero × 2” + “Impresora térmica × 2” para cotizar un reinstalaje.</span></div></div>
+    </article>
+
+    <article class="card" id="facturas">
+      <div class="card-head">
+        <span class="m-ic ic-green"><i data-lucide="file-check"></i></span>
+        <div>
+          <div class="m-title">Facturas</div>
+          <div class="m-route"><a href="#" data-route="/ventas/facturas">/ventas/facturas</a></div>
+        </div>
+      </div>
+      <div class="row"><div class="k">Qué es</div><div class="v">El documento legal de la venta: qué le vendiste al cliente, cuánto costó y cuánto debe pagar.</div></div>
+      <div class="row"><div class="k">Para qué sirve</div><div class="v">Cobrar. Calcula subtotal + IVA 10 %, lleva el estado de cada factura y genera el <strong>PDF</strong> para enviarle al cliente.</div></div>
+      <div class="row"><div class="k">Cómo se usa</div><div class="v"><ol><li><strong>Ventas → Facturas → Nueva factura</strong>.</li><li>Elegís cliente, fecha y agregás ítems (descripción, cantidad, precio).</li><li>Elegís estado: en <strong>borrador</strong> no compromete nada; en <strong>emitida</strong> ya es válida para cobrar.</li><li>En el detalle tenés <strong>Imprimir PDF</strong>, <strong>Registrar pago</strong>, <strong>Nota de crédito</strong> y <strong>Anular</strong>.</li></ol></div></div>
+      <div class="row"><div class="k">Estados</div><div class="v"><code>borrador</code> → <code>emitida</code> → <code>pagada</code> · o <code>anulada</code> en cualquier momento antes de cobrar</div></div>
+      <div class="row"><div class="k">Ejemplo</div><div class="v"><span class="ex">Factura <b>FAC-000001</b> a Distribuidora del Este: POS Avanzado + 2 impresoras + instalación → Subtotal ₲ 5.000.000 + IVA ₲ 500.000 = <b>Total ₲ 5.500.000</b>. Se cobra completa y pasa a <b>pagada</b>.</span></div></div>
+      <div class="row"><div class="k">Ojo</div><div class="v">Una factura emitida descuenta stock de los artículos de tipo <code>producto</code>. Los de tipo <code>servicio</code> no afectan inventario.</div></div>
+    </article>
+
+    <article class="card" id="pagos">
+      <div class="card-head">
+        <span class="m-ic ic-green"><i data-lucide="credit-card"></i></span>
+        <div>
+          <div class="m-title">Pagos</div>
+          <div class="m-route"><a href="#" data-route="/ventas/pagos">/ventas/pagos</a></div>
+        </div>
+      </div>
+      <div class="row"><div class="k">Qué es</div><div class="v">El registro de cada cobro que recibiste, total o parcial.</div></div>
+      <div class="row"><div class="k">Para qué sirve</div><div class="v">Saber qué facturas están cobradas y cuál es el saldo real de cada cliente. La factura se marca <strong>pagada</strong> sola cuando el saldo llega a cero.</div></div>
+      <div class="row"><div class="k">Cómo se usa</div><div class="v"><ol><li>Desde el detalle de la factura → <strong>Registrar pago</strong>, o Ventas → Pagos → <em>Nuevo pago</em>.</li><li>Elegís factura, monto, método, fecha y referencia (número de transferencia/cheque).</li><li>Podés cargar varios pagos parciales sobre la misma factura.</li></ol></div></div>
+      <div class="row"><div class="k">Métodos</div><div class="v"><code>efectivo</code>, <code>transferencia</code>, <code>cheque</code>, <code>tarjeta</code>, <code>otro</code></div></div>
+      <div class="row"><div class="k">Ejemplo</div><div class="v"><span class="ex">FAC-000003 total ₲ 1.705.000 → cobrás <b>₲ 500.000 en efectivo</b>. La factura sigue <b>emitida</b> con saldo ₲ 1.205.000.</span></div></div>
+    </article>
+
+    <article class="card" id="notas_credito">
+      <div class="card-head">
+        <span class="m-ic ic-green"><i data-lucide="rotate-ccw"></i></span>
+        <div>
+          <div class="m-title">Notas de crédito</div>
+          <div class="m-route"><a href="#" data-route="/ventas/notas_credito">/ventas/notas_credito</a></div>
+        </div>
+      </div>
+      <div class="row"><div class="k">Qué es</div><div class="v">Un documento que <strong>descuenta</strong> saldo de una factura ya emitida.</div></div>
+      <div class="row"><div class="k">Para qué sirve</div><div class="v">Registrar devoluciones, descuentos posteriores o errores de facturación <strong>sin anular</strong> la factura original (que ya fue entregada al cliente).</div></div>
+      <div class="row"><div class="k">Cómo se usa</div><div class="v"><ol><li>Desde el detalle de la factura → <strong>Nota de crédito</strong>.</li><li>Cargás el monto y el motivo.</li><li>El saldo de la factura baja automáticamente.</li></ol></div></div>
+      <div class="row"><div class="k">Ejemplo</div><div class="v"><span class="ex">FAC-000004 (₲ 3.190.000) + nota de crédito de <b>₲ 350.000</b> por demora en la instalación → saldo ₲ 2.840.000.</span></div></div>
+      <div class="row"><div class="k">Ojo</div><div class="v">No se puede modificar ni borrar: es un asiento contable. Si te equivocaste, cargás otra nota que la compense.</div></div>
+    </article>
+
+    <article class="card" id="articulos">
+      <div class="card-head">
+        <span class="m-ic ic-green"><i data-lucide="package"></i></span>
+        <div>
+          <div class="m-title">Artículos</div>
+          <div class="m-route"><a href="#" data-route="/ventas/articulos">/ventas/articulos</a></div>
+        </div>
+      </div>
+      <div class="row"><div class="k">Qué es</div><div class="v">El catálogo de todo lo que vendés: productos físicos y servicios.</div></div>
+      <div class="row"><div class="k">Para qué sirve</div><div class="v">No escribir precios a mano en cada factura. Al facturar elegís el artículo y el precio se completa solo.</div></div>
+      <div class="row"><div class="k">Cómo se usa</div><div class="v"><ol><li><em>Nuevo artículo</em>: código, nombre, precio, tipo y descripción.</li><li>El tipo <code>producto</code> descuenta stock al facturar; el tipo <code>servicio</code> no.</li><li>Desactivás el artículo para que no aparezca más en el selector (no se borra).</li></ol></div></div>
+      <div class="row"><div class="k">Ejemplo</div><div class="v"><span class="ex"><b>POS-002</b> · Sistema POS Avanzado · producto · ₲ 2.800.000<br><b>CAP-01</b> · Capacitación de personal · servicio · ₲ 350.000</span></div></div>
+    </article>
+
+    <article class="card" id="soporte">
+      <div class="card-head">
+        <span class="m-ic ic-brand"><i data-lucide="life-buoy"></i></span>
+        <div>
+          <div class="m-title">Soporte</div>
+          <div class="m-route"><a href="#" data-route="/soporte">/soporte</a></div>
+        </div>
+      </div>
+      <div class="row"><div class="k">Qué es</div><div class="v">El sistema de tickets: cada pedido de ayuda de un cliente es un ticket con conversación.</div></div>
+      <div class="row"><div class="k">Para qué sirve</div><div class="v">Atender reclamos y consultas post-venta sin perder el hilo, con prioridad y responsable asignado.</div></div>
+      <div class="row"><div class="k">Cómo se usa</div><div class="v"><ol><li><em>Nuevo ticket</em>: cliente, asunto, descripción y prioridad.</li><li>En el detalle respondés con mensajes y cambiás el estado.</li><li>Cerrado el problema, lo pasás a <strong>resuelto</strong> o <strong>cerrado</strong>.</li></ol></div></div>
+      <div class="row"><div class="k">Valores</div><div class="v">Estado: <code>abierto</code>, <code>en_progreso</code>, <code>resuelto</code>, <code>cerrado</code> · Prioridad: <code>baja</code>, <code>normal</code>, <code>alta</code>, <code>urgente</code></div></div>
+      <div class="row"><div class="k">Ejemplo</div><div class="v"><span class="ex">Ticket “La impresora térmica no imprime tickets” — prioridad <b>alta</b>, asignado a Soporte → se responde y se marca <b>resuelto</b>.</span></div></div>
+    </article>
+
+    <article class="card" id="suscripciones">
+      <div class="card-head">
+        <span class="m-ic ic-cyan"><i data-lucide="refresh-cw"></i></span>
+        <div>
+          <div class="m-title">Suscripciones</div>
+          <div class="m-route"><a href="#" data-route="/suscripciones">/suscripciones</a></div>
+        </div>
+      </div>
+      <div class="row"><div class="k">Qué es</div><div class="v">Los contratos que se cobran periódicamente (mensual, trimestral o anual), en lugar de una vez.</div></div>
+      <div class="row"><div class="k">Para qué sirve</div><div class="v">Saber qué ingresos fijos tenés, cuándo vencen y si una suscripción está activa, pausada o cancelada.</div></div>
+      <div class="row"><div class="k">Cómo se usa</div><div class="v"><ol><li><em>Nueva suscripción</em>: cliente, artículo/servicio, monto, periodicidad y fecha de inicio.</li><li>La pausás si el cliente suspende temporalmente; la cancelás si termina.</li></ol></div></div>
+      <div class="row"><div class="k">Valores</div><div class="v">Periodicidad: <code>mensual</code>, <code>trimestral</code>, <code>anual</code> · Estado: <code>activa</code>, <code>pausada</code>, <code>cancelada</code></div></div>
+      <div class="row"><div class="k">Ejemplo</div><div class="v"><span class="ex">Farmacia San Roque · “Soporte mensual” · <b>₲ 250.000 mensual</b> · activa desde el 01/11.</span></div></div>
+    </article>
+
+    <!-- ================= OPERACIONES ================= -->
+    <h2 class="sec" id="operaciones"><span class="sec-ic"><i data-lucide="briefcase-business"></i></span> Operaciones</h2>
+    <p class="sec-desc">La parte interna: lo que gastás, lo que comprás y lo que producís.</p>
+
+    <article class="card" id="proyectos">
+      <div class="card-head">
+        <span class="m-ic ic-blue"><i data-lucide="briefcase"></i></span>
+        <div>
+          <div class="m-title">Proyectos</div>
+          <div class="m-route"><a href="#" data-route="/proyectos">/proyectos</a></div>
+        </div>
+      </div>
+      <div class="row"><div class="k">Qué es</div><div class="v">Un trabajo con inicio y fin que le hacés a un cliente (una implementación, una obra, una instalación).</div></div>
+      <div class="row"><div class="k">Para qué sirve</div><div class="v">Agrupar todo lo que implica ese trabajo y ver su avance, en vez de tenerlo desparramado.</div></div>
+      <div class="row"><div class="k">Cómo se usa</div><div class="v"><ol><li><em>Nuevo proyecto</em>: nombre, cliente y estado.</li><li>Lo movés entre <code>activo</code>, <code>pausado</code>, <code>completado</code> o <code>cancelado</code>.</li></ol></div></div>
+      <div class="row"><div class="k">Ejemplo</div><div class="v"><span class="ex">“Primer módulo Constructora Guaraní” · cliente Constructora Guaraní · estado <b>activo</b>.</span></div></div>
+    </article>
+
+    <article class="card" id="proveedores">
+      <div class="card-head">
+        <span class="m-ic ic-warn"><i data-lucide="truck"></i></span>
+        <div>
+          <div class="m-title">Proveedores</div>
+          <div class="m-route"><a href="#" data-route="/proveedores">/proveedores</a></div>
+        </div>
+      </div>
+      <div class="row"><div class="k">Qué es</div><div class="v">Las empresas o personas a las que <strong>les comprás</strong> (no a las que vendés).</div></div>
+      <div class="row"><div class="k">Para qué sirve</div><div class="v">Tener sus datos a mano para emitir órdenes de compra y saber a quién le debés.</div></div>
+      <div class="row"><div class="k">Cómo se usa</div><div class="v"><ol><li><em>Nuevo proveedor</em>: nombre, documento, email, teléfono y dirección.</li><li>Aparece en el selector al crear una Orden de compra.</li></ol></div></div>
+      <div class="row"><div class="k">Ejemplo</div><div class="v"><span class="ex">“Importadora Tecnológica S.A.” · RUC <b>80098765-4</b> · vendedor@importec.com.py.</span></div></div>
+    </article>
+
+    <article class="card" id="ordenes_compra">
+      <div class="card-head">
+        <span class="m-ic ic-warn"><i data-lucide="clipboard-list"></i></span>
+        <div>
+          <div class="m-title">Órdenes de compra</div>
+          <div class="m-route"><a href="#" data-route="/ordenes_compra">/ordenes_compra</a></div>
+        </div>
+      </div>
+      <div class="row"><div class="k">Qué es</div><div class="v">El pedido formal que le hacés a un proveedor para que te mande mercadería.</div></div>
+      <div class="row"><div class="k">Para qué sirve</div><div class="v">Controlar qué pediste, a qué precio y si te llegó.</div></div>
+      <div class="row"><div class="k">Cómo se usa</div><div class="v"><ol><li><em>Nueva orden</em>: proveedor e ítems del catálogo.</li><li>Se guarda como <code>borrador</code>; la <strong>emitís</strong> para enviarla.</li><li>Cuando llega la mercadería, la marcás <strong>recibida</strong> y el stock entra solo.</li></ol></div></div>
+      <div class="row"><div class="k">Estados</div><div class="v"><code>borrador</code> → <code>emitida</code> → <code>recibida</code> · o <code>anulada</code></div></div>
+      <div class="row"><div class="k">Ejemplo</div><div class="v"><span class="ex">OC a Importadora Tecnológica por 10 lechugas térmicas → pasa a <b>recibida</b> → stock +10.</span></div></div>
+    </article>
+
+    <article class="card" id="stock">
+      <div class="card-head">
+        <span class="m-ic ic-warn"><i data-lucide="layers"></i></span>
+        <div>
+          <div class="m-title">Stock</div>
+          <div class="m-route"><a href="#" data-route="/stock">/stock</a> · <a href="#" data-route="/stock/movimientos">/stock/movimientos</a></div>
+        </div>
+      </div>
+      <div class="row"><div class="k">Qué es</div><div class="v">Cuánto tenés de cada producto y el historial de cada movimiento.</div></div>
+      <div class="row"><div class="k">Para qué sirve</div><div class="v">Saber si tenés para vender y por qué el número cambió. Cada factura emitida descuenta y cada orden recibida suma.</div></div>
+      <div class="row"><div class="k">Cómo se usa</div><div class="v"><ol><li>En <strong>Stock</strong> ves cantidades por artículo.</li><li>En <strong>Movimientos</strong> ves el detalle: entrada/salida, cantidad, referencia y motivo.</li><li>Para corregir a mano (rotura, conteo), usás <strong>Ajustes de inventario</strong>.</li></ol></div></div>
+      <div class="row"><div class="k">Ejemplo</div><div class="v"><span class="ex">“Impresora Térmica”: FAC-000001 consumió 2 (salida) y OC recibida sumó 10 (entrada) → stock final 8.</span></div></div>
+    </article>
+
+    <article class="card" id="ajustes_inventario">
+      <div class="card-head">
+        <span class="m-ic ic-warn"><i data-lucide="sliders-horizontal"></i></span>
+        <div>
+          <div class="m-title">Ajustes de inventario</div>
+          <div class="m-route"><a href="#" data-route="/ajustes_inventario">/ajustes_inventario</a></div>
+        </div>
+      </div>
+      <div class="row"><div class="k">Qué es</div><div class="v">Correcciones manuales al stock, con un motivo escrito.</div></div>
+      <div class="row"><div class="k">Para qué sirve</div><div class="v">Cuadrar el sistema con la realidad cuando no hay ni una venta ni una compra que lo expliquen.</div></div>
+      <div class="row"><div class="k">Cómo se usa</div><div class="v"><ol><li>Elegís artículo, cantidad y motivo (“rotura”, “conteo físico”).</li><li>Queda registrado en Movimientos como un movimiento más.</li></ol></div></div>
+      <div class="row"><div class="k">Ejemplo</div><div class="v"><span class="ex">Contás 3 tablets y el sistema dice 5 → ajuste de <b>−2</b> con motivo “conteo físico”.</span></div></div>
+    </article>
+
+    <article class="card" id="gastos">
+      <div class="card-head">
+        <span class="m-ic ic-red"><i data-lucide="receipt"></i></span>
+        <div>
+          <div class="m-title">Gastos</div>
+          <div class="m-route"><a href="#" data-route="/gastos">/gastos</a></div>
+        </div>
+      </div>
+      <div class="row"><div class="k">Qué es</div><div class="v">El registro de la plata que <strong>sale</strong>: alquiler, sueldos, servicios, insumos.</div></div>
+      <div class="row"><div class="k">Para qué sirve</div><div class="v">Saber cuánto te cuesta operar y ver la diferencia real entre lo que vendés y lo que gastás.</div></div>
+      <div class="row"><div class="k">Cómo se usa</div><div class="v"><ol><li><em>Nuevo gasto</em>: concepto, monto, fecha, categoría y notas.</li><li>Los gastos alimentan el informe de Gastos.</li></ol></div></div>
+      <div class="row"><div class="k">Ejemplo</div><div class="v"><span class="ex">Concepto “Alquiler oficina noviembre” · ₲ 3.500.000 · categoría <b>alquiler</b>.</span></div></div>
+    </article>
+
+    <!-- ================= HERRAMIENTAS ================= -->
+    <h2 class="sec" id="herramientas"><span class="sec-ic"><i data-lucide="wrench"></i></span> Herramientas</h2>
+    <p class="sec-desc">Archivos e informes para medir cómo va el negocio.</p>
+
+    <article class="card" id="explorador">
+      <div class="card-head">
+        <span class="m-ic ic-gray"><i data-lucide="folder-open"></i></span>
+        <div>
+          <div class="m-title">Explorador de archivos</div>
+          <div class="m-route"><a href="#" data-route="/explorador">/explorador</a></div>
+        </div>
+      </div>
+      <div class="row"><div class="k">Qué es</div><div class="v">Un espacio para subir y descargar archivos (contratos, comprobantes, fotos).</div></div>
+      <div class="row"><div class="k">Para qué sirve</div><div class="v">Guardar los documentos de cada cliente junto con su ficha, sin depender de la PC de alguien.</div></div>
+      <div class="row"><div class="k">Cómo se usa</div><div class="v"><ol><li>Subís un archivo con el botón <em>Subir</em>.</li><li>Lo descargás con el botón de descarga de cada fila.</li></ol></div></div>
+      <div class="row"><div class="k">Ejemplo</div><div class="v"><span class="ex">Subís “contrato-disteste-2026.pdf” y lo descargás cuando lo pide el cliente.</span></div></div>
+    </article>
+
+    <article class="card" id="informes">
+      <div class="card-head">
+        <span class="m-ic ic-blue"><i data-lucide="bar-chart-3"></i></span>
+        <div>
+          <div class="m-title">Informes</div>
+          <div class="m-route"><a href="#" data-route="/informes_ventas">/informes_ventas</a> · <a href="#" data-route="/informes_gastos">/informes_gastos</a> · <a href="#" data-route="/informes_pipeline">/informes_pipeline</a> · <a href="#" data-route="/informes_actividad">/informes_actividad</a></div>
+        </div>
+      </div>
+      <div class="row"><div class="k">Qué es</div><div class="v">Los reportes con números y gráficos de lo que pasó en un período.</div></div>
+      <div class="row"><div class="k">Para qué sirve</div><div class="v">Tomar decisiones con datos: qué vender más, qué gastás de más, dónde se trabaja el pipeline.</div></div>
+      <div class="row"><div class="k">Cómo se usa</div><div class="v"><ol><li>Elegís el rango de fechas arriba.</li><li>Cada informe se filtra igual y muestra totales por período.</li></ol></div></div>
+      <div class="row"><div class="k">Cuál usar</div><div class="v"><ul><li><strong>Ventas</strong>: cuánto facturaste y cuánto te falta cobrar.</li><li><strong>Gastos</strong>: en qué se te fue la plata.</li><li><strong>Conversión</strong>: cuántas oportunidades se ganan vs se pierden.</li><li><strong>Actividad</strong>: llamadas, reuniones y tareas por usuario.</li></ul></div></div>
+      <div class="row"><div class="k">Ejemplo</div><div class="v"><span class="ex">Informes → Ventas, del 1 al 30 de noviembre: 6 facturas, ₲ 9.500.000 facturado, ₲ 3.500.000 cobrado.</span></div></div>
+    </article>
+
+    <!-- ================= SISTEMA ================= -->
+    <h2 class="sec" id="sistema"><span class="sec-ic"><i data-lucide="settings"></i></span> Sistema</h2>
+    <p class="sec-desc">Administración de usuarios y permisos. Normalmente solo para el administrador.</p>
+
+    <article class="card" id="usuarios">
+      <div class="card-head">
+        <span class="m-ic ic-gray"><i data-lucide="user-cog"></i></span>
+        <div>
+          <div class="m-title">Usuarios</div>
+          <div class="m-route"><a href="#" data-route="/usuarios">/usuarios</a></div>
+        </div>
+      </div>
+      <div class="row"><div class="k">Qué es</div><div class="v">Las personas que pueden entrar a la empresa en SolCRM, con su rol.</div></div>
+      <div class="row"><div class="k">Para qué sirve</div><div class="v">Dar acceso solo a quien corresponde, con el nivel justo de permisos.</div></div>
+      <div class="row"><div class="k">Cómo se usa</div><div class="v"><ol><li><em>Nuevo usuario</em>: nombre, usuario, email, contraseña y rol.</li><li>Se desactiva en vez de borrarse, para conservar quién hizo cada cosa.</li></ol></div></div>
+      <div class="row"><div class="k">Ejemplo</div><div class="v"><span class="ex">Usuario <b>vendedor</b> (Carlos Vendedor) con rol <b>vendedor</b>; usuario <b>soporte</b> (María Soporte) con rol <b>soporte</b>.</span></div></div>
+    </article>
+
+    <article class="card" id="roles">
+      <div class="card-head">
+        <span class="m-ic ic-gray"><i data-lucide="shield"></i></span>
+        <div>
+          <div class="m-title">Roles</div>
+          <div class="m-route"><a href="#" data-route="/roles">/roles</a></div>
+        </div>
+      </div>
+      <div class="row"><div class="k">Qué es</div><div class="v">Conjuntos de permisos que definen qué puede ver y hacer un usuario.</div></div>
+      <div class="row"><div class="k">Para qué sirve</div><div class="v">Que el que despacha no vea los gastos, y que el que vende no borre usuarios.</div></div>
+      <div class="row"><div class="k">Cómo se usa</div><div class="v"><ol><li><em>Nuevo rol</em>: nombre y descripción.</li><li>Tildás los permisos (cada módulo es un permiso).</li><li>Asignás el rol al crear o editar el usuario.</li></ol></div></div>
+      <div class="row"><div class="k">Ejemplo</div><div class="v"><span class="ex">Rol <b>vendedor</b>: puede pipeline, clientes, leads, facturas, pagos, informes de ventas. <b>No</b> puede usuarios ni gastos.</span></div></div>
+    </article>
+
+    <article class="card" id="configuracion">
+      <div class="card-head">
+        <span class="m-ic ic-gray"><i data-lucide="sliders"></i></span>
+        <div>
+          <div class="m-title">Ajustes de la empresa</div>
+          <div class="m-route"><a href="#" data-route="/configuracion">/configuracion</a></div>
+        </div>
+      </div>
+      <div class="row"><div class="k">Qué es</div><div class="v">Los datos generales de tu empresa que aparecen en toda la aplicación.</div></div>
+      <div class="row"><div class="k">Para qué sirve</div><div class="v">Que los documentos y menciones de la empresa usen tus datos reales.</div></div>
+      <div class="row"><div class="k">Cómo se usa</div><div class="v"><ol><li>Completás los datos y guardás.</li><li>Los cambios aplican a todos los usuarios de la empresa.</li></ol></div></div>
+      <div class="row"><div class="k">Ejemplo</div><div class="v"><span class="ex">Nombre “Tu empresa S.A.” · RUC <b>80012345-6</b> → aparece en el encabezado de la factura en PDF.</span></div></div>
+    </article>
+
+    <div class="divider"></div>
+
+    <div class="tip">
+      <i data-lucide="life-buoy"></i>
+      <div>
+        <strong>¿No encontrás algo?</strong> Usá el buscador del menú con <code>Ctrl + K</code>
+        desde cualquier pantalla. Si el problema es técnico (no carga, da error), avisale al
+        administrador de tu empresa.
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<footer>
+  SolCRM · Guía de uso para el usuario final ·
+  <a href="/doc">Doc técnica del proyecto</a>
+</footer>
+
+<script>
+(function () {
+  // Iconos
+  if (window.lucide) { lucide.createIcons(); }
+
+  // Tema claro/oscuro (mismo localStorage que la app)
+  var btn = document.getElementById('themeBtn');
+  function pintar() {
+    btn.innerHTML = document.documentElement.classList.contains('dark')
+      ? '<i data-lucide="sun"></i>'
+      : '<i data-lucide="moon"></i>';
+    if (window.lucide) { lucide.createIcons(); }
+  }
+  btn.addEventListener('click', function () {
+    var dark = document.documentElement.classList.toggle('dark');
+    localStorage.setItem('theme', dark ? 'dark' : 'light');
+    pintar();
+  });
+  pintar();
+
+  // Buscador de módulos
+  var q = document.getElementById('q');
+  q.addEventListener('input', function () {
+    var t = q.value.trim().toLowerCase();
+    document.querySelectorAll('.card[id]').forEach(function (c) {
+      c.style.display = (!t || c.textContent.toLowerCase().indexOf(t) !== -1) ? '' : 'none';
+    });
+    document.querySelectorAll('h2.sec').forEach(function (h) {
+      h.style.display = t ? 'none' : '';
+    });
+    document.querySelectorAll('.sec-desc').forEach(function (h) {
+      h.style.display = t ? 'none' : '';
+    });
+  });
+
+  // Botones "abrir el módulo": usan el slug del tenant de la URL del navegador.
+  // La guía también funciona sola (sin app), así que calculamos el slug en vivo.
+  var segs = location.pathname.split('/').filter(Boolean);
+  var slug = (segs[0] && segs[0] !== 'ayuda' && segs.indexOf('ayuda') === -1) ? segs[0] : null;
+  document.querySelectorAll('a[data-route]').forEach(function (a) {
+    var ruta = a.getAttribute('data-route');
+    a.href = slug ? '/' + slug + ruta : '#';
+    if (!slug) {
+      a.title = 'Abrí esta guía desde tu empresa para que este link funcione';
+    }
+  });
+
+  // Resaltar la sección visible en la navegación
+  var links = Array.from(document.querySelectorAll('.nav a'));
+  var secciones = links.map(function (a) {
+    return document.getElementById(a.getAttribute('href').slice(1));
+  });
+  if ('IntersectionObserver' in window) {
+    var obs = new IntersectionObserver(function (entradas) {
+      entradas.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        links.forEach(function (a) { a.classList.remove('active'); });
+        var i = secciones.indexOf(e.target);
+        if (i !== -1) links[i].classList.add('active');
+      });
+    }, { rootMargin: '-80px 0px -70% 0px' });
+    secciones.forEach(function (s) { if (s) obs.observe(s); });
+  }
+})();
+</script>
+</body>
+</html>
