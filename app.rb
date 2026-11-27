@@ -9,6 +9,7 @@ require_relative "helpers/flash_helpers"
 require_relative "helpers/ventas_helpers"
 require_relative "helpers/inventario_helpers"
 require_relative "helpers/informes_helpers"
+require_relative "helpers/pdf_helpers"
 
 
 class BaseApp < Sinatra::Base
@@ -65,6 +66,7 @@ class BaseApp < Sinatra::Base
   helpers VentasHelpers
   helpers InventarioHelpers
   helpers InformesHelpers
+  helpers PdfHelpers
 end
 
 class SolCRM < BaseApp

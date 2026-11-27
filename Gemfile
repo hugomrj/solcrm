@@ -10,5 +10,6 @@ gem "pg"
 gem "sequel"
 gem "bcrypt"
 
-gem "wicked_pdf"
-gem "wkhtmltopdf-binary" # Instala el binario automáticamente
+gem "prawn" # Genera los PDF (facturas) sin binarios externos
+gem "prawn-table" # Tabla de ítems del PDF
+gem "matrix" # Prawn lo necesita y salió de la stdlib en Ruby 3.1+

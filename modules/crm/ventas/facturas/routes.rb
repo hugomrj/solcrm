@@ -64,24 +64,13 @@ class FacturasRoutes < BaseApp
     factura = tenant_db(:facturas).where(id: params[:id]).first
     halt 404, "Factura no encontrada" unless factura
 
-    @cliente = tenant_db(:clientes).where(id: factura[:cliente_id]).first
-    @items   = DB[:facturas_items].where(factura_id: factura[:id]).order(:id).all
-    @factura = factura
-
-    require "wicked_pdf"
-    
-    # Renderizamos la vista (esto inyecta el CSS)
-    html = erb(:"crm/ventas/facturas/pdf", layout: false)
-    
-    # Generamos el PDF
-    pdf = WickedPdf.new.pdf_from_string(
-      html,
-      encoding: "UTF-8"
-    )
+    cliente = tenant_db(:clientes).where(id: factura[:cliente_id]).first
+    # facturas_items NO tiene tenant_id: se accede por FK de una factura ya filtrada por tenant
+    items   = DB[:facturas_items].where(factura_id: factura[:id]).order(:id).all
 
     content_type "application/pdf"
     headers "Content-Disposition" => "inline; filename=\"Factura_#{factura[:numero]}.pdf\""
-    pdf
+    factura_pdf(factura, cliente, items)
   end
 
 
